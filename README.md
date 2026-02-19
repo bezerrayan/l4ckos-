@@ -2,37 +2,37 @@
 
 Um site de e-commerce completo e responsivo para venda de materiais escoteiros, desenvolvido com HTML, CSS e JavaScript puros.
 
-## 📋 Descrição
+##  Descrição
 
 **Sempre Alerta** é uma loja online dedicada a fornecer materiais de qualidade premium para o movimento escoteiro. O site oferece uma experiência moderna, intuitiva e totalmente responsiva, com foco nos valores de aventura, fraternidade, natureza, disciplina e crescimento pessoal.
 
-## 🎯 Características Principais
+##  Características Principais
 
 ### Funcionalidades
-- ✅ Catálogo de produtos com filtros por categoria
-- ✅ Carrinho de compras funcional (front-end com localStorage)
-- ✅ Modal de detalhes do produto
-- ✅ Página "Sobre a marca" com valores escoteiros
-- ✅ Formulário de contato com validação
-- ✅ Menu responsivo para mobile
-- ✅ Navegação fluida com scroll suave
-- ✅ Sistema de notificações
-- ✅ Suporte a localStorage para persistência de dados
+-  Catálogo de produtos com filtros por categoria
+-  Carrinho de compras funcional (front-end com localStorage)
+-  Modal de detalhes do produto
+-  Página "Sobre a marca" com valores escoteiros
+-  Formulário de contato com validação
+-  Menu responsivo para mobile
+-  Navegação fluida com scroll suave
+-  Sistema de notificações
+-  Suporte a localStorage para persistência de dados
 
 ### Design
-- 🎨 Design moderno e profissional
-- 🎨 Paleta de cores inspirada na natureza (verde floresta, marrom quente, bege natural)
-- 🎨 Tipografia ousada (Poppins Bold para headings, Outfit para corpo)
-- 🎨 Espaçamento generoso para sofisticação
-- 🎨 Animações fluidas e feedback visual claro
+-  Design moderno e profissional
+-  Paleta de cores inspirada na natureza (verde floresta, marrom quente, bege natural)
+-  Tipografia ousada (Poppins Bold para headings, Outfit para corpo)
+-  Espaçamento generoso para sofisticação
+-  Animações fluidas e feedback visual claro
 
 ### Responsividade
-- 📱 Totalmente responsivo (mobile, tablet, desktop)
-- 📱 Mobile-first approach
-- 📱 Breakpoints otimizados (480px, 768px, 1024px)
-- 📱 Menu hamburger para dispositivos pequenos
+-  Totalmente responsivo (mobile, tablet, desktop)
+-  Mobile-first approach
+-  Breakpoints otimizados (480px, 768px, 1024px)
+-  Menu hamburger para dispositivos pequenos
 
-## 📁 Estrutura de Pastas
+##  Estrutura de Pastas
 
 ```
 loja-escoteira/
@@ -77,25 +77,14 @@ Depois acesse: `http://localhost:8000`
 - **Google Fonts**: Tipografia (Poppins, Outfit)
 - **localStorage**: Persistência de dados do carrinho
 
-## 📦 Produtos
+##  Produtos
 
-O site inclui 8 produtos de exemplo em 3 categorias:
+O site inclui 3 produtos de exemplo
 
 ### Vestuário
-- Camiseta Scout Premium
-- Lenço Escoteiro Personalizado
-- Cinto Scout Resistente
+- Camisetas Premium
 
-### Acessórios
-- Bússola Vintage Scout
-- Mochila Scout 40L
-- Mapa e Bússola Kit
-
-### Hidratação
-- Garrafa Scout Inox
-- Caneca Scout Térmica
-
-## 🎨 Design Philosophy
+##  Design Philosophy
 
 O design segue a filosofia de **Modernismo Terrestre com Tipografia Ousada**:
 
@@ -105,7 +94,7 @@ O design segue a filosofia de **Modernismo Terrestre com Tipografia Ousada**:
 - **Assimetria Controlada**: Layouts dinâmicos que mantêm harmonia
 - **Animações Fluidas**: Transições suaves que transmitem profissionalismo
 
-## 🔧 Personalização
+##  Personalização
 
 ### Alterar Cores
 Edite as variáveis CSS em `css/styles.css`:
@@ -144,14 +133,14 @@ Edite as fontes em `css/styles.css`:
 --font-body: 'Outfit', sans-serif;
 ```
 
-## 📱 Responsividade
+##  Responsividade
 
 O site é totalmente responsivo com breakpoints em:
 - **480px**: Pequenos celulares
 - **768px**: Tablets e celulares grandes
 - **1024px**: Tablets grandes e desktops
 
-## ♿ Acessibilidade
+##  Acessibilidade
 
 - Estrutura HTML semântica
 - Atributos `aria-label` em elementos interativos
@@ -159,14 +148,14 @@ O site é totalmente responsivo com breakpoints em:
 - Suporte a navegação por teclado
 - Modo reduzido de movimento (`prefers-reduced-motion`)
 
-## 🔒 Segurança
+##  Segurança
 
 - Validação de formulário no front-end
 - Proteção contra XSS com textContent
 - Sem dados sensíveis no JavaScript
 - Pronto para integração com backend seguro
 
-## 📊 Performance
+##  Performance
 
 - Imagens otimizadas
 - CSS minificado e bem organizado
@@ -174,7 +163,7 @@ O site é totalmente responsivo com breakpoints em:
 - Lazy loading preparado para imagens
 - Scroll suave sem impacto na performance
 
-## 🚀 Preparado Para
+##  Preparado Para
 
 - ✅ HTTPS
 - ✅ Autenticação futura
@@ -192,7 +181,7 @@ Todo o código está bem comentado e organizado:
 - Explicações de lógica complexa
 - Fácil de editar e manter
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Carrinho não persiste
 Verifique se localStorage está habilitado no navegador.
@@ -206,15 +195,15 @@ Certifique-se de que JavaScript está habilitado.
 ### Estilos não aplicam
 Limpe o cache do navegador (Ctrl+Shift+Delete ou Cmd+Shift+Delete).
 
-## 📞 Suporte e Contato
+##  Suporte e Contato
 
 Para dúvidas ou sugestões sobre o site, use o formulário de contato na seção "Entre em Contato".
 
-## 📄 Licença
+##  Licença
 
 Este projeto é fornecido como está para uso educacional e comercial.
 
-## 🎓 Aprendizado
+##  Aprendizado
 
 Este projeto demonstra:
 - Estrutura HTML semântica
@@ -225,7 +214,7 @@ Este projeto demonstra:
 - Acessibilidade web
 - Performance web
 
-## 🔄 Histórico de Versões
+##  Histórico de Versões
 
 ### v1.0.0 (2024)
 - Lançamento inicial
@@ -234,7 +223,7 @@ Este projeto demonstra:
 - Formulário de contato
 - Design responsivo completo
 
-## 📚 Recursos Adicionais
+##  Recursos Adicionais
 
 - [MDN Web Docs](https://developer.mozilla.org/)
 - [Web.dev](https://web.dev/)
@@ -243,5 +232,5 @@ Este projeto demonstra:
 
 ---
 
-**Sempre Alerta** - Materiais Escoteiros Premium  
-Desenvolvido com ❤️ para o movimento escoteiro
+**L4ckos** - Materiais Premium  
+Desenvolvido com para o movimento escoteiro
