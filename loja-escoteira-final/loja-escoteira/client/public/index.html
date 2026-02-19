@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sempre Alerta - Loja oficial de materiais escoteiros. Camisetas, lenços, garrafas, acessórios e muito mais para scouts.">
+    <meta name="keywords" content="escotismo, materiais escoteiros, uniformes, acessórios, scout">
+    <meta name="author" content="Sempre Alerta">
+    <meta name="theme-color" content="#1B4D3E">
+    
+    <title>Sempre Alerta - Loja Escoteira | Materiais Scout Premium</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <h1>Sempre Alerta</h1>
+                    <p class="tagline">Materiais Escoteiros Premium</p>
+                </div>
+
+                <!-- Menu Toggle (Mobile) -->
+                <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <!-- Navigation Menu -->
+                <nav class="nav-menu">
+                    <a href="#home" class="nav-link active">Início</a>
+                    <a href="#produtos" class="nav-link">Produtos</a>
+                    <a href="#sobre" class="nav-link">Sobre</a>
+                    <a href="#contato" class="nav-link">Contato</a>
+                </nav>
+
+                <!-- Favorites Icon -->
+                <div class="favorites-icon-container">
+                    <button class="favorites-icon" id="favoritesIcon" aria-label="Abrir favoritos">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span class="favorites-count" id="favoritesCount">0</span>
+                    </button>
+                </div>
+
+                <!-- Cart Icon -->
+                <div class="cart-icon-container">
+                    <button class="cart-icon" id="cartIcon" aria-label="Abrir carrinho">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h2>Aventura, Fraternidade e Natureza</h2>
+            <p>Materiais escoteiros de qualidade premium para quem vive a aventura</p>
+            <button class="btn btn-primary" onclick="document.getElementById('produtos').scrollIntoView({behavior: 'smooth'})">Explorar Produtos</button>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="produtos" class="products-section">
+        <div class="container">
+            <h2 class="section-title">Nossos Produtos</h2>
+            
+            <!-- Filter Buttons -->
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-category="todos">Todos</button>
+                <button class="filter-btn" data-category="vestuario">Vestuário</button>
+                <button class="filter-btn" data-category="acessorios">Acessórios</button>
+                <button class="filter-btn" data-category="hidratacao">Hidratação</button>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Produtos serão renderizados aqui pelo JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div class="modal-body" id="modalBody">
+                <!-- Conteúdo do produto será renderizado aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="sobre" class="about-section">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>Sobre a Sempre Alerta</h2>
+                    <p>Somos uma loja dedicada a fornecer materiais de qualidade para o movimento escoteiro. Acreditamos nos valores de aventura, fraternidade, natureza, disciplina e crescimento pessoal.</p>
+                    
+                    <div class="values">
+                        <div class="value-item">
+                            <h3>🏕️ Aventura</h3>
+                            <p>Equipamentos para explorar e descobrir o mundo</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>🤝 Fraternidade</h3>
+                            <p>Unindo scouts em uma comunidade global</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>🌿 Natureza</h3>
+                            <p>Respeito e conexão com o meio ambiente</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>💪 Disciplina</h3>
+                            <p>Qualidade e excelência em tudo que fazemos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contato" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">Entre em Contato</h2>
+            
+            <form class="contact-form" id="contactForm">
+                <div class="form-group">
+                    <label for="name">Nome *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Assunto *</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Selecione um assunto</option>
+                        <option value="duvida">Dúvida sobre produto</option>
+                        <option value="pedido">Dúvida sobre pedido</option>
+                        <option value="sugestao">Sugestão</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Mensagem *</label>
+                    <textarea id="message" name="message" rows="5" required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Enviar Mensagem</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Sempre Alerta</h3>
+                    <p>Materiais escoteiros premium para aventureiros</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="#home">Início</a></li>
+                        <li><a href="#produtos">Produtos</a></li>
+                        <li><a href="#sobre">Sobre</a></li>
+                        <li><a href="#contato">Contato</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Informações</h4>
+                    <ul>
+                        <li><a href="#">Política de Privacidade</a></li>
+                        <li><a href="#">Termos de Serviço</a></li>
+                        <li><a href="#">Devolução e Reembolso</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contato</h4>
+                    <p>Email: contato@semprealerta.com.br</p>
+                    <p>Telefone: (11) 3000-0000</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Sempre Alerta. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="/js/main.js"></script>
+    <script type="module" src="/js/products.js"></script>
+    <script type="module" src="/js/cart.js"></script>
+    <script type="module" src="/js/favorites.js"></script>
+    <script type="module" src="/js/ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+# Ignora dependências instaladas
+node_modules/
+
+# Ignora arquivos de build
+/dist/
+
+# Ignora variáveis de ambiente sensíveis
+.env
+.env.*
+
+# Ignora logs
+*.log
+
+# Ignora arquivos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Ignora arquivos de banco de dados locais
+*.sqlite
+*.db
+
+# Ignora arquivos de cache
+.cache/
+.vite/
+
+# Ignora arquivos de configurações do editor
+.vscode/
+.idea/
+
+# Ignora arquivos de backup
+*.bak
+
+# Ignora arquivos de relatórios de testes
+coverage/
+
+# Ignora arquivos de patch
+patches/
