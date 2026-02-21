@@ -62,7 +62,7 @@ function encodeState(payload: { returnTo: string; nonce: string }): string {
   return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
 }
 
-function hasConfiguredGoogleCredentials() {
+function getGoogleCredentialStatus() {
   const hasClientId =
     typeof ENV.googleClientId === "string" &&
     ENV.googleClientId.trim() !== "" &&
@@ -73,14 +73,22 @@ function hasConfiguredGoogleCredentials() {
     ENV.googleClientSecret.trim() !== "" &&
     !ENV.googleClientSecret.includes("preencha_");
 
+  return { hasClientId, hasClientSecret };
+}
+
+function hasConfiguredGoogleCredentials() {
+  const { hasClientId, hasClientSecret } = getGoogleCredentialStatus();
+
   return hasClientId && hasClientSecret;
 }
 
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/login", async (req: Request, res: Response) => {
     if (!hasConfiguredGoogleCredentials()) {
+      const status = getGoogleCredentialStatus();
       res.status(500).json({
         error: "Google OAuth não configurado. Preencha GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env",
+        status,
       });
       return;
     }
@@ -130,8 +138,10 @@ export function registerOAuthRoutes(app: Express) {
       }
 
       if (!hasConfiguredGoogleCredentials()) {
+        const status = getGoogleCredentialStatus();
         res.status(500).json({
           error: "Google OAuth não configurado no servidor. Verifique GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET",
+          status,
         });
         return;
       }
