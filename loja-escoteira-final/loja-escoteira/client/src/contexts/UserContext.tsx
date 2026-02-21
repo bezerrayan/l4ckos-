@@ -3,8 +3,16 @@
  * Fornece: user, login, logout, isAuthenticated
  */
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+  useEffect,
+} from "react";
 import type { User } from "../types/user";
+import { trpc } from "../lib/trpc";
 
 // ============= TIPOS =============
 
@@ -29,7 +37,40 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
 
-  const isAuthenticated = user !== null;
+  const utils = trpc.useUtils();
+  const meQuery = trpc.auth.me.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: true,
+  });
+  const logoutMutation = trpc.auth.logout.useMutation();
+
+  const isAuthenticated = user !== null || Boolean(meQuery.data);
+
+  useEffect(() => {
+    if (!meQuery.data) {
+      if (!meQuery.isLoading) {
+        setUserState(null);
+      }
+      return;
+    }
+
+    const serverUser = meQuery.data as {
+      id?: number | string;
+      name?: string | null;
+      email?: string | null;
+      createdAt?: string | Date | null;
+    };
+
+    const mappedUser: User = {
+      id: String(serverUser.id ?? ""),
+      name: serverUser.name || "Usuário",
+      email: serverUser.email || "",
+      isAuthenticated: true,
+      createdAt: serverUser.createdAt ? new Date(serverUser.createdAt) : new Date(),
+    };
+
+    setUserState(mappedUser);
+  }, [meQuery.data, meQuery.isLoading]);
 
   // 📌 Login (simulado - implementar com sua API)
   const login = useCallback(async (email: string, password: string) => {
@@ -55,6 +96,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       };
       
       setUserState(newUser);
+      await utils.auth.me.invalidate();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao fazer login";
       setError(message);
@@ -62,13 +104,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [utils.auth.me]);
 
   // 📌 Logout
   const logout = useCallback(() => {
-    setUserState(null);
-    setError(undefined);
-  }, []);
+    void (async () => {
+      try {
+        await logoutMutation.mutateAsync();
+      } catch {
+        // noop: mesmo com falha no backend, limpamos estado local
+      } finally {
+        setUserState(null);
+        setError(undefined);
+        await utils.auth.me.invalidate();
+      }
+    })();
+  }, [logoutMutation, utils.auth.me]);
 
   // 📌 Definir usuário diretamente
   const setUser = useCallback((newUser: User | null) => {
@@ -78,7 +129,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const value: UserContextType = {
     user,
     isAuthenticated,
-    isLoading,
+    isLoading: isLoading || meQuery.isLoading || logoutMutation.isPending,
     error,
     login,
     logout,

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
+import { getLoginUrl } from "../const";
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -98,10 +99,16 @@ export default function Cadastro() {
   };
 
   const handleGoogleSignUp = () => {
-    showToast({
-      message: "Google Sign Up será integrado em breve!",
-      duration: 3000,
-    });
+    const loginUrl = getLoginUrl();
+    if (!loginUrl) {
+      showToast({
+        message: "Não foi possível iniciar cadastro com Google",
+        duration: 3000,
+      });
+      return;
+    }
+
+    window.location.href = loginUrl;
   };
 
   return (
@@ -260,11 +267,15 @@ export default function Cadastro() {
 
         {/* Sign Up com Google */}
         <button
+          type="button"
           onClick={handleGoogleSignUp}
           style={styles.googleBtn as CSSProperties}
+          disabled={isSubmitting}
           onMouseEnter={(e) => {
-            const btn = e.currentTarget as HTMLElement;
-            btn.style.background = "#f8f8f8";
+            if (!isSubmitting) {
+              const btn = e.currentTarget as HTMLElement;
+              btn.style.background = "#f8f8f8";
+            }
           }}
           onMouseLeave={(e) => {
             const btn = e.currentTarget as HTMLElement;

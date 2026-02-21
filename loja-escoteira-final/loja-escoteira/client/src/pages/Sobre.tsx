@@ -3,6 +3,7 @@
  */
 
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
 
 export default function Sobre() {
@@ -102,9 +103,9 @@ export default function Sobre() {
         <p style={styles.ctaText}>
           Explore nossa coleção completa de produtos para o movimento escoteiro
         </p>
-        <a href="/produtos" style={styles.ctaButton as CSSProperties}>
+        <Link to="/produtos" style={styles.ctaButton as CSSProperties}>
           Ver Produtos Agora
-        </a>
+        </Link>
       </section>
     </div>
   );

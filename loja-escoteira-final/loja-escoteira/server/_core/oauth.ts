@@ -1,7 +1,10 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { parse as parseCookieHeader } from "cookie";
 import type { Express, Request, Response } from "express";
+import { randomBytes } from "node:crypto";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
+import { ENV } from "./env";
 import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -9,42 +12,209 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function getBaseUrl(req: Request): string {
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const proto =
+    typeof forwardedProto === "string"
+      ? forwardedProto.split(",")[0]?.trim() || req.protocol
+      : req.protocol;
+  const forwardedHost = req.headers["x-forwarded-host"];
+  const host =
+    (typeof forwardedHost === "string"
+      ? forwardedHost.split(",")[0]?.trim()
+      : undefined) || req.get("host");
+  return `${proto}://${host}`;
+}
+
+function getGoogleRedirectUri(req: Request): string {
+  const runtimeRedirectUri = `${getBaseUrl(req)}/api/oauth/callback`;
+
+  if (!ENV.googleRedirectUri) {
+    return runtimeRedirectUri;
+  }
+
+  try {
+    const configured = new URL(ENV.googleRedirectUri);
+    const runtime = new URL(runtimeRedirectUri);
+    const isLocalhostConfig =
+      configured.hostname === "localhost" || configured.hostname === "127.0.0.1";
+
+    if (isLocalhostConfig) {
+      return runtimeRedirectUri;
+    }
+
+    return configured.toString();
+  } catch {
+    return runtimeRedirectUri;
+  }
+}
+
+function decodeState(state: string): { returnTo?: string; nonce?: string } {
+  try {
+    const raw = Buffer.from(state, "base64url").toString("utf8");
+    return JSON.parse(raw) as { returnTo?: string; nonce?: string };
+  } catch {
+    return {};
+  }
+}
+
+function encodeState(payload: { returnTo: string; nonce: string }): string {
+  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+}
+
+function hasConfiguredGoogleCredentials() {
+  const hasClientId =
+    typeof ENV.googleClientId === "string" &&
+    ENV.googleClientId.trim() !== "" &&
+    !ENV.googleClientId.includes("preencha_");
+
+  const hasClientSecret =
+    typeof ENV.googleClientSecret === "string" &&
+    ENV.googleClientSecret.trim() !== "" &&
+    !ENV.googleClientSecret.includes("preencha_");
+
+  return hasClientId && hasClientSecret;
+}
+
 export function registerOAuthRoutes(app: Express) {
+  app.get("/api/oauth/login", async (req: Request, res: Response) => {
+    if (!hasConfiguredGoogleCredentials()) {
+      res.status(500).json({
+        error: "Google OAuth não configurado. Preencha GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env",
+      });
+      return;
+    }
+
+    const returnToRaw = getQueryParam(req, "returnTo");
+    const returnTo =
+      typeof returnToRaw === "string" && returnToRaw.startsWith("/")
+        ? returnToRaw
+        : "/";
+
+    const nonce = randomBytes(16).toString("hex");
+    const state = encodeState({ returnTo, nonce });
+    const cookieOptions = getSessionCookieOptions(req);
+
+    res.cookie("oauth_state", state, {
+      ...cookieOptions,
+      httpOnly: true,
+      maxAge: 10 * 60 * 1000,
+    });
+
+    const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+    url.searchParams.set("client_id", ENV.googleClientId);
+    url.searchParams.set("redirect_uri", getGoogleRedirectUri(req));
+    url.searchParams.set("response_type", "code");
+    url.searchParams.set("scope", "openid email profile");
+    url.searchParams.set("state", state);
+    url.searchParams.set("prompt", "select_account");
+
+    res.redirect(302, url.toString());
+  });
+
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
 
     if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
+      res.redirect(302, "/login?oauthError=missing_code_or_state");
       return;
     }
 
     try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
+      const cookies = parseCookieHeader(req.headers.cookie ?? "");
+      const expectedState = cookies.oauth_state;
+      if (!expectedState || expectedState !== state) {
+        res.status(400).json({ error: "invalid oauth state" });
+        return;
+      }
 
-      if (!userInfo.openId) {
-        res.status(400).json({ error: "openId missing from user info" });
+      if (!hasConfiguredGoogleCredentials()) {
+        res.status(500).json({
+          error: "Google OAuth não configurado no servidor. Verifique GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET",
+        });
+        return;
+      }
+
+      const redirectUri = getGoogleRedirectUri(req);
+
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code,
+          client_id: ENV.googleClientId,
+          client_secret: ENV.googleClientSecret,
+          redirect_uri: redirectUri,
+          grant_type: "authorization_code",
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        const details = await tokenResponse.text();
+        console.error("[OAuth] Token exchange failed", details);
+        res.status(500).json({ error: "failed to exchange google token" });
+        return;
+      }
+
+      const tokenPayload = (await tokenResponse.json()) as {
+        access_token?: string;
+      };
+      if (!tokenPayload.access_token) {
+        res.status(500).json({ error: "google access_token missing" });
+        return;
+      }
+
+      const userInfoResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+        headers: {
+          Authorization: `Bearer ${tokenPayload.access_token}`,
+        },
+      });
+
+      if (!userInfoResponse.ok) {
+        const details = await userInfoResponse.text();
+        console.error("[OAuth] Failed to fetch user info", details);
+        res.status(500).json({ error: "failed to fetch google userinfo" });
+        return;
+      }
+
+      const userInfo = (await userInfoResponse.json()) as {
+        sub?: string;
+        name?: string;
+        email?: string;
+      };
+
+      const openId = userInfo.sub;
+
+      if (!openId) {
+        res.status(400).json({ error: "google sub missing from user info" });
         return;
       }
 
       await db.upsertUser({
-        openId: userInfo.openId,
+        openId,
         name: userInfo.name || null,
         email: userInfo.email ?? null,
-        loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+        loginMethod: "google",
         lastSignedIn: new Date(),
       });
 
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
+      const sessionToken = await sdk.createSessionToken(openId, {
         name: userInfo.name || "",
         expiresInMs: ONE_YEAR_MS,
       });
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.clearCookie("oauth_state", { ...cookieOptions, maxAge: -1 });
 
-      res.redirect(302, "/");
+      const decodedState = decodeState(state);
+      const returnTo =
+        typeof decodedState.returnTo === "string" && decodedState.returnTo.startsWith("/")
+          ? decodedState.returnTo
+          : "/";
+
+      res.redirect(302, returnTo);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });

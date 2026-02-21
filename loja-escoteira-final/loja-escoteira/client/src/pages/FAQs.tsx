@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
 
 interface FAQ {
@@ -192,9 +193,9 @@ export default function FAQs() {
               Entre em contato conosco através do formulário de contato ou
               pelos canais abaixo.
             </p>
-            <a href="/contato" style={styles.sidebarButton as CSSProperties}>
+            <Link to="/contato" style={styles.sidebarButton as CSSProperties}>
               Ir para Contato
-            </a>
+            </Link>
           </div>
 
           <div style={styles.sidebarCard as CSSProperties}>

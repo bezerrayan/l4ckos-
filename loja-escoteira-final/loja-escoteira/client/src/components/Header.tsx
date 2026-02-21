@@ -7,6 +7,28 @@ export default function Header() {
   const { favorites } = useFavorites();
   const { user, logout } = useUser();
 
+  const getDisplayFirstName = (name?: string, email?: string) => {
+    const trimmedName = name?.trim();
+    if (trimmedName) {
+      const firstName = trimmedName.split(/\s+/)[0];
+      return firstName.charAt(0).toLocaleUpperCase("pt-BR") + firstName.slice(1);
+    }
+
+    const emailPrefix = email?.split("@")[0]?.trim();
+    if (emailPrefix) {
+      const firstPartBySeparator = emailPrefix.split(/[._-]+/)[0]?.trim();
+      const rawFirstPart = firstPartBySeparator || emailPrefix;
+
+      const normalizedFirstPart = rawFirstPart.length > 4 && !/[._-]/.test(emailPrefix)
+        ? rawFirstPart.slice(0, 3)
+        : rawFirstPart;
+
+      return normalizedFirstPart.charAt(0).toLocaleUpperCase("pt-BR") + normalizedFirstPart.slice(1);
+    }
+
+    return "Usuário";
+  };
+
   return (
     <header style={styles.header}>
       <div style={styles.container}>
@@ -124,11 +146,11 @@ export default function Header() {
                   {user.avatar ? (
                     <img src={user.avatar} alt={user.name} style={{width: "100%", height: "100%", borderRadius: "50%"}} />
                   ) : (
-                    <span>{user.name.charAt(0).toUpperCase()}</span>
+                    <span>{getDisplayFirstName(user.name, user.email).charAt(0)}</span>
                   )}
                 </div>
                 <div style={styles.userName as CSSProperties}>
-                  {user.name}
+                  {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
                 </div>
               </Link>
               <button
