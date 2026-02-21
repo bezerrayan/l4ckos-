@@ -10,6 +10,8 @@ import { ENV } from "./env";
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
 
+const isString = (value: unknown): value is string => typeof value === "string";
+
 export type SessionPayload = {
   openId: string;
   appId: string;
@@ -27,7 +29,20 @@ class SDKServer {
   }
 
   private getSessionSecret() {
-    const secret = ENV.cookieSecret;
+    const secret = ENV.cookieSecret?.trim() ?? "";
+
+    if (!secret) {
+      const error = new Error("JWT_SECRET is missing");
+      Object.assign(error, { code: "MISSING_JWT_SECRET" });
+      throw error;
+    }
+
+    if (secret.length < 32) {
+      const error = new Error("JWT_SECRET is too short");
+      Object.assign(error, { code: "WEAK_JWT_SECRET" });
+      throw error;
+    }
+
     return new TextEncoder().encode(secret);
   }
 
@@ -81,7 +96,7 @@ class SDKServer {
       if (
         !isNonEmptyString(openId) ||
         !isNonEmptyString(appId) ||
-        !isNonEmptyString(name)
+        !isString(name)
       ) {
         return null;
       }
