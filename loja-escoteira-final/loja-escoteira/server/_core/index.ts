@@ -32,6 +32,12 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   const isProduction = process.env.NODE_ENV === "production";
+  const hasGoogleClientId = Boolean(process.env.GOOGLE_CLIENT_ID?.trim());
+  const hasGoogleClientSecret = Boolean(process.env.GOOGLE_CLIENT_SECRET?.trim());
+  const hasGoogleRedirectUri = Boolean(process.env.GOOGLE_REDIRECT_URI?.trim());
+  console.log(
+    `[OAuth Env] clientId=${hasGoogleClientId} clientSecret=${hasGoogleClientSecret} redirectUri=${hasGoogleRedirectUri}`
+  );
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
