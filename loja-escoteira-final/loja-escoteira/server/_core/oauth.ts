@@ -215,6 +215,14 @@ export function registerOAuthRoutes(app: Express) {
         lastSignedIn: new Date(),
       });
 
+      callbackStage = "verify_user_persisted";
+      const persistedUser = await db.getUserByOpenId(openId);
+      if (!persistedUser) {
+        const persistenceError = new Error("User was not persisted or retrieved after OAuth upsert");
+        Object.assign(persistenceError, { code: "USER_NOT_PERSISTED" });
+        throw persistenceError;
+      }
+
       callbackStage = "create_session";
       const sessionToken = await sdk.createSessionToken(openId, {
         name: userInfo.name || "",
