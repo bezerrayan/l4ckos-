@@ -50,10 +50,12 @@ class SDKServer {
     openId: string,
     options: { expiresInMs?: number; name?: string } = {}
   ): Promise<string> {
+    const appId = ENV.appId?.trim() || "loja-escoteira";
+
     return this.signSession(
       {
         openId,
-        appId: ENV.appId,
+        appId,
         name: options.name || "",
       },
       options

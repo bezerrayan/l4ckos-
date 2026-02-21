@@ -1,5 +1,5 @@
 export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
+  appId: process.env.VITE_APP_ID ?? process.env.APP_ID ?? "loja-escoteira",
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? process.env.VITE_GOOGLE_CLIENT_ID ?? "",
