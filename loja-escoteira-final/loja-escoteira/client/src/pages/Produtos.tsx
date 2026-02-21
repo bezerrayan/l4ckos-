@@ -8,8 +8,10 @@ import ProductCard from "../components/ProductCard";
 import { getProducts, searchProducts } from "../lib/mockProducts";
 import type { Product } from "../types/product";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Produtos() {
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
 
   // 📌 Buscar produtos baseado no termo de busca
@@ -20,17 +22,17 @@ export default function Produtos() {
   return (
     <div>
       {/* Header Section */}
-      <div style={styles.header}>
+      <div style={{ ...styles.header, marginBottom: isMobile ? 28 : styles.header.marginBottom, paddingBottom: isMobile ? 20 : styles.header.paddingBottom }}>
         <div>
-          <h1 style={styles.title}>Nossa Coleção</h1>
-          <p style={styles.subtitle}>
+          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa Coleção</h1>
+          <p style={{ ...styles.subtitle, fontSize: isMobile ? 15 : styles.subtitle.fontSize }}>
             Descubra nossos {produtos.length} produtos de qualidade premium para o seu movimento escoteiro
           </p>
         </div>
       </div>
 
       {/* Barra de Busca */}
-      <div style={styles.searchContainer}>
+      <div style={{ ...styles.searchContainer, marginBottom: isMobile ? 30 : styles.searchContainer.marginBottom }}>
         <input
           type="text"
           placeholder="Buscar equipamentos..."
@@ -59,7 +61,7 @@ export default function Produtos() {
             </p>
           </div>
 
-          <div style={styles.productsGrid}>
+          <div style={{ ...styles.productsGrid, gridTemplateColumns: isMobile ? "1fr" : styles.productsGrid.gridTemplateColumns, gap: isMobile ? 16 : styles.productsGrid.gap }}>
             {produtos.map((produto, idx) => (
               <div
                 key={produto.id}
@@ -73,7 +75,7 @@ export default function Produtos() {
           </div>
         </div>
       ) : (
-        <div style={styles.emptyState}>
+        <div style={{ ...styles.emptyState, padding: isMobile ? "40px 16px" : styles.emptyState.padding }}>
           <div style={styles.emptyIcon}>○</div>
           <h2 style={styles.emptyTitle}>Nenhum produto encontrado</h2>
           <p style={styles.emptyText}>

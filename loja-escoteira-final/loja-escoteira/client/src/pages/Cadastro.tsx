@@ -9,8 +9,10 @@ import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Cadastro() {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { setUser } = useUser();
   const { showToast } = useToast();
@@ -112,9 +114,15 @@ export default function Cadastro() {
   };
 
   return (
-    <div style={styles.container as CSSProperties}>
+    <div
+      style={{
+        ...styles.container,
+        gridTemplateColumns: isMobile ? "1fr" : styles.container.gridTemplateColumns,
+        minHeight: isMobile ? "auto" : styles.container.minHeight,
+      } as CSSProperties}
+    >
       {/* Lado Esquerdo - Logo e Informações */}
-      <div style={styles.leftPanel as CSSProperties}>
+      <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
             {/* Espaço para logo da marca */}
@@ -123,10 +131,15 @@ export default function Cadastro() {
       </div>
 
       {/* Lado Direito - Formulário */}
-      <div style={styles.rightPanel as CSSProperties}>
+      <div
+        style={{
+          ...styles.rightPanel,
+          padding: isMobile ? "24px 14px" : styles.rightPanel.padding,
+        } as CSSProperties}
+      >
         {/* Header */}
         <div style={styles.header as CSSProperties}>
-          <h1 style={styles.title as CSSProperties}>Criar Conta</h1>
+          <h1 style={{ ...styles.title, fontSize: isMobile ? 28 : styles.title.fontSize } as CSSProperties}>Criar Conta</h1>
           <p style={styles.subtitle as CSSProperties}>
             Preencha os dados para se registrar
           </p>
@@ -134,7 +147,12 @@ export default function Cadastro() {
 
         {/* Formulário de Cadastro */}
         <form onSubmit={handleSignUp} style={styles.form as CSSProperties}>
-          <div style={styles.nameRow as CSSProperties}>
+          <div
+            style={{
+              ...styles.nameRow,
+              gridTemplateColumns: isMobile ? "1fr" : styles.nameRow.gridTemplateColumns,
+            } as CSSProperties}
+          >
             <div style={styles.formGroup as CSSProperties}>
               <label style={styles.label as CSSProperties} htmlFor="firstName">
                 Primeiro Nome *

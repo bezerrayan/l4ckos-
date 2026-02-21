@@ -10,8 +10,10 @@ import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import type { User } from "../types/user";
 import { getLoginUrl } from "../const";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Login() {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { login, setUser, isLoading } = useUser();
   const { showToast } = useToast();
@@ -63,9 +65,15 @@ export default function Login() {
   };
 
   return (
-    <div style={styles.container as CSSProperties}>
+    <div
+      style={{
+        ...styles.container,
+        gridTemplateColumns: isMobile ? "1fr" : styles.container.gridTemplateColumns,
+        minHeight: isMobile ? "auto" : styles.container.minHeight,
+      } as CSSProperties}
+    >
       {/* Lado Esquerdo - Logo e Informações */}
-      <div style={styles.leftPanel as CSSProperties}>
+      <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
             {/* Espaço para logo da marca */}
@@ -74,10 +82,15 @@ export default function Login() {
       </div>
 
       {/* Lado Direito - Formulário */}
-      <div style={styles.rightPanel as CSSProperties}>
+      <div
+        style={{
+          ...styles.rightPanel,
+          padding: isMobile ? "24px 14px" : styles.rightPanel.padding,
+        } as CSSProperties}
+      >
         {/* Header */}
         <div style={styles.header as CSSProperties}>
-          <h1 style={styles.title as CSSProperties}>Bem-vindo</h1>
+          <h1 style={{ ...styles.title, fontSize: isMobile ? 28 : styles.title.fontSize } as CSSProperties}>Bem-vindo</h1>
           <p style={styles.subtitle as CSSProperties}>
             Faça login ou crie sua conta
           </p>

@@ -1,12 +1,21 @@
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Footer() {
+  const isMobile = useIsMobile();
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer style={styles.footer}>
-      <div style={styles.container}>
+    <footer style={{ ...styles.footer, padding: isMobile ? "36px 0" : styles.footer.padding, marginTop: isMobile ? 60 : styles.footer.marginTop }}>
+      <div
+        style={{
+          ...styles.container,
+          padding: isMobile ? "0 14px" : styles.container.padding,
+          gap: isMobile ? 24 : styles.container.gap,
+          gridTemplateColumns: isMobile ? "1fr" : styles.container.gridTemplateColumns,
+        }}
+      >
         {/* Coluna 1: Sobre */}
         <div style={styles.column}>
           <h4 style={styles.columnTitle}>Sobre Nós</h4>
@@ -115,7 +124,7 @@ export default function Footer() {
       <div style={styles.divider}></div>
 
       {/* Bottom */}
-      <div style={styles.bottom}>
+      <div style={{ ...styles.bottom, padding: isMobile ? "0 14px" : styles.bottom.padding }}>
         <p style={styles.copyright}>
           © {currentYear} l4ckos. Todos os direitos reservados.
         </p>

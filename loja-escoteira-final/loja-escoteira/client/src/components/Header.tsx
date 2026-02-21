@@ -2,10 +2,12 @@ import { Link } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Header() {
   const { favorites } = useFavorites();
   const { user, logout } = useUser();
+  const isMobile = useIsMobile();
 
   const getDisplayFirstName = (name?: string, email?: string) => {
     const trimmedName = name?.trim();
@@ -31,7 +33,15 @@ export default function Header() {
 
   return (
     <header style={styles.header}>
-      <div style={styles.container}>
+      <div
+        style={{
+          ...styles.container,
+          padding: isMobile ? "12px 12px" : styles.container.padding,
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "stretch" : "center",
+          gap: isMobile ? 10 : 0,
+        }}
+      >
         <Link to="/" style={styles.logoLink}>
           <div style={styles.logoContainer as CSSProperties}>
             <div style={styles.logoBadge as CSSProperties}>
@@ -42,9 +52,16 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav style={styles.nav}>
+        <nav
+          style={{
+            ...styles.nav,
+            gap: isMobile ? 8 : styles.nav.gap,
+            flexWrap: isMobile ? "wrap" : "nowrap",
+            justifyContent: isMobile ? "center" : "flex-start",
+          }}
+        >
           <Link 
-            style={styles.link}
+            style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "7px 10px" : styles.link.padding }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement;
               el.style.backgroundColor = "rgba(255,255,255,0.1)";
@@ -60,7 +77,7 @@ export default function Header() {
             Início
           </Link>
           <Link 
-            style={styles.link}
+            style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "7px 10px" : styles.link.padding }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement;
               el.style.backgroundColor = "rgba(255,255,255,0.1)";
@@ -76,7 +93,7 @@ export default function Header() {
             Produtos
           </Link>
           <Link 
-            style={styles.link}
+            style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "7px 10px" : styles.link.padding }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement;
               el.style.backgroundColor = "rgba(255,255,255,0.1)";
@@ -116,7 +133,7 @@ export default function Header() {
             </span>
           </Link>
           <Link 
-            style={styles.link}
+            style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "7px 10px" : styles.link.padding }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement;
               el.style.backgroundColor = "rgba(255,255,255,0.1)";
@@ -140,7 +157,14 @@ export default function Header() {
           </Link>
           {/* Botão de Login/Perfil */}
           {user && user.isAuthenticated ? (
-            <div style={styles.userMenu as CSSProperties}>
+            <div
+              style={{
+                ...styles.userMenu,
+                width: isMobile ? "100%" : undefined,
+                justifyContent: isMobile ? "space-between" : "flex-start",
+                flexWrap: isMobile ? "wrap" : "nowrap",
+              } as CSSProperties}
+            >
               <Link to="/perfil" style={styles.userInfo as CSSProperties}>
                 <div style={styles.avatar as CSSProperties}>
                   {user.avatar ? (
@@ -149,7 +173,7 @@ export default function Header() {
                     <span>{getDisplayFirstName(user.name, user.email).charAt(0)}</span>
                   )}
                 </div>
-                <div style={styles.userName as CSSProperties}>
+                <div style={{ ...styles.userName, maxWidth: isMobile ? 90 : styles.userName.maxWidth } as CSSProperties}>
                   {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
                 </div>
               </Link>
@@ -169,10 +193,16 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <div style={styles.authLinks as CSSProperties}>
+            <div
+              style={{
+                ...styles.authLinks,
+                width: isMobile ? "100%" : undefined,
+                justifyContent: isMobile ? "center" : "flex-start",
+              } as CSSProperties}
+            >
               <Link
                 to="/login"
-                style={styles.loginBtn as CSSProperties}
+                style={{ ...styles.loginBtn, fontSize: isMobile ? 14 : styles.loginBtn.fontSize, padding: isMobile ? "8px 12px" : styles.loginBtn.padding } as CSSProperties}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement;
                   el.style.background = "#333333";
@@ -188,7 +218,7 @@ export default function Header() {
               </Link>
               <Link
                 to="/cadastro"
-                style={styles.signupBtn as CSSProperties}
+                style={{ ...styles.signupBtn, fontSize: isMobile ? 14 : styles.signupBtn.fontSize, padding: isMobile ? "8px 12px" : styles.signupBtn.padding } as CSSProperties}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement;
                   el.style.background = "#ffffff";

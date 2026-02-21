@@ -8,20 +8,30 @@ import ProductCard from "../components/ProductCard";
 import PromoCarousel from "../components/PromoCarousel";
 import { MOCK_PRODUCTS } from "../lib/mockProducts";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Home() {
+  const isMobile = useIsMobile();
   // 📌 Pegar todos os produtos para destaque (3 camisas personalizadas)
   const destaque = MOCK_PRODUCTS.slice(0, 3);
 
   return (
     <div>
       {/* 🎯 Hero Section */}
-      <div style={styles.heroContainer}>
+      <div
+        style={{
+          ...styles.heroContainer,
+          gridTemplateColumns: isMobile ? "1fr" : styles.heroContainer.gridTemplateColumns,
+          gap: isMobile ? 24 : styles.heroContainer.gap,
+          marginBottom: isMobile ? 36 : styles.heroContainer.marginBottom,
+          padding: isMobile ? "18px 0" : styles.heroContainer.padding,
+        }}
+      >
         <div style={styles.heroContent}>
-          <h1 style={styles.heroTitle}>
+          <h1 style={{ ...styles.heroTitle, fontSize: isMobile ? 34 : styles.heroTitle.fontSize }}>
             Bem-vindo à Nossa Loja
           </h1>
-          <p style={styles.heroSubtitle}>
+          <p style={{ ...styles.heroSubtitle, fontSize: isMobile ? 16 : styles.heroSubtitle.fontSize }}>
             Descubra uma seleção variada de produtos de qualidade para esportes, aventura e muito mais
           </p>
           <div style={styles.heroButtons}>
@@ -35,7 +45,7 @@ export default function Home() {
         </div>
 
         {/* Elemento Visual - Logo/Imagem da Marca */}
-        <div style={styles.heroVisual}>
+        <div style={{ ...styles.heroVisual, height: isMobile ? 240 : styles.heroVisual.height }}>
           <img 
             src="https://via.placeholder.com/400x400?text=Sua+Logo+Aqui" 
             alt="Logo da marca"
@@ -45,20 +55,20 @@ export default function Home() {
       </div>
 
       {/* 🎁 Carrossel de Promoções */}
-      <section style={styles.promoSection}>
+      <section style={{ ...styles.promoSection, marginBottom: isMobile ? 40 : styles.promoSection.marginBottom }}>
         <PromoCarousel />
       </section>
 
       {/* ⭐ Destaques da Loja */}
-      <section id="destaques" style={styles.section}>
+      <section id="destaques" style={{ ...styles.section, marginBottom: isMobile ? 44 : styles.section.marginBottom }}>
         <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>Produtos em Destaque</h2>
+          <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Produtos em Destaque</h2>
           <p style={styles.sectionSubtitle}>
             Conheça nossa seleção handpicked dos melhores produtos
           </p>
         </div>
 
-        <div style={styles.productsGrid}>
+        <div style={{ ...styles.productsGrid, gap: isMobile ? 16 : styles.productsGrid.gap }}>
           {destaque.map((produto, idx) => (
             <div key={produto.id} style={{
               animation: `fadeInUp 0.5s ease-out ${idx * 100}ms backwards`
@@ -76,9 +86,9 @@ export default function Home() {
       </section>
 
       {/* ℹ️ Diferenciais */}
-      <section style={styles.benefitsSection}>
+      <section style={{ ...styles.benefitsSection, marginBottom: isMobile ? 44 : styles.benefitsSection.marginBottom }}>
         <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>Por Que Comprar Conosco</h2>
+          <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Por Que Comprar Conosco</h2>
         </div>
 
         <div style={styles.benefitsGrid}>
@@ -157,8 +167,8 @@ export default function Home() {
       </section>
 
       {/* CTA Final */}
-      <section style={styles.ctaSection}>
-        <h2 style={styles.ctaTitle}>Pronto para sua próxima compra?</h2>
+      <section style={{ ...styles.ctaSection, padding: isMobile ? 28 : styles.ctaSection.padding }}>
+        <h2 style={{ ...styles.ctaTitle, fontSize: isMobile ? 28 : styles.ctaTitle.fontSize }}>Pronto para sua próxima compra?</h2>
         <p style={styles.ctaDescription}>Explore nossa coleção completa de produtos premium</p>
         <Link to="/produtos" style={styles.ctaBig}>
           Navegar pela Loja

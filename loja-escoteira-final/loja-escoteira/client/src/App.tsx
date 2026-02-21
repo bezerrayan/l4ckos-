@@ -16,17 +16,27 @@ import FAQs from "./pages/FAQs";
 import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import NotFound from "./pages/NotFound";
+import { useIsMobile } from "./hooks/useIsMobile";
 
 /**
  * App - Componente raiz com rotas
  * Nota: Providers são adicionados em main.tsx
  */
 export default function App() {
+  const isMobile = useIsMobile();
+
   return (
     <BrowserRouter>
       <Header />
 
-      <div style={{ minHeight: "calc(100vh - 200px)", maxWidth: 1400, margin: "0 auto", padding: "40px 32px" }}>
+      <div
+        style={{
+          minHeight: isMobile ? "calc(100vh - 160px)" : "calc(100vh - 200px)",
+          maxWidth: 1400,
+          margin: "0 auto",
+          padding: isMobile ? "20px 14px" : "40px 32px",
+        }}
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/produtos" element={<Produtos />} />

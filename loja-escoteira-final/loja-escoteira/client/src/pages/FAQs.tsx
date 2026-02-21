@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface FAQ {
   id: number;
@@ -89,6 +90,7 @@ const FAQS: FAQ[] = [
 const CATEGORIAS = ["Todos", "Pedidos", "Pagamento", "Devolução", "Conta", "Produtos"];
 
 export default function FAQs() {
+  const isMobile = useIsMobile();
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todos");
   const [faqAberta, setFaqAberta] = useState<number | null>(null);
 
@@ -104,15 +106,15 @@ export default function FAQs() {
   return (
     <div style={styles.container as CSSProperties}>
       {/* Hero Section */}
-      <div style={styles.hero as CSSProperties}>
-        <h1 style={styles.title}>Perguntas Frequentes</h1>
-        <p style={styles.subtitle}>
+      <div style={{ ...styles.hero, padding: isMobile ? "42px 14px" : styles.hero.padding, marginBottom: isMobile ? 30 : styles.hero.marginBottom } as CSSProperties}>
+        <h1 style={{ ...styles.title, fontSize: isMobile ? 34 : styles.title.fontSize }}>Perguntas Frequentes</h1>
+        <p style={{ ...styles.subtitle, fontSize: isMobile ? 16 : styles.subtitle.fontSize }}>
           Encontre respostas para as dúvidas mais comuns
         </p>
       </div>
 
       {/* Filtros */}
-      <div style={styles.filtersSection as CSSProperties}>
+      <div style={{ ...styles.filtersSection, padding: isMobile ? "0 14px" : styles.filtersSection.padding, margin: isMobile ? "0 auto 24px" : styles.filtersSection.margin } as CSSProperties}>
         <h2 style={styles.filterTitle as CSSProperties}>Filtrar por Categoria</h2>
         <div style={styles.filterButtons as CSSProperties}>
           {CATEGORIAS.map((categoria) => (
@@ -150,7 +152,14 @@ export default function FAQs() {
       </div>
 
       {/* FAQs List */}
-      <div style={styles.faqsContainer as CSSProperties}>
+      <div
+        style={{
+          ...styles.faqsContainer,
+          gridTemplateColumns: isMobile ? "1fr" : styles.faqsContainer.gridTemplateColumns,
+          gap: isMobile ? 20 : styles.faqsContainer.gap,
+          padding: isMobile ? "0 14px" : styles.faqsContainer.padding,
+        } as CSSProperties}
+      >
         <div style={styles.faqsList as CSSProperties}>
           {faqsFiltradas.map((faq) => (
             <div

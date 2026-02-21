@@ -5,8 +5,10 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Perfil() {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { user, logout } = useUser();
 
@@ -45,9 +47,16 @@ export default function Perfil() {
   };
 
   return (
-    <div style={styles.container as CSSProperties}>
+    <div style={{ ...styles.container, padding: isMobile ? "0 4px" : undefined } as CSSProperties}>
       {/* Header do Perfil */}
-      <div style={styles.profileHeader as CSSProperties}>
+      <div
+        style={{
+          ...styles.profileHeader,
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 16 : styles.profileHeader.gap,
+          padding: isMobile ? 18 : styles.profileHeader.padding,
+        } as CSSProperties}
+      >
         <div style={styles.avatarLarge as CSSProperties}>
           {user.avatar ? (
             <img src={user.avatar} alt={user.name} />
@@ -56,7 +65,7 @@ export default function Perfil() {
           )}
         </div>
         <div style={styles.profileInfo as CSSProperties}>
-          <h1 style={styles.userName as CSSProperties}>
+          <h1 style={{ ...styles.userName, fontSize: isMobile ? 24 : styles.userName.fontSize } as CSSProperties}>
             Olá, {user.name}! 👋
           </h1>
           <p style={styles.email as CSSProperties}>{user.email}</p>
@@ -67,7 +76,12 @@ export default function Perfil() {
       </div>
 
       {/* Seções de Perfil */}
-      <div style={styles.sectionsGrid as CSSProperties}>
+      <div
+        style={{
+          ...styles.sectionsGrid,
+          gridTemplateColumns: isMobile ? "1fr" : styles.sectionsGrid.gridTemplateColumns,
+        } as CSSProperties}
+      >
         {/* Dados Pessoais */}
         <div style={styles.section as CSSProperties}>
           <h2 style={styles.sectionTitle as CSSProperties}>Dados Pessoais</h2>

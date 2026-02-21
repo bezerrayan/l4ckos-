@@ -7,15 +7,17 @@ import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { formatPrice } from "../lib/utils";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Carrinho() {
+  const isMobile = useIsMobile();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
 
   return (
     <div>
       {/* Header */}
-      <div style={styles.header}>
-        <h1 style={styles.title}>
+      <div style={{ ...styles.header, marginBottom: isMobile ? 28 : styles.header.marginBottom, paddingBottom: isMobile ? 20 : styles.header.paddingBottom }}>
+        <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>
           <span style={{display: "inline-flex", alignItems: "center", gap: 10}}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#1a1a1a"}}>
               <path d="M6 6h15l-1.5 9h-13z"></path>
@@ -33,14 +35,27 @@ export default function Carrinho() {
       </div>
 
       {cart.items.length > 0 ? (
-        <div style={styles.container}>
+        <div
+          style={{
+            ...styles.container,
+            gridTemplateColumns: isMobile ? "1fr" : styles.container.gridTemplateColumns,
+            gap: isMobile ? 20 : styles.container.gap,
+          }}
+        >
           {/* Tabela de Itens - Mobile responsivo */}
           <div style={styles.itemsSection}>
             <h2 style={styles.sectionTitle}>Seu Pedido</h2>
 
             <div style={styles.itemsList}>
               {cart.items.map((item) => (
-                <div key={item.product.id} style={styles.cartItem}>
+                <div
+                  key={item.product.id}
+                  style={{
+                    ...styles.cartItem,
+                    gridTemplateColumns: isMobile ? "1fr" : styles.cartItem.gridTemplateColumns,
+                    gap: isMobile ? 10 : styles.cartItem.gap,
+                  }}
+                >
                   <div style={styles.itemImageContainer}>
                     <img
                       src={item.product.image}
@@ -49,7 +64,7 @@ export default function Carrinho() {
                     />
                   </div>
 
-                  <div style={styles.itemDetails}>
+                  <div style={{ ...styles.itemDetails, paddingLeft: isMobile ? 0 : styles.itemDetails.paddingLeft }}>
                     <h3 style={styles.itemName}>{item.product.name}</h3>
                     <p style={styles.itemCategory}>Materiais Escoteiros</p>
                     <p style={styles.itemPrice}>
@@ -57,7 +72,7 @@ export default function Carrinho() {
                     </p>
                   </div>
 
-                  <div style={styles.itemQuantity}>
+                  <div style={{ ...styles.itemQuantity, textAlign: isMobile ? "left" : styles.itemQuantity.textAlign }}>
                     <label style={styles.quantityLabel}>Qtd.</label>
                     <div style={styles.quantityControl}>
                       <button
@@ -94,7 +109,7 @@ export default function Carrinho() {
                     </div>
                   </div>
 
-                  <div style={styles.itemTotal}>
+                  <div style={{ ...styles.itemTotal, textAlign: isMobile ? "left" : styles.itemTotal.textAlign }}>
                     <p style={styles.itemTotalLabel}>Subtotal</p>
                     <p style={styles.totalPrice}>
                       {formatPrice(item.product.price * item.quantity)}
@@ -102,7 +117,7 @@ export default function Carrinho() {
                   </div>
 
                   <button
-                    style={styles.removeBtn}
+                    style={{ ...styles.removeBtn, justifySelf: isMobile ? "flex-end" : undefined }}
                     onClick={() => removeFromCart(item.product.id)}
                     title="Remover item"
                   >
@@ -119,7 +134,13 @@ export default function Carrinho() {
           </div>
 
           {/* Resumo do Pedido */}
-          <div style={styles.summarySection}>
+          <div
+            style={{
+              ...styles.summarySection,
+              position: isMobile ? "static" : styles.summarySection.position,
+              top: isMobile ? undefined : styles.summarySection.top,
+            }}
+          >
             <h2 style={styles.sectionTitle}>Resumo do Pedido</h2>
 
             <div style={styles.summaryCard}>
@@ -201,7 +222,7 @@ export default function Carrinho() {
           </div>
         </div>
       ) : (
-        <div style={styles.emptyState}>
+        <div style={{ ...styles.emptyState, padding: isMobile ? "44px 16px" : styles.emptyState.padding }}>
           <div style={styles.emptyIcon}>
             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{color: "#555555"}}>
               <path d="M6 6h15l-1.5 9h-13z"></path>

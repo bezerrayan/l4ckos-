@@ -5,8 +5,10 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Sobre() {
+  const isMobile = useIsMobile();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -14,17 +16,25 @@ export default function Sobre() {
   return (
     <div style={styles.container as CSSProperties}>
       {/* Hero Section */}
-      <div style={styles.hero as CSSProperties}>
-        <h1 style={styles.title}>Sobre a L4ckos</h1>
-        <p style={styles.subtitle}>
+      <div style={{ ...styles.hero, padding: isMobile ? "42px 14px" : styles.hero.padding, marginBottom: isMobile ? 34 : styles.hero.marginBottom } as CSSProperties}>
+        <h1 style={{ ...styles.title, fontSize: isMobile ? 34 : styles.title.fontSize }}>Sobre a L4ckos</h1>
+        <p style={{ ...styles.subtitle, fontSize: isMobile ? 16 : styles.subtitle.fontSize }}>
           Sua parceira de confiança no movimento escoteiro
         </p>
       </div>
 
       {/* Seção Principal */}
-      <section style={styles.section as CSSProperties}>
+      <section
+        style={{
+          ...styles.section,
+          gridTemplateColumns: isMobile ? "1fr" : styles.section.gridTemplateColumns,
+          gap: isMobile ? 24 : styles.section.gap,
+          margin: isMobile ? "0 auto 40px" : styles.section.margin,
+          padding: isMobile ? "0 14px" : styles.section.padding,
+        } as CSSProperties}
+      >
         <div style={styles.sectionContent as CSSProperties}>
-          <h2 style={styles.sectionTitle}>Nossa História</h2>
+          <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 28 : styles.sectionTitle.fontSize }}>Nossa História</h2>
           <p style={styles.text}>
             A L4ckos nasceu com a missão de oferecer produtos de qualidade premium para o movimento escoteiro brasileiro. Com anos de experiência no mercado, nos tornamos referência em equipamentos, uniformes e materiais para scouts de todas as idades.
           </p>
@@ -40,8 +50,8 @@ export default function Sobre() {
       </section>
 
       {/* Valores */}
-      <section style={styles.valuesSection as CSSProperties}>
-        <h2 style={styles.sectionTitle}>Nossos Valores</h2>
+      <section style={{ ...styles.valuesSection, padding: isMobile ? "0 14px" : styles.valuesSection.padding, margin: isMobile ? "0 auto 40px" : styles.valuesSection.margin } as CSSProperties}>
+        <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 28 : styles.sectionTitle.fontSize }}>Nossos Valores</h2>
         <div style={styles.valuesGrid as CSSProperties}>
           <div style={styles.valueCard as CSSProperties}>
             <div style={styles.valueIcon as CSSProperties}>★</div>
@@ -75,8 +85,8 @@ export default function Sobre() {
       </section>
 
       {/* Números */}
-      <section style={styles.statsSection as CSSProperties}>
-        <h2 style={styles.sectionTitle}>Nossos Números</h2>
+      <section style={{ ...styles.statsSection, padding: isMobile ? "34px 14px" : styles.statsSection.padding, marginBottom: isMobile ? 40 : styles.statsSection.marginBottom } as CSSProperties}>
+        <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 28 : styles.sectionTitle.fontSize }}>Nossos Números</h2>
         <div style={styles.statsGrid as CSSProperties}>
           <div style={styles.statCard as CSSProperties}>
             <div style={styles.statNumber as CSSProperties}>+500</div>
@@ -98,8 +108,8 @@ export default function Sobre() {
       </section>
 
       {/* CTA */}
-      <section style={styles.ctaSection as CSSProperties}>
-        <h2 style={styles.ctaTitle}>Pronto para sua próxima aventura?</h2>
+      <section style={{ ...styles.ctaSection, padding: isMobile ? "34px 14px" : styles.ctaSection.padding } as CSSProperties}>
+        <h2 style={{ ...styles.ctaTitle, fontSize: isMobile ? 28 : styles.ctaTitle.fontSize }}>Pronto para sua próxima aventura?</h2>
         <p style={styles.ctaText}>
           Explore nossa coleção completa de produtos para o movimento escoteiro
         </p>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface Promo {
   id: number;
@@ -41,6 +42,7 @@ const PROMOS: Promo[] = [
 ];
 
 export default function PromoCarousel() {
+  const isMobile = useIsMobile();
   const [current, setCurrent] = useState(0);
 
   const next = () => setCurrent((prev) => (prev + 1) % PROMOS.length);
@@ -49,12 +51,21 @@ export default function PromoCarousel() {
   const promo = PROMOS[current];
 
   return (
-    <div style={styles.carousel}>
-      <div style={{ ...styles.slide, background: promo.color }}>
+    <div style={{ ...styles.carousel, marginBottom: isMobile ? 32 : styles.carousel.marginBottom }}>
+      <div
+        style={{
+          ...styles.slide,
+          background: promo.color,
+          gridTemplateColumns: isMobile ? "1fr" : styles.slide.gridTemplateColumns,
+          gap: isMobile ? 16 : styles.slide.gap,
+          padding: isMobile ? 20 : styles.slide.padding,
+          minHeight: isMobile ? 0 : styles.slide.minHeight,
+        }}
+      >
         <div style={styles.content}>
           <p style={styles.badge}>PROMOÇÃO</p>
-          <h2 style={styles.title}>{promo.title}</h2>
-          <p style={styles.description}>{promo.description}</p>
+          <h2 style={{ ...styles.title, fontSize: isMobile ? 24 : styles.title.fontSize }}>{promo.title}</h2>
+          <p style={{ ...styles.description, fontSize: isMobile ? 14 : styles.description.fontSize }}>{promo.description}</p>
           <button
             style={styles.cta}
             onMouseEnter={(e) => {
@@ -72,8 +83,8 @@ export default function PromoCarousel() {
           </button>
         </div>
 
-        <div style={styles.discount}>
-          <p style={styles.discountValue}>{promo.discount}</p>
+        <div style={{ ...styles.discount, padding: isMobile ? 16 : styles.discount.padding }}>
+          <p style={{ ...styles.discountValue, fontSize: isMobile ? 34 : styles.discountValue.fontSize }}>{promo.discount}</p>
           <p style={styles.discountLabel}>OFF</p>
         </div>
       </div>

@@ -6,16 +6,18 @@ import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { useFavorites } from "../contexts/FavoritesContext";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Favoritos() {
+  const isMobile = useIsMobile();
   const { favorites, clearFavorites } = useFavorites();
 
   return (
     <div>
       {/* Header da Página */}
-      <div style={styles.pageHeader as CSSProperties}>
-        <h1 style={styles.pageTitle as CSSProperties}> 🤍 Meus Favoritos</h1>
-        <p style={styles.pageSubtitle as CSSProperties}>
+      <div style={{ ...styles.pageHeader, marginBottom: isMobile ? 28 : styles.pageHeader.marginBottom } as CSSProperties}>
+        <h1 style={{ ...styles.pageTitle, fontSize: isMobile ? 30 : styles.pageTitle.fontSize } as CSSProperties}> 🤍 Meus Favoritos</h1>
+        <p style={{ ...styles.pageSubtitle, fontSize: isMobile ? 15 : styles.pageSubtitle.fontSize } as CSSProperties}>
           {favorites.length === 0
             ? "Você ainda não tem produtos favoritos"
             : `Você tem ${favorites.length} produto${favorites.length !== 1 ? "s" : ""} salvo${favorites.length !== 1 ? "s" : ""}`}
@@ -24,7 +26,7 @@ export default function Favoritos() {
 
       {favorites.length === 0 ? (
         // Estado vazio
-        <div style={styles.emptyState as CSSProperties}>
+        <div style={{ ...styles.emptyState, padding: isMobile ? 36 : styles.emptyState.padding } as CSSProperties}>
           <div style={styles.emptyIcon as CSSProperties}>🤍</div>
           <h2 style={styles.emptyTitle as CSSProperties}>
             Nenhum favorito ainda
@@ -39,7 +41,7 @@ export default function Favoritos() {
       ) : (
         // Grid de produtos favoritos
         <>
-          <div style={styles.productsGrid as CSSProperties}>
+          <div style={{ ...styles.productsGrid, gridTemplateColumns: isMobile ? "1fr" : styles.productsGrid.gridTemplateColumns, gap: isMobile ? 16 : styles.productsGrid.gap } as CSSProperties}>
             {favorites.map((produto, idx) => (
               <div
                 key={produto.id}

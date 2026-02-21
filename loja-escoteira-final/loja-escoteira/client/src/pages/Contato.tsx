@@ -5,8 +5,10 @@
 import { useState, useEffect } from "react";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Contato() {
+  const isMobile = useIsMobile();
   const { showToast } = useToast();
   const [formData, setFormData] = useState({
     nome: "",
@@ -62,14 +64,21 @@ export default function Contato() {
   return (
     <div style={styles.container as CSSProperties}>
       {/* Hero Section */}
-      <div style={styles.hero as CSSProperties}>
-        <h1 style={styles.title}>Entre em Contato</h1>
-        <p style={styles.subtitle}>
+      <div style={{ ...styles.hero, padding: isMobile ? "42px 14px" : styles.hero.padding, marginBottom: isMobile ? 30 : styles.hero.marginBottom } as CSSProperties}>
+        <h1 style={{ ...styles.title, fontSize: isMobile ? 34 : styles.title.fontSize }}>Entre em Contato</h1>
+        <p style={{ ...styles.subtitle, fontSize: isMobile ? 16 : styles.subtitle.fontSize }}>
           Estamos aqui para ajudar! Tire suas dúvidas ou envie sugestões
         </p>
       </div>
 
-      <div style={styles.content as CSSProperties}>
+      <div
+        style={{
+          ...styles.content,
+          gridTemplateColumns: isMobile ? "1fr" : styles.content.gridTemplateColumns,
+          gap: isMobile ? 24 : styles.content.gap,
+          padding: isMobile ? "0 14px" : styles.content.padding,
+        } as CSSProperties}
+      >
         {/* Informações de Contato */}
         <div style={styles.infoSection as CSSProperties}>
           <h2 style={styles.sectionTitle}>Informações de Contato</h2>

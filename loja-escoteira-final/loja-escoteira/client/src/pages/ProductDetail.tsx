@@ -10,6 +10,7 @@ import { useToast } from "../contexts/ToastContext";
 import { getProductById } from "../lib/mockProducts";
 import type { CSSProperties } from "react";
 import { useState, useEffect } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const COLORS = [
   { name: "Preto", hex: "#1a1a1a" },
@@ -30,6 +31,7 @@ const RATINGS = [
 ];
 
 export default function ProductDetail() {
+  const isMobile = useIsMobile();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -112,13 +114,20 @@ export default function ProductDetail() {
       {/* Botão voltar */}
       <button 
         onClick={handleGoBack}
-        style={styles.backButton as CSSProperties}
+        style={{ ...styles.backButton, marginBottom: isMobile ? 18 : styles.backButton.marginBottom } as CSSProperties}
       >
         ← Voltar
       </button>
 
       {/* Container principal */}
-      <div style={styles.container as CSSProperties}>
+      <div
+        style={{
+          ...styles.container,
+          gridTemplateColumns: isMobile ? "1fr" : styles.container.gridTemplateColumns,
+          gap: isMobile ? 24 : styles.container.gap,
+          marginBottom: isMobile ? 40 : styles.container.marginBottom,
+        } as CSSProperties}
+      >
         
         {/* Coluna esquerda - Imagem */}
         <div style={styles.leftColumn as CSSProperties}>
@@ -136,7 +145,7 @@ export default function ProductDetail() {
           
           {/* Título e Badge */}
           <div style={styles.headerSection as CSSProperties}>
-            <h1 style={styles.productTitle as CSSProperties}>{product.name}</h1>
+            <h1 style={{ ...styles.productTitle, fontSize: isMobile ? 24 : styles.productTitle.fontSize } as CSSProperties}>{product.name}</h1>
             <span style={styles.badge as CSSProperties}>⭐ BESTSELLER</span>
           </div>
 
@@ -162,7 +171,7 @@ export default function ProductDetail() {
 
           {/* Preço */}
           <div style={styles.priceSection as CSSProperties}>
-            <h2 style={styles.price as CSSProperties}>R$ {product.price.toFixed(2)}</h2>
+            <h2 style={{ ...styles.price, fontSize: isMobile ? 30 : styles.price.fontSize } as CSSProperties}>R$ {product.price.toFixed(2)}</h2>
             <p style={styles.priceNote as CSSProperties}>
               Frete grátis para compras acima de R$ 200
             </p>
@@ -199,7 +208,12 @@ export default function ProductDetail() {
           {/* Seletor de Tamanho */}
           <div style={styles.sectionBlock as CSSProperties}>
             <h3 style={styles.sectionTitle as CSSProperties}>Tamanho</h3>
-            <div style={styles.sizeGrid as CSSProperties}>
+            <div
+              style={{
+                ...styles.sizeGrid,
+                gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : styles.sizeGrid.gridTemplateColumns,
+              } as CSSProperties}
+            >
               {SIZES.map((size) => (
                 <button
                   key={size}
@@ -247,7 +261,12 @@ export default function ProductDetail() {
           </div>
 
           {/* Botões de Ação */}
-          <div style={styles.actionButtons as CSSProperties}>
+          <div
+            style={{
+              ...styles.actionButtons,
+              flexDirection: isMobile ? "column" : "row",
+            } as CSSProperties}
+          >
             <button
               onClick={handleAddToCart}
               style={styles.addToCartBtn as CSSProperties}
@@ -270,6 +289,8 @@ export default function ProductDetail() {
                 ...styles.favoriteBtn,
                 background: isFav ? "#dc2626" : "white",
                 color: isFav ? "white" : "#dc2626",
+                minWidth: isMobile ? 0 : styles.favoriteBtn.minWidth,
+                width: isMobile ? "100%" : undefined,
               } as CSSProperties}
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLElement;
