@@ -123,6 +123,7 @@ export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
+    let callbackStage = "init";
 
     if (!code || !state) {
       res.redirect(302, "/login?oauthError=missing_code_or_state");
@@ -130,6 +131,7 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
+      callbackStage = "validate_state";
       const cookies = parseCookieHeader(req.headers.cookie ?? "");
       const expectedState = cookies.oauth_state;
       if (!expectedState || expectedState !== state) {
@@ -137,6 +139,7 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      callbackStage = "validate_credentials";
       if (!hasConfiguredGoogleCredentials()) {
         const status = getGoogleCredentialStatus();
         res.status(500).json({
@@ -146,6 +149,7 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      callbackStage = "token_exchange";
       const redirectUri = getGoogleRedirectUri(req);
 
       const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
@@ -175,6 +179,7 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      callbackStage = "userinfo";
       const userInfoResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
         headers: {
           Authorization: `Bearer ${tokenPayload.access_token}`,
@@ -201,6 +206,7 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      callbackStage = "upsert_user";
       await db.upsertUser({
         openId,
         name: userInfo.name || null,
@@ -209,11 +215,13 @@ export function registerOAuthRoutes(app: Express) {
         lastSignedIn: new Date(),
       });
 
+      callbackStage = "create_session";
       const sessionToken = await sdk.createSessionToken(openId, {
         name: userInfo.name || "",
         expiresInMs: ONE_YEAR_MS,
       });
 
+      callbackStage = "set_cookie_redirect";
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       res.clearCookie("oauth_state", { ...cookieOptions, maxAge: -1 });
@@ -226,8 +234,15 @@ export function registerOAuthRoutes(app: Express) {
 
       res.redirect(302, returnTo);
     } catch (error) {
-      console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: unknown }).code ?? "unknown")
+          : "unknown";
+      console.error("[OAuth] Callback failed", { stage: callbackStage, code, error });
+      res.status(500).json({
+        error: "OAuth callback failed",
+        status: { stage: callbackStage, code },
+      });
     }
   });
 }
