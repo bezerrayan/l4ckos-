@@ -110,9 +110,13 @@ async function startServer() {
     .split(",")
     .map(item => item.trim())
     .filter(Boolean);
-  const allowedOrigins = configuredOrigins.length
-    ? configuredOrigins
-    : ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003"];
+  const allowedOriginsSet = new Set(configuredOrigins);
+
+  if (!isProduction && allowedOriginsSet.size === 0) {
+    ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:5173"].forEach(origin => {
+      allowedOriginsSet.add(origin);
+    });
+  }
   const hasGoogleClientId = Boolean(process.env.GOOGLE_CLIENT_ID?.trim());
   const hasGoogleClientSecret = Boolean(process.env.GOOGLE_CLIENT_SECRET?.trim());
   const hasGoogleRedirectUri = Boolean(process.env.GOOGLE_REDIRECT_URI?.trim());
@@ -148,12 +152,12 @@ async function startServer() {
           return;
         }
 
-        if (allowedOrigins.includes(origin)) {
+        if (allowedOriginsSet.has(origin)) {
           callback(null, true);
           return;
         }
 
-        callback(null, false);
+        callback(new Error("Origin not allowed by CORS"));
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -191,7 +195,7 @@ async function startServer() {
       typeof origin === "string" &&
       /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
 
-    if (!origin || allowedOrigins.includes(origin) || isLocalhostOrigin) {
+    if (!origin || (typeof origin === "string" && allowedOriginsSet.has(origin)) || isLocalhostOrigin) {
       next();
       return;
     }
