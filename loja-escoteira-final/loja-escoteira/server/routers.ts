@@ -28,7 +28,7 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        if (ENV.isProduction) {
+        if (ENV.isProduction && !ENV.allowLocalAuthInProduction) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Local login disabled in production" });
         }
 
@@ -76,7 +76,7 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        if (ENV.isProduction) {
+        if (ENV.isProduction && !ENV.allowLocalAuthInProduction) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Local signup disabled in production" });
         }
 
