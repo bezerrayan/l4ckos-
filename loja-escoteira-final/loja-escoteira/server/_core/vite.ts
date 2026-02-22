@@ -60,14 +60,34 @@ export function serveStatic(app: Express) {
 
   const assetsPath = path.resolve(distPath, "assets");
 
-  app.use(
-    "/assets",
-    express.static(assetsPath, {
-      immutable: true,
-      maxAge: "1y",
-      fallthrough: false,
-    })
-  );
+  app.get("/assets/*", (req, res) => {
+    const relativePath = req.path.replace(/^\/assets\//, "");
+    const normalizedRelative = path.normalize(relativePath);
+
+    if (!normalizedRelative || normalizedRelative.startsWith("..") || path.isAbsolute(normalizedRelative)) {
+      res.status(400).end();
+      return;
+    }
+
+    const filePath = path.resolve(assetsPath, normalizedRelative);
+    const normalizedAssetsPath = assetsPath.replace(/\\/g, "/");
+    const normalizedFilePath = filePath.replace(/\\/g, "/");
+
+    if (!normalizedFilePath.startsWith(normalizedAssetsPath + "/") && normalizedFilePath !== normalizedAssetsPath) {
+      res.status(400).end();
+      return;
+    }
+
+    fs.access(filePath, fs.constants.R_OK, error => {
+      if (error) {
+        res.status(404).end();
+        return;
+      }
+
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      res.sendFile(filePath);
+    });
+  });
 
   app.use(
     express.static(distPath, {
