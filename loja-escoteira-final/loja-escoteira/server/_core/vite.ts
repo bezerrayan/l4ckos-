@@ -58,17 +58,23 @@ export function serveStatic(app: Express) {
     );
   }
 
+  const assetsPath = path.resolve(distPath, "assets");
+
+  app.use(
+    "/assets",
+    express.static(assetsPath, {
+      immutable: true,
+      maxAge: "1y",
+      fallthrough: false,
+    })
+  );
+
   app.use(
     express.static(distPath, {
       setHeaders: (res, filePath) => {
-        const normalizedPath = filePath.replace(/\\/g, "/");
+        const normalizedPath = String(filePath).replace(/\\/g, "/");
         if (normalizedPath.endsWith("/index.html")) {
           res.setHeader("Cache-Control", "no-cache");
-          return;
-        }
-
-        if (normalizedPath.includes("/assets/")) {
-          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         }
       },
     })
