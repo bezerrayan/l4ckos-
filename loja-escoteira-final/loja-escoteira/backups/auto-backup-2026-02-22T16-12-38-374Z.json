@@ -1,0 +1,107 @@
+{
+  "exportedAt": "2026-02-22T16:12:38.372Z",
+  "data": {
+    "users": [
+      {
+        "id": 1,
+        "openId": "118324729938421546100",
+        "name": "Yan Bezerra",
+        "email": "bezerrayan651@gmail.com",
+        "loginMethod": "google",
+        "role": "user",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-21T16:10:44.000Z",
+        "updatedAt": "2026-02-21T16:22:31.000Z",
+        "lastSignedIn": "2026-02-21T16:22:32.000Z"
+      },
+      {
+        "id": 7,
+        "openId": "100477206296438906678",
+        "name": "yan",
+        "email": "yanbezerra651@gmail.com",
+        "loginMethod": "google",
+        "role": "user",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-21T16:25:28.000Z",
+        "updatedAt": "2026-02-22T14:39:05.000Z",
+        "lastSignedIn": "2026-02-22T14:39:06.000Z"
+      },
+      {
+        "id": 43,
+        "openId": "local:bezerrayan651@gmail.com",
+        "name": "bezerrayan651",
+        "email": "bezerrayan651@gmail.com",
+        "loginMethod": "local-dev",
+        "role": "user",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-22T15:01:24.000Z",
+        "updatedAt": "2026-02-22T15:07:03.000Z",
+        "lastSignedIn": "2026-02-22T15:07:04.000Z"
+      },
+      {
+        "id": 64,
+        "openId": "local:admin@local.dev",
+        "name": "admin",
+        "email": "admin@local.dev",
+        "loginMethod": "local-dev",
+        "role": "admin",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-22T15:07:46.000Z",
+        "updatedAt": "2026-02-22T15:08:21.000Z",
+        "lastSignedIn": "2026-02-22T15:08:22.000Z"
+      }
+    ],
+    "products": [],
+    "productVariants": [],
+    "productImages": [],
+    "orders": [],
+    "orderItems": [],
+    "coupons": [],
+    "userProfiles": [
+      {
+        "id": 1,
+        "userId": 43,
+        "phone": "68992286847",
+        "createdAt": "2026-02-22T15:01:32.000Z",
+        "updatedAt": "2026-02-22T15:01:32.000Z"
+      }
+    ],
+    "userAddresses": [
+      {
+        "id": 3,
+        "userId": 43,
+        "label": "Casa",
+        "recipient": "Yan Bezerra",
+        "zipCode": "70236-150",
+        "street": "Quadra SQS 402 Bloco O",
+        "number": "201",
+        "complement": "Apto",
+        "neighborhood": "Asa Sul",
+        "city": "Brasília",
+        "state": "DF",
+        "isDefault": 1,
+        "createdAt": "2026-02-22T15:01:59.000Z",
+        "updatedAt": "2026-02-22T15:01:59.000Z"
+      }
+    ],
+    "userPaymentMethods": [
+      {
+        "id": 2,
+        "userId": 43,
+        "label": "Cartão principal",
+        "holderName": "Yan Bezerra",
+        "brand": "Visa",
+        "last4": "9999",
+        "expiry": "09/33",
+        "isDefault": 1,
+        "createdAt": "2026-02-22T15:01:59.000Z",
+        "updatedAt": "2026-02-22T15:01:59.000Z"
+      }
+    ],
+    "auditLogs": []
+  }
+}
