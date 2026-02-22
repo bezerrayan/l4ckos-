@@ -106,16 +106,27 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   const isProduction = process.env.NODE_ENV === "production";
-  const configuredOrigins = (process.env.CORS_ORIGINS || "")
+  const allowedOrigins = (process.env.CORS_ORIGINS || "")
     .split(",")
     .map(item => item.trim())
     .filter(Boolean);
-  const allowedOriginsSet = new Set(configuredOrigins);
 
-  if (!isProduction && allowedOriginsSet.size === 0) {
-    ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:5173"].forEach(origin => {
-      allowedOriginsSet.add(origin);
-    });
+  if (!isProduction && allowedOrigins.length === 0) {
+    allowedOrigins.push("http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:5173");
+  }
+
+  function isAllowed(origin?: string) {
+    if (!origin) return true; // healthcheck / server-to-server
+
+    try {
+      const url = new URL(origin);
+      return allowedOrigins.some(allowed => {
+        const allowedUrl = new URL(allowed);
+        return url.host === allowedUrl.host; // ignora protocolo, barra final e porta padrão
+      });
+    } catch {
+      return false;
+    }
   }
   const hasGoogleClientId = Boolean(process.env.GOOGLE_CLIENT_ID?.trim());
   const hasGoogleClientSecret = Boolean(process.env.GOOGLE_CLIENT_SECRET?.trim());
@@ -142,25 +153,11 @@ async function startServer() {
   app.use(
     cors({
       origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
-        if (!origin) {
-          callback(null, true);
-          return;
-        }
-
-        if (!isProduction && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) {
-          callback(null, true);
-          return;
-        }
-
-        if (allowedOriginsSet.has(origin)) {
-          callback(null, true);
-          return;
-        }
-
-        callback(new Error("Origin not allowed by CORS"));
+        if (isAllowed(origin)) return callback(null, true);
+        console.error("CORS BLOCKED:", origin);
+        return callback(new Error("Origin not allowed by CORS"));
       },
       credentials: true,
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     }),
   );
 
@@ -190,12 +187,7 @@ async function startServer() {
     }
 
     const origin = req.headers.origin;
-    const isLocalhostOrigin =
-      !isProduction &&
-      typeof origin === "string" &&
-      /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
-
-    if (!origin || (typeof origin === "string" && allowedOriginsSet.has(origin)) || isLocalhostOrigin) {
+    if (isAllowed(origin)) {
       next();
       return;
     }
