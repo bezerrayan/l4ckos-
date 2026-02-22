@@ -15,6 +15,20 @@
       "when": 1770409244223,
       "tag": "0001_tired_bruce_banner",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1771771190165,
+      "tag": "0002_rapid_quentin_quire",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1771773461177,
+      "tag": "0003_plain_red_ghost",
+      "breakpoints": true
     }
   ]
 }

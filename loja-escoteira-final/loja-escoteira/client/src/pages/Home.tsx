@@ -47,7 +47,7 @@ export default function Home() {
         {/* Elemento Visual - Logo/Imagem da Marca */}
         <div style={{ ...styles.heroVisual, height: isMobile ? 240 : styles.heroVisual.height }}>
           <img 
-            src="/images/logo%20principal.png" 
+            src="/images/logo-principal.png" 
             alt="Logo da marca"
             style={styles.heroImage}
           />
@@ -107,7 +107,7 @@ export default function Home() {
           >
             <div style={styles.benefitIcon}></div>
             <h3 style={styles.benefitTitle}>Entrega Rápida</h3>
-            <p style={styles.benefitText}>Receba seus pedidos em até 5 dias úteis com rastreamento</p>
+            <p style={styles.benefitText}></p>
           </div>
 
           <div 
@@ -248,7 +248,7 @@ const styles: Record<string, CSSProperties> = {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    padding: 0,
+    objectPosition: "center",
   },
   promoSection: {
     marginBottom: 80,

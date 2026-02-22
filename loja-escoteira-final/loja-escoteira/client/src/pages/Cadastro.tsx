@@ -5,17 +5,18 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { trpc } from "../lib/trpc";
 
 export default function Cadastro() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { setUser } = useUser();
   const { showToast } = useToast();
+  const utils = trpc.useUtils();
+  const localSignupMutation = trpc.auth.localSignup.useMutation();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -69,30 +70,22 @@ export default function Cadastro() {
 
     setIsSubmitting(true);
     try {
-      // TODO: Integrar com API real
-      // const response = await api.post('/auth/signup', formData)
-
-      // Simulação de registro
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Usar apenas o primeiro nome no sistema
-      const newUser = {
-        id: Math.random().toString(),
-        name: formData.firstName.charAt(0).toUpperCase() + formData.firstName.slice(1),
+      await localSignupMutation.mutateAsync({
+        name: `${formData.firstName} ${formData.lastName}`.trim() || formData.firstName,
         email: formData.email,
-        isAuthenticated: true,
-        createdAt: new Date(),
-      };
+        password: formData.password,
+      });
+      await utils.auth.me.invalidate();
 
-      setUser(newUser);
       showToast({
-        message: `Bem-vindo, ${newUser.name}! Cadastro realizado com sucesso!`,
+        message: "Cadastro realizado com sucesso!",
         duration: 3000,
       });
       navigate("/");
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao criar conta. Tente novamente.";
       showToast({
-        message: "Erro ao criar conta. Tente novamente.",
+        message,
         duration: 3000,
       });
     } finally {
@@ -125,7 +118,7 @@ export default function Cadastro() {
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
-            <img src="/images/logo%20principal.png" alt="Logo da marca" style={styles.logoImage as CSSProperties} />
+            <img src="/images/logo-principal.png" alt="Logo da marca" style={styles.logoImage as CSSProperties} />
           </div>
         </div>
       </div>
@@ -165,7 +158,7 @@ export default function Cadastro() {
                 onChange={handleChange}
                 placeholder="João"
                 style={styles.input as CSSProperties}
-                disabled={isSubmitting}
+                disabled={isSubmitting || localSignupMutation.isPending}
               />
             </div>
 
@@ -181,7 +174,7 @@ export default function Cadastro() {
                 onChange={handleChange}
                 placeholder="da Silva"
                 style={styles.input as CSSProperties}
-                disabled={isSubmitting}
+                disabled={isSubmitting || localSignupMutation.isPending}
               />
             </div>
           </div>
@@ -198,7 +191,7 @@ export default function Cadastro() {
               onChange={handleChange}
               placeholder="seu@email.com"
               style={styles.input as CSSProperties}
-              disabled={isSubmitting}
+              disabled={isSubmitting || localSignupMutation.isPending}
             />
           </div>
 
@@ -214,7 +207,7 @@ export default function Cadastro() {
               onChange={handleChange}
               placeholder="Mínimo 6 caracteres"
               style={styles.input as CSSProperties}
-              disabled={isSubmitting}
+              disabled={isSubmitting || localSignupMutation.isPending}
             />
           </div>
 
@@ -233,7 +226,7 @@ export default function Cadastro() {
               onChange={handleChange}
               placeholder="Confirme sua senha"
               style={styles.input as CSSProperties}
-              disabled={isSubmitting}
+              disabled={isSubmitting || localSignupMutation.isPending}
             />
           </div>
 
@@ -356,9 +349,9 @@ const styles: Record<string, CSSProperties> = {
   logoPlaceholder: {
     textAlign: "center",
     width: 320,
-    height: 250,
-    background: "rgba(200, 200, 200, 0.2)",
-    border: "2px dashed rgba(100, 100, 100, 0.4)",
+    height: 190,
+    background: "transparent",
+    border: "none",
     borderRadius: 12,
     display: "flex",
     alignItems: "center",
@@ -370,9 +363,10 @@ const styles: Record<string, CSSProperties> = {
   },
   logoImage: {
     width: "100%",
+    maxWidth: "none",
     height: "100%",
     objectFit: "cover",
-    objectPosition: "calc(50% + 24px) center",
+    objectPosition: "center",
   },
   logo: {
     fontSize: 64,

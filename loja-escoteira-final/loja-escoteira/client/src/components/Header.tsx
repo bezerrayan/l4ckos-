@@ -177,6 +177,11 @@ export default function Header() {
                   {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
                 </div>
               </Link>
+              {user.role === "admin" ? (
+                <Link to="/admin" style={styles.adminBtn as CSSProperties}>
+                  Admin
+                </Link>
+              ) : null}
               <button
                 onClick={logout}
                 style={styles.logoutBtn as CSSProperties}
@@ -258,6 +263,11 @@ export default function Header() {
                   {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
                 </div>
               </Link>
+              {user.role === "admin" ? (
+                <Link to="/admin" style={styles.adminBtn as CSSProperties}>
+                  Admin
+                </Link>
+              ) : null}
               <button
                 onClick={logout}
                 style={styles.logoutBtn as CSSProperties}
@@ -414,6 +424,16 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 700,
     cursor: "pointer",
     transition: "all 0.2s ease",
+  },
+  adminBtn: {
+    color: "#fbbf24",
+    background: "rgba(251,191,36,0.1)",
+    border: "1px solid rgba(251,191,36,0.35)",
+    borderRadius: 20,
+    padding: "6px 12px",
+    fontWeight: 700,
+    fontSize: 13,
+    textDecoration: "none",
   },
   loginBtn: {
     color: "white",

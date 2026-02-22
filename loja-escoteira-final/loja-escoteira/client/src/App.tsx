@@ -10,6 +10,7 @@ import Favoritos from "./pages/Favoritos";
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
 import Perfil from "./pages/Perfil";
+import Admin from "./pages/Admin";
 import Sobre from "./pages/Sobre";
 import Contato from "./pages/Contato";
 import FAQs from "./pages/FAQs";
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/contato" element={<Contato />} />
           <Route path="/faqs" element={<FAQs />} />

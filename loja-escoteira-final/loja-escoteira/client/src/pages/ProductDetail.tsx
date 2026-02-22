@@ -136,6 +136,9 @@ export default function ProductDetail() {
               src={product.image} 
               alt={product.name}
               style={styles.productImage as CSSProperties}
+              onError={(event) => {
+                event.currentTarget.src = "/images/camisa.png";
+              }}
             />
           </div>
         </div>

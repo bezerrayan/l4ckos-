@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
+import { router, publicProcedure, adminProcedure } from "../_core/trpc";
 import { getProducts, getProductById, createProduct, updateProduct, deleteProduct } from "../db";
 
 export const productsRouter = router({
@@ -43,7 +43,7 @@ export const productsRouter = router({
   }),
 
   // Criar novo produto (apenas admin)
-  create: protectedProcedure
+  create: adminProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -61,7 +61,7 @@ export const productsRouter = router({
     }),
 
   // Atualizar produto (apenas admin)
-  update: protectedProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.number(),
@@ -81,7 +81,7 @@ export const productsRouter = router({
     }),
 
   // Deletar produto (apenas admin)
-  delete: protectedProcedure.input(z.number()).mutation(async ({ input }) => {
+  delete: adminProcedure.input(z.number()).mutation(async ({ input }) => {
     await deleteProduct(input);
     return { success: true };
   }),

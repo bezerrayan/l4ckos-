@@ -11,9 +11,9 @@ const camisetaImageURL = "/images/camisa.png";
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: 1,
-    name: "Camisa Personalizada — Aventura",
+    name: "Camisa Personalizada — Dri-fit",
     description: "Camisa premium com bordados exclusivos de mapa topográfico. Tecido algodão 100% com detalhes refletivos para explorar o desconhecido com estilo.",
-    price: 129.0,
+    price: 79.9,
     image: camisetaImageURL,
     category: "Escoteiro",
     stock: 20,
@@ -21,9 +21,9 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 2,
-    name: "Camisa Personalizada — Liderança",
+    name: "Camisa Personalizada — Oversized",
     description: "Design exclusivo com brasão customizado e estrela refletiva no ombro. Confecção artesanal com atenção aos mínimos detalhes.",
-    price: 139.0,
+    price: 99.9,
     image: camisetaImageURL,
     category: "Escoteiro",
     stock: 15,
@@ -31,9 +31,9 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: 3,
-    name: "Camisa Personalizada — Natureza",
+    name: "Camisa Personalizada — Edição Limitada",
     description: "Ilustração botânica exclusiva com patch de couro autêntico. Perfeita para quem celebra a conexão com a natureza em cada aventura.",
-    price: 149.0,
+    price: 129.9,
     image: camisetaImageURL,
     category: "Escoteiro",
     stock: 12,

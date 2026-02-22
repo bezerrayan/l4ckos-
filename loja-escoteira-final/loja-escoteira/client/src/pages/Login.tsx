@@ -8,15 +8,17 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
-import type { User } from "../types/user";
 import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { trpc } from "../lib/trpc";
 
 export default function Login() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { login, setUser, isLoading } = useUser();
+  const { isLoading } = useUser();
   const { showToast } = useToast();
+  const utils = trpc.useUtils();
+  const localLoginMutation = trpc.auth.localLogin.useMutation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,15 +37,17 @@ export default function Login() {
 
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      await localLoginMutation.mutateAsync({ email, password });
+      await utils.auth.me.invalidate();
       showToast({
         message: "Login realizado com sucesso!",
         duration: 3000,
       });
       navigate("/");
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao fazer login. Verifique suas credenciais.";
       showToast({
-        message: "Erro ao fazer login. Verifique suas credenciais.",
+        message,
         duration: 3000,
       });
     } finally {
@@ -76,7 +80,7 @@ export default function Login() {
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
-            <img src="/images/logo%20principal.png" alt="Logo da marca" style={styles.logoImage as CSSProperties} />
+            <img src="/images/logo-principal.png" alt="Logo da marca" style={styles.logoImage as CSSProperties} />
           </div>
         </div>
       </div>
@@ -109,7 +113,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com"
               style={styles.input as CSSProperties}
-              disabled={isSubmitting || isLoading}
+              disabled={isSubmitting || isLoading || localLoginMutation.isPending}
             />
           </div>
 
@@ -124,7 +128,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               style={styles.input as CSSProperties}
-              disabled={isSubmitting || isLoading}
+              disabled={isSubmitting || isLoading || localLoginMutation.isPending}
             />
           </div>
 
@@ -144,12 +148,12 @@ export default function Login() {
             type="submit"
             style={{
               ...styles.submitBtn,
-              opacity: isSubmitting || isLoading ? 0.7 : 1,
-              cursor: isSubmitting || isLoading ? "not-allowed" : "pointer",
+              opacity: isSubmitting || isLoading || localLoginMutation.isPending ? 0.7 : 1,
+              cursor: isSubmitting || isLoading || localLoginMutation.isPending ? "not-allowed" : "pointer",
             } as CSSProperties}
-            disabled={isSubmitting || isLoading}
+            disabled={isSubmitting || isLoading || localLoginMutation.isPending}
             onMouseEnter={(e) => {
-              if (!isSubmitting && !isLoading) {
+              if (!isSubmitting && !isLoading && !localLoginMutation.isPending) {
                 const btn = e.currentTarget as HTMLElement;
                 btn.style.transform = "translateY(-2px)";
                 btn.style.boxShadow = "0 12px 24px rgba(26,26,26,0.3)";
@@ -161,7 +165,7 @@ export default function Login() {
               btn.style.boxShadow = "0 4px 12px rgba(26,26,26,0.2)";
             }}
           >
-            {isSubmitting || isLoading ? "Entrando..." : "Entrar"}
+            {isSubmitting || isLoading || localLoginMutation.isPending ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
@@ -182,7 +186,7 @@ export default function Login() {
             const btn = e.currentTarget as HTMLElement;
             btn.style.background = "white";
           }}
-          disabled={isSubmitting || isLoading}
+          disabled={isSubmitting || isLoading || localLoginMutation.isPending}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" style={{marginRight: 12}} aria-hidden="true" focusable="false">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
@@ -228,7 +232,7 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    alignItems: "flex-start",
+    alignItems: "center",
     color: "#1a1a1a",
   },
   logoSection: {
@@ -239,10 +243,11 @@ const styles: Record<string, CSSProperties> = {
   },
   logoPlaceholder: {
     textAlign: "center",
-    width: 320,
-    height: 250,
-    background: "rgba(200, 200, 200, 0.2)",
-    border: "2px dashed rgba(100, 100, 100, 0.4)",
+    width: "100%",
+    maxWidth: 420,
+    height: 240,
+    background: "transparent",
+    border: "none",
     borderRadius: 12,
     display: "flex",
     alignItems: "center",
@@ -254,9 +259,10 @@ const styles: Record<string, CSSProperties> = {
   },
   logoImage: {
     width: "100%",
+    maxWidth: "none",
     height: "100%",
     objectFit: "cover",
-    objectPosition: "calc(50% + 24px) center",
+    objectPosition: "center",
   },
   logo: {
     fontSize: 64,

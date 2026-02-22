@@ -36,10 +36,7 @@ export default function Sobre() {
         <div style={styles.sectionContent as CSSProperties}>
           <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 28 : styles.sectionTitle.fontSize }}>Nossa História</h2>
           <p style={styles.text}>
-            A L4ckos nasceu com a missão de oferecer produtos de qualidade premium para o movimento escoteiro brasileiro. Com anos de experiência no mercado, nos tornamos referência em equipamentos, uniformes e materiais para scouts de todas as idades.
-          </p>
-          <p style={styles.text}>
-            Acreditamos que o escotismo transforma vidas, e nossos produtos são cuidadosamente selecionados para acompanhar cada aventura, cada desafio e cada momento de aprendizado dos nossos clientes.
+            A L4CKOS nasceu com a ideia de criar uma identidade única para o público em geral, onde pessoas possam se identificar, e que seja fácil de lembrar. O nome L4ckos é uma ideia que surgiu a partir das aventuras dos criadores, a pronuncia é "Lackos", e a ideia é que seja algo bem fácil de lembrar, e que tenha uma identidade forte. 
           </p>
         </div>
         <div style={styles.sectionImage as CSSProperties}>
@@ -84,7 +81,7 @@ export default function Sobre() {
         </div>
       </section>
 
-      {/* Números */}
+      {/* Números (temporariamente desativado)
       <section style={{ ...styles.statsSection, padding: isMobile ? "34px 14px" : styles.statsSection.padding, marginBottom: isMobile ? 40 : styles.statsSection.marginBottom } as CSSProperties}>
         <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 28 : styles.sectionTitle.fontSize }}>Nossos Números</h2>
         <div style={styles.statsGrid as CSSProperties}>
@@ -106,6 +103,7 @@ export default function Sobre() {
           </div>
         </div>
       </section>
+      */}
 
       {/* CTA */}
       <section style={{ ...styles.ctaSection, padding: isMobile ? "34px 14px" : styles.ctaSection.padding } as CSSProperties}>

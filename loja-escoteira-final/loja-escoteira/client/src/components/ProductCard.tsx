@@ -48,7 +48,14 @@ export default function ProductCard({ product }: Props) {
       }}
     >
       <div style={styles.imageContainer as CSSProperties}>
-        <img src={product.image} style={styles.image as CSSProperties} alt={product.name} />
+        <img
+          src={product.image}
+          style={styles.image as CSSProperties}
+          alt={product.name}
+          onError={(event) => {
+            event.currentTarget.src = "/images/camisa.png";
+          }}
+        />
         <div style={{...styles.badge, background: badge.color} as CSSProperties}>{badge.text}</div>
         <div style={styles.designOverlay as CSSProperties}>
           {product.name.includes("Aventura") && (

@@ -23,9 +23,9 @@ const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
       url:
-        typeof window === "undefined"
-          ? "http://localhost:3000/api/trpc"
-          : `${window.location.origin}/api/trpc`,
+        typeof window !== "undefined"
+          ? `${window.location.origin}/api/trpc`
+          : "http://localhost:3000/api/trpc",
       transformer: superjson,
     }),
   ],

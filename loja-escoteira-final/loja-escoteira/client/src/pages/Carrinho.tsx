@@ -61,6 +61,9 @@ export default function Carrinho() {
                       src={item.product.image}
                       alt={item.product.name}
                       style={styles.itemImage}
+                      onError={(event) => {
+                        event.currentTarget.src = "/images/camisa.png";
+                      }}
                     />
                   </div>
 

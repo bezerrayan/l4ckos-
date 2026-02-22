@@ -44,7 +44,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   });
   const logoutMutation = trpc.auth.logout.useMutation();
 
-  const isAuthenticated = user !== null || Boolean(meQuery.data);
+  const isAuthenticated = Boolean(meQuery.data);
 
   useEffect(() => {
     if (!meQuery.data) {
@@ -58,6 +58,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       id?: number | string;
       name?: string | null;
       email?: string | null;
+      role?: "user" | "admin";
       createdAt?: string | Date | null;
     };
 
@@ -65,6 +66,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       id: String(serverUser.id ?? ""),
       name: serverUser.name || "Usuário",
       email: serverUser.email || "",
+      role: serverUser.role,
       isAuthenticated: true,
       createdAt: serverUser.createdAt ? new Date(serverUser.createdAt) : new Date(),
     };
@@ -78,25 +80,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setError(undefined);
     
     try {
-      // TODO: Integrar com API real
-      // const response = await api.post('/auth/login', { email, password })
-      
-      // Por enquanto, mock
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
-      // Extrair primeiro nome do email (antes do @)
-      const namesFromEmail = email.split('@')[0].split('.').map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(' ');
-      
-      const newUser: User = {
-        id: "1",
-        name: namesFromEmail,
-        email,
-        isAuthenticated: true,
-        createdAt: new Date(),
-      };
-      
-      setUserState(newUser);
-      await utils.auth.me.invalidate();
+      if (!email || !password) {
+        throw new Error("Preencha email e senha.");
+      }
+
+      throw new Error("Login por email ainda não está integrado. Use 'Continuar com Google'.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao fazer login";
       setError(message);
