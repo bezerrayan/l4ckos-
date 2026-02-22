@@ -1,6 +1,6 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
-const backendUrl = (import.meta as any).env?.VITE_BACKEND_URL || "http://localhost:3002";
+const backendUrl = (import.meta as any).env?.VITE_BACKEND_URL || "http://localhost:3010";
 
 function resolveApiUrl() {
   try {
