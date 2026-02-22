@@ -153,7 +153,7 @@ async function startServer() {
           return;
         }
 
-        callback(new Error("Origin not allowed by CORS"));
+        callback(null, false);
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

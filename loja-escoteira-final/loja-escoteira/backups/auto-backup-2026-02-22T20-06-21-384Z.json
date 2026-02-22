@@ -1,0 +1,222 @@
+{
+  "exportedAt": "2026-02-22T20:06:21.379Z",
+  "data": {
+    "users": [
+      {
+        "id": 1,
+        "openId": "118324729938421546100",
+        "name": "Yan Bezerra",
+        "email": "bezerrayan651@gmail.com",
+        "loginMethod": "google",
+        "role": "user",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-20T11:03:34.000Z",
+        "updatedAt": "2026-02-20T11:23:18.000Z",
+        "lastSignedIn": "2026-02-20T14:23:18.000Z"
+      },
+      {
+        "id": 12,
+        "openId": "100477206296438906678",
+        "name": "yan",
+        "email": "yanbezerra651@gmail.com",
+        "loginMethod": "google",
+        "role": "user",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-20T11:08:29.000Z",
+        "updatedAt": "2026-02-20T11:09:17.000Z",
+        "lastSignedIn": "2026-02-20T14:09:18.000Z"
+      },
+      {
+        "id": 23,
+        "openId": "local-dev-user",
+        "name": "Usuário Local",
+        "email": "local@dev.local",
+        "loginMethod": "local-dev",
+        "role": "user",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-22T11:53:38.000Z",
+        "updatedAt": "2026-02-22T11:53:47.000Z",
+        "lastSignedIn": "2026-02-22T14:53:48.000Z"
+      },
+      {
+        "id": 45,
+        "openId": "local:bezerrayan651@gmail.com",
+        "name": "bezerrayan651",
+        "email": "bezerrayan651@gmail.com",
+        "loginMethod": "local-dev",
+        "role": "user",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-22T15:24:26.000Z",
+        "updatedAt": "2026-02-22T15:56:58.000Z",
+        "lastSignedIn": "2026-02-22T18:56:59.000Z"
+      },
+      {
+        "id": 53,
+        "openId": "local:admin@local.dev",
+        "name": "Yan D3v",
+        "email": "admin@local.dev",
+        "loginMethod": "local-dev",
+        "role": "admin",
+        "isVip": 0,
+        "isBlocked": 0,
+        "createdAt": "2026-02-22T15:33:47.000Z",
+        "updatedAt": "2026-02-22T15:59:39.000Z",
+        "lastSignedIn": "2026-02-22T18:59:40.000Z"
+      }
+    ],
+    "products": [
+      {
+        "id": 1,
+        "name": "Camiseta Premium",
+        "description": "Camiseta de alta qualidade em algod├úo 100%",
+        "fullDescription": "Camiseta confeccionada em algod├úo 100% premium, com acabamento impec├ível. Perfeita para o dia a dia.",
+        "category": "vestuario",
+        "price": 8990,
+        "imageUrl": "https://via.placeholder.com/400?text=Camiseta",
+        "stock": 50,
+        "createdAt": "2026-02-11T19:28:51.000Z",
+        "updatedAt": "2026-02-11T19:28:51.000Z"
+      },
+      {
+        "id": 2,
+        "name": "Len├ºo Personalizado",
+        "description": "Len├ºo tradicional com detalhes em ouro",
+        "fullDescription": "Len├ºo confeccionado em tecido de alta qualidade com acabamento em ouro.",
+        "category": "vestuario",
+        "price": 5990,
+        "imageUrl": "https://via.placeholder.com/400?text=Lenco",
+        "stock": 30,
+        "createdAt": "2026-02-11T19:28:51.000Z",
+        "updatedAt": "2026-02-11T19:28:51.000Z"
+      },
+      {
+        "id": 3,
+        "name": "Garrafa T├®rmica",
+        "description": "Garrafa isolada de 750ml em a├ºo inoxid├ível",
+        "fullDescription": "Garrafa t├®rmica de alta performance com isolamento duplo em v├ícuo.",
+        "category": "hidratacao",
+        "price": 12990,
+        "imageUrl": "https://via.placeholder.com/400?text=Garrafa",
+        "stock": 25,
+        "createdAt": "2026-02-11T19:28:51.000Z",
+        "updatedAt": "2026-02-11T19:28:51.000Z"
+      },
+      {
+        "id": 4,
+        "name": "B├║ssola Profissional",
+        "description": "B├║ssola de lat├úo com agulha magn├®tica de precis├úo",
+        "fullDescription": "B├║ssola profissional de lat├úo com agulha magn├®tica de alta precis├úo.",
+        "category": "acessorios",
+        "price": 14990,
+        "imageUrl": "https://via.placeholder.com/400?text=Bussola",
+        "stock": 15,
+        "createdAt": "2026-02-11T19:28:51.000Z",
+        "updatedAt": "2026-02-11T19:28:51.000Z"
+      },
+      {
+        "id": 5,
+        "name": "Mochila 40L",
+        "description": "Mochila de trekking com compartimentos organizadores",
+        "fullDescription": "Mochila de trekking de 40 litros com estrutura ergon├┤mica.",
+        "category": "acessorios",
+        "price": 29990,
+        "imageUrl": "https://via.placeholder.com/400?text=Mochila",
+        "stock": 10,
+        "createdAt": "2026-02-11T19:28:51.000Z",
+        "updatedAt": "2026-02-11T19:28:51.000Z"
+      },
+      {
+        "id": 6,
+        "name": "Faca de Campismo",
+        "description": "Faca multifuncional com bainha de couro",
+        "fullDescription": "Faca profissional com l├ómina de alta qualidade para campismo.",
+        "category": "acessorios",
+        "price": 8990,
+        "imageUrl": "https://via.placeholder.com/400?text=Faca",
+        "stock": 20,
+        "createdAt": "2026-02-11T19:28:51.000Z",
+        "updatedAt": "2026-02-11T19:28:51.000Z"
+      },
+      {
+        "id": 8,
+        "name": "Corda 30m",
+        "description": "Corda de nylon resistente 30 metros",
+        "fullDescription": "Corda profissional de nylon com alta resist├¬ncia.",
+        "category": "acessorios",
+        "price": 3990,
+        "imageUrl": "https://via.placeholder.com/400?text=Corda",
+        "stock": 35,
+        "createdAt": "2026-02-11T19:28:51.000Z",
+        "updatedAt": "2026-02-11T19:28:51.000Z"
+      }
+    ],
+    "productVariants": [],
+    "productImages": [],
+    "orders": [],
+    "orderItems": [],
+    "coupons": [],
+    "userProfiles": [
+      {
+        "id": 1,
+        "userId": 45,
+        "phone": "68992286847",
+        "createdAt": "2026-02-22T15:24:36.000Z",
+        "updatedAt": "2026-02-22T15:24:36.000Z"
+      },
+      {
+        "id": 2,
+        "userId": 53,
+        "phone": null,
+        "createdAt": "2026-02-22T15:59:34.000Z",
+        "updatedAt": "2026-02-22T15:59:34.000Z"
+      }
+    ],
+    "userAddresses": [
+      {
+        "id": 2,
+        "userId": 45,
+        "label": "Casa",
+        "recipient": "Yan Bezerra",
+        "zipCode": "70236-150",
+        "street": "Quadra SQS 402 Bloco O",
+        "number": "201",
+        "complement": "Apto",
+        "neighborhood": "Asa Sul",
+        "city": "Brasília",
+        "state": "DF",
+        "isDefault": 1,
+        "createdAt": "2026-02-22T15:24:57.000Z",
+        "updatedAt": "2026-02-22T15:24:57.000Z"
+      }
+    ],
+    "userPaymentMethods": [
+      {
+        "id": 1,
+        "userId": 45,
+        "label": "Cartão principal",
+        "holderName": "Yan Bezerra",
+        "brand": "Visa",
+        "last4": "9894",
+        "expiry": "22/33",
+        "isDefault": 1,
+        "createdAt": "2026-02-22T15:24:57.000Z",
+        "updatedAt": "2026-02-22T15:24:57.000Z"
+      }
+    ],
+    "auditLogs": [
+      {
+        "id": 1,
+        "actorUserId": 53,
+        "action": "product.delete",
+        "entity": "product",
+        "entityId": "7",
+        "metadata": null,
+        "createdAt": "2026-02-22T15:34:23.000Z"
+      }
+    ]
+  }
+}
