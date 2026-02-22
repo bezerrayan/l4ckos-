@@ -156,7 +156,7 @@ export default function Header() {
             </span>
           </Link>
           {/* Botão de Login/Perfil */}
-          {user && user.isAuthenticated ? (
+          {!isMobile && (user && user.isAuthenticated ? (
             <div
               style={{
                 ...styles.userMenu,
@@ -233,8 +233,62 @@ export default function Header() {
                 Criar Conta
               </Link>
             </div>
-          )}
+          ))}
         </nav>
+
+        {isMobile && (
+          user && user.isAuthenticated ? (
+            <div
+              style={{
+                ...styles.userMenu,
+                width: "100%",
+                justifyContent: "space-between",
+                marginTop: 4,
+              } as CSSProperties}
+            >
+              <Link to="/perfil" style={styles.userInfo as CSSProperties}>
+                <div style={styles.avatar as CSSProperties}>
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} style={{width: "100%", height: "100%", borderRadius: "50%"}} />
+                  ) : (
+                    <span>{getDisplayFirstName(user.name, user.email).charAt(0)}</span>
+                  )}
+                </div>
+                <div style={{ ...styles.userName, maxWidth: 120 } as CSSProperties}>
+                  {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
+                </div>
+              </Link>
+              <button
+                onClick={logout}
+                style={styles.logoutBtn as CSSProperties}
+              >
+                Sair
+              </button>
+            </div>
+          ) : (
+            <div
+              style={{
+                ...styles.authLinks,
+                width: "100%",
+                justifyContent: "space-between",
+                marginTop: 4,
+              } as CSSProperties}
+            >
+              <Link
+                to="/login"
+                style={{ ...styles.loginBtn, fontSize: 14, padding: "8px 12px", flex: 1, textAlign: "center" } as CSSProperties}
+              >
+                Entrar
+              </Link>
+              <Link
+                to="/cadastro"
+                style={{ ...styles.signupBtn, fontSize: 14, padding: "8px 12px", flex: 1, textAlign: "center" } as CSSProperties}
+              >
+                Criar Conta
+              </Link>
+            </div>
+          )
+        )}
       </div>
     </header>
   );
