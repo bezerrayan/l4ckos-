@@ -60,8 +60,18 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
+  const indexPath = path.resolve(distPath, "index.html");
+
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  app.use("*", (req, res) => {
+    const requestPath = (req.originalUrl || req.url || "").split("?")[0] || "";
+    const hasFileExtension = path.extname(requestPath) !== "";
+
+    if (hasFileExtension) {
+      res.status(404).end();
+      return;
+    }
+
+    res.sendFile(indexPath);
   });
 }
