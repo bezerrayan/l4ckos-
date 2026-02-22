@@ -58,7 +58,21 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(
+    express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        const normalizedPath = filePath.replace(/\\/g, "/");
+        if (normalizedPath.endsWith("/index.html")) {
+          res.setHeader("Cache-Control", "no-cache");
+          return;
+        }
+
+        if (normalizedPath.includes("/assets/")) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    })
+  );
 
   const indexPath = path.resolve(distPath, "index.html");
 
@@ -72,6 +86,7 @@ export function serveStatic(app: Express) {
       return;
     }
 
+    res.setHeader("Cache-Control", "no-cache");
     res.sendFile(indexPath);
   });
 }
