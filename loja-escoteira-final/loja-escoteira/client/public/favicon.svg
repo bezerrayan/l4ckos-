@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="L4ckos">
-  <rect width="64" height="64" fill="#f3f4f6"/>
-  <path d="M8 12h8v20h14v8H8z" fill="#111827"/>
-  <path d="M34 12h8v20h8v8h-8v12h-8V40H24l10-28z" fill="#111827"/>
-  <rect x="8" y="54" width="32" height="4" rx="2" fill="#4f46e5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="L4ckos favicon">
+  <rect width="64" height="64" fill="none"/>
+  <path fill="#ffffff" d="M8 8h12v30h18v12H8z"/>
+  <path fill="#ffffff" d="M38 8h10v20h8L46 44h-8l6-10h-6z"/>
 </svg>

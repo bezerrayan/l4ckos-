@@ -125,7 +125,7 @@ export default function Cadastro() {
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
-            {/* Espaço para logo da marca */}
+            <img src="/images/logo%20principal.png" alt="Logo da marca" style={styles.logoImage as CSSProperties} />
           </div>
         </div>
       </div>
@@ -366,6 +366,13 @@ const styles: Record<string, CSSProperties> = {
     color: "rgba(100, 100, 100, 0.6)",
     fontSize: 14,
     fontWeight: 500,
+    overflow: "hidden",
+  },
+  logoImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    objectPosition: "calc(50% + 24px) center",
   },
   logo: {
     fontSize: 64,

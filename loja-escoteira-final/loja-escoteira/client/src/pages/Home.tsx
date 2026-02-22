@@ -47,19 +47,19 @@ export default function Home() {
         {/* Elemento Visual - Logo/Imagem da Marca */}
         <div style={{ ...styles.heroVisual, height: isMobile ? 240 : styles.heroVisual.height }}>
           <img 
-            src="https://via.placeholder.com/400x400?text=Sua+Logo+Aqui" 
+            src="/images/logo%20principal.png" 
             alt="Logo da marca"
             style={styles.heroImage}
           />
         </div>
       </div>
 
-      {/* 🎁 Carrossel de Promoções */}
+      {/*  Carrossel de Promoções */}
       <section style={{ ...styles.promoSection, marginBottom: isMobile ? 40 : styles.promoSection.marginBottom }}>
         <PromoCarousel />
       </section>
 
-      {/* ⭐ Destaques da Loja */}
+      {/*  Destaques da Loja */}
       <section id="destaques" style={{ ...styles.section, marginBottom: isMobile ? 44 : styles.section.marginBottom }}>
         <div style={styles.sectionHeader}>
           <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Produtos em Destaque</h2>
@@ -85,7 +85,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ℹ️ Diferenciais */}
+      {/* ℹ Diferenciais */}
       <section style={{ ...styles.benefitsSection, marginBottom: isMobile ? 44 : styles.benefitsSection.marginBottom }}>
         <div style={styles.sectionHeader}>
           <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Por Que Comprar Conosco</h2>
@@ -247,8 +247,8 @@ const styles: Record<string, CSSProperties> = {
   heroImage: {
     width: "100%",
     height: "100%",
-    objectFit: "contain",
-    padding: 20,
+    objectFit: "cover",
+    padding: 0,
   },
   promoSection: {
     marginBottom: 80,
