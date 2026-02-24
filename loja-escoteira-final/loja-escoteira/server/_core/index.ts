@@ -120,6 +120,11 @@ async function startServer() {
 
     try {
       const url = new URL(origin);
+
+      if (!isProduction && (url.hostname === "localhost" || url.hostname === "127.0.0.1")) {
+        return true;
+      }
+
       return allowedOrigins.some(allowed => {
         const allowedUrl = new URL(allowed);
         return url.host === allowedUrl.host; // ignora protocolo, barra final e porta padrão
@@ -151,6 +156,7 @@ async function startServer() {
   );
 
   app.use(
+    "/api",
     cors({
       origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
         if (isAllowed(origin)) return callback(null, true);

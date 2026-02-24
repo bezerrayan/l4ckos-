@@ -11,6 +11,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserProvider } from "./contexts/UserContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { DataSyncProvider } from "./components/DataSyncProvider";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 import App from "./App";
 import "./index.css";
@@ -35,22 +36,24 @@ const trpcClient = trpc.createClient({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light" switchable={true}>
-          <CartProvider>
-            <FavoritesProvider>
-              <UserProvider>
-                <ToastProvider>
-                  <DataSyncProvider>
-                    <App />
-                  </DataSyncProvider>
-                </ToastProvider>
-              </UserProvider>
-            </FavoritesProvider>
-          </CartProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </trpc.Provider>
+    <ErrorBoundary>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider defaultTheme="light" switchable={true}>
+            <CartProvider>
+              <FavoritesProvider>
+                <UserProvider>
+                  <ToastProvider>
+                    <DataSyncProvider>
+                      <App />
+                    </DataSyncProvider>
+                  </ToastProvider>
+                </UserProvider>
+              </FavoritesProvider>
+            </CartProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

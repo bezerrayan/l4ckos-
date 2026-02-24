@@ -1,13 +1,26 @@
 import { Link } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
-import type { CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Header() {
   const { favorites } = useFavorites();
   const { user, logout } = useUser();
   const isMobile = useIsMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setIsMenuOpen(false);
+    }
+  }, [isMobile]);
+
+  const closeMobileMenu = () => {
+    if (isMobile) {
+      setIsMenuOpen(false);
+    }
+  };
 
   const getDisplayFirstName = (name?: string, email?: string) => {
     const trimmedName = name?.trim();
@@ -42,206 +55,258 @@ export default function Header() {
           gap: isMobile ? 10 : 0,
         }}
       >
-        <Link to="/" style={styles.logoLink}>
-          <div style={styles.logoContainer as CSSProperties}>
-            <div style={styles.logoBadge as CSSProperties}>
-              <div style={styles.logoText}>L4ckos</div>
-              <div style={styles.logoUnderline}></div>
-            </div>
-            <p style={styles.tagline}>Loja Escoteira</p>
-          </div>
-        </Link>
-
-        <nav
+        <div
           style={{
-            ...styles.nav,
-            gap: isMobile ? 8 : styles.nav.gap,
-            flexWrap: isMobile ? "wrap" : "nowrap",
-            justifyContent: isMobile ? "center" : "flex-start",
-          }}
+            ...styles.mobileTopRow,
+            justifyContent: isMobile ? "center" : styles.mobileTopRow.justifyContent,
+            position: isMobile ? "relative" : undefined,
+          } as CSSProperties}
         >
-          <Link 
-            style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "7px 10px" : styles.link.padding }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "rgba(255,255,255,0.1)";
-              el.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "transparent";
-              el.style.transform = "translateY(0)";
-            }}
+          <Link
             to="/"
+            style={{
+              ...styles.logoLink,
+              alignItems: isMobile ? "center" : styles.logoLink.alignItems,
+              textAlign: isMobile ? "center" : undefined,
+            } as CSSProperties}
+            onClick={closeMobileMenu}
           >
-            Início
-          </Link>
-          <Link 
-            style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "7px 10px" : styles.link.padding }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "rgba(255,255,255,0.1)";
-              el.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "transparent";
-              el.style.transform = "translateY(0)";
-            }}
-            to="/produtos"
-          >
-            Produtos
-          </Link>
-          <Link 
-            style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "7px 10px" : styles.link.padding }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "rgba(255,255,255,0.1)";
-              el.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "transparent";
-              el.style.transform = "translateY(0)";
-            }}
-            to="/favoritos"
-          >
-            <span style={{display: "inline-flex", alignItems: "center", gap: 8, position: "relative"}}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: "white"}}>
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-              </svg>
-              Favoritos
-              {favorites.length > 0 && (
-                <span style={{
-                  position: "absolute",
-                  top: -8,
-                  right: -8,
-                  background: "#dc2626",
-                  color: "white",
-                  borderRadius: "50%",
-                  width: 20,
-                  height: 20,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 12,
-                  fontWeight: "bold",
-                }}>
-                  {favorites.length}
-                </span>
-              )}
-            </span>
-          </Link>
-          <Link 
-            style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "7px 10px" : styles.link.padding }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "rgba(255,255,255,0.1)";
-              el.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.backgroundColor = "transparent";
-              el.style.transform = "translateY(0)";
-            }}
-            to="/carrinho"
-          >
-            <span style={{display: "inline-flex", alignItems: "center", gap: 8}}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{color: "white"}}>
-                <path d="M6 6h15l-1.5 9h-13z"></path>
-                <circle cx="9" cy="20" r="1"></circle>
-                <circle cx="19" cy="20" r="1"></circle>
-              </svg>
-              Carrinho
-            </span>
-          </Link>
-          {/* Botão de Login/Perfil */}
-          {!isMobile && (user && user.isAuthenticated ? (
             <div
               style={{
-                ...styles.userMenu,
-                width: isMobile ? "100%" : undefined,
-                justifyContent: isMobile ? "space-between" : "flex-start",
-                flexWrap: isMobile ? "wrap" : "nowrap",
+                ...styles.logoContainer,
+                alignItems: isMobile ? "center" : styles.logoContainer.alignItems,
               } as CSSProperties}
             >
-              <Link to="/perfil" style={styles.userInfo as CSSProperties}>
-                <div style={styles.avatar as CSSProperties}>
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} style={{width: "100%", height: "100%", borderRadius: "50%"}} />
-                  ) : (
-                    <span>{getDisplayFirstName(user.name, user.email).charAt(0)}</span>
-                  )}
-                </div>
-                <div style={{ ...styles.userName, maxWidth: isMobile ? 90 : styles.userName.maxWidth } as CSSProperties}>
-                  {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
-                </div>
-              </Link>
-              {user.role === "admin" ? (
-                <Link to="/admin" style={styles.adminBtn as CSSProperties}>
-                  Admin
-                </Link>
-              ) : null}
-              <button
-                onClick={logout}
-                style={styles.logoutBtn as CSSProperties}
-                onMouseEnter={(e) => {
-                  const btn = e.currentTarget as HTMLElement;
-                  btn.style.backgroundColor = "#dc2626";
-                }}
-                onMouseLeave={(e) => {
-                  const btn = e.currentTarget as HTMLElement;
-                  btn.style.backgroundColor = "rgba(220,38,38,0.1)";
-                }}
+              <div
+                style={{
+                  ...styles.logoBadge,
+                  alignItems: isMobile ? "center" : styles.logoBadge.alignItems,
+                } as CSSProperties}
               >
-                Sair
-              </button>
+                <div style={styles.logoText}>L4ckos</div>
+                <div style={styles.logoUnderline}></div>
+              </div>
+              <p style={styles.tagline}>Loja Escoteira</p>
             </div>
-          ) : (
-            <div
-              style={{
-                ...styles.authLinks,
-                width: isMobile ? "100%" : undefined,
-                justifyContent: isMobile ? "center" : "flex-start",
-              } as CSSProperties}
-            >
-              <Link
-                to="/login"
-                style={{ ...styles.loginBtn, fontSize: isMobile ? 14 : styles.loginBtn.fontSize, padding: isMobile ? "8px 12px" : styles.loginBtn.padding } as CSSProperties}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.background = "#333333";
-                  el.style.transform = "scale(1.05)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.background = "rgba(255,255,255,0.15)";
-                  el.style.transform = "scale(1)";
-                }}
-              >
-                Entrar
-              </Link>
-              <Link
-                to="/cadastro"
-                style={{ ...styles.signupBtn, fontSize: isMobile ? 14 : styles.signupBtn.fontSize, padding: isMobile ? "8px 12px" : styles.signupBtn.padding } as CSSProperties}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.background = "#ffffff";
-                  el.style.color = "#1a1a1a";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.background = "white";
-                  el.style.color = "#1a1a1a";
-                }}
-              >
-                Criar Conta
-              </Link>
-            </div>
-          ))}
-        </nav>
+          </Link>
 
-        {isMobile && (
+          {isMobile && (
+            <button
+              type="button"
+              aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={isMenuOpen}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              style={{
+                ...styles.hamburgerBtn,
+                position: "absolute",
+                right: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+              } as CSSProperties}
+            >
+              <span style={styles.hamburgerIcon as CSSProperties}>{isMenuOpen ? "✕" : "☰"}</span>
+            </button>
+          )}
+        </div>
+
+        {(!isMobile || isMenuOpen) && (
+          <>
+            <nav
+              style={{
+                ...styles.nav,
+                gap: isMobile ? 8 : styles.nav.gap,
+                flexWrap: isMobile ? "nowrap" : "nowrap",
+                justifyContent: isMobile ? "flex-start" : "flex-start",
+                flexDirection: isMobile ? "column" : "row",
+                alignItems: isMobile ? "stretch" : "center",
+                width: isMobile ? "100%" : undefined,
+              }}
+            >
+              <Link
+                style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                onClick={closeMobileMenu}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
+                  el.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "transparent";
+                  el.style.transform = "translateY(0)";
+                }}
+                to="/"
+              >
+                Início
+              </Link>
+              <Link
+                style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                onClick={closeMobileMenu}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
+                  el.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "transparent";
+                  el.style.transform = "translateY(0)";
+                }}
+                to="/produtos"
+              >
+                Produtos
+              </Link>
+              <Link
+                style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                onClick={closeMobileMenu}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
+                  el.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "transparent";
+                  el.style.transform = "translateY(0)";
+                }}
+                to="/favoritos"
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, position: "relative" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "white" }}>
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                  Favoritos
+                  {favorites.length > 0 && (
+                    <span style={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                      background: "#dc2626",
+                      color: "white",
+                      borderRadius: "50%",
+                      width: 20,
+                      height: 20,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      fontWeight: "bold",
+                    }}>
+                      {favorites.length}
+                    </span>
+                  )}
+                </span>
+              </Link>
+              <Link
+                style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                onClick={closeMobileMenu}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
+                  el.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "transparent";
+                  el.style.transform = "translateY(0)";
+                }}
+                to="/carrinho"
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "white" }}>
+                    <path d="M6 6h15l-1.5 9h-13z"></path>
+                    <circle cx="9" cy="20" r="1"></circle>
+                    <circle cx="19" cy="20" r="1"></circle>
+                  </svg>
+                  Carrinho
+                </span>
+              </Link>
+              {!isMobile && (user && user.isAuthenticated ? (
+                <div
+                  style={{
+                    ...styles.userMenu,
+                    width: isMobile ? "100%" : undefined,
+                    justifyContent: isMobile ? "space-between" : "flex-start",
+                    flexWrap: isMobile ? "wrap" : "nowrap",
+                  } as CSSProperties}
+                >
+                  <Link to="/perfil" style={styles.userInfo as CSSProperties}>
+                    <div style={styles.avatar as CSSProperties}>
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.name} style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
+                      ) : (
+                        <span>{getDisplayFirstName(user.name, user.email).charAt(0)}</span>
+                      )}
+                    </div>
+                    <div style={{ ...styles.userName, maxWidth: isMobile ? 90 : styles.userName.maxWidth } as CSSProperties}>
+                      {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
+                    </div>
+                  </Link>
+                  {user.role === "admin" ? (
+                    <Link to="/admin" style={styles.adminBtn as CSSProperties}>
+                      Admin
+                    </Link>
+                  ) : null}
+                  <button
+                    onClick={logout}
+                    style={styles.logoutBtn as CSSProperties}
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget as HTMLElement;
+                      btn.style.backgroundColor = "#dc2626";
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget as HTMLElement;
+                      btn.style.backgroundColor = "rgba(220,38,38,0.1)";
+                    }}
+                  >
+                    Sair
+                  </button>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    ...styles.authLinks,
+                    width: isMobile ? "100%" : undefined,
+                    justifyContent: isMobile ? "center" : "flex-start",
+                  } as CSSProperties}
+                >
+                  <Link
+                    to="/login"
+                    style={{ ...styles.loginBtn, fontSize: isMobile ? 14 : styles.loginBtn.fontSize, padding: isMobile ? "8px 12px" : styles.loginBtn.padding } as CSSProperties}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.background = "#333333";
+                      el.style.transform = "scale(1.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.background = "rgba(255,255,255,0.15)";
+                      el.style.transform = "scale(1)";
+                    }}
+                  >
+                    Entrar
+                  </Link>
+                  <Link
+                    to="/cadastro"
+                    style={{ ...styles.signupBtn, fontSize: isMobile ? 14 : styles.signupBtn.fontSize, padding: isMobile ? "8px 12px" : styles.signupBtn.padding } as CSSProperties}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.background = "#ffffff";
+                      el.style.color = "#1a1a1a";
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.background = "white";
+                      el.style.color = "#1a1a1a";
+                    }}
+                  >
+                    Criar Conta
+                  </Link>
+                </div>
+              ))}
+            </nav>
+
+            {isMobile && (
           user && user.isAuthenticated ? (
             <div
               style={{
@@ -251,7 +316,7 @@ export default function Header() {
                 marginTop: 4,
               } as CSSProperties}
             >
-              <Link to="/perfil" style={styles.userInfo as CSSProperties}>
+              <Link to="/perfil" style={styles.userInfo as CSSProperties} onClick={closeMobileMenu}>
                 <div style={styles.avatar as CSSProperties}>
                   {user.avatar ? (
                     <img src={user.avatar} alt={user.name} style={{width: "100%", height: "100%", borderRadius: "50%"}} />
@@ -264,12 +329,15 @@ export default function Header() {
                 </div>
               </Link>
               {user.role === "admin" ? (
-                <Link to="/admin" style={styles.adminBtn as CSSProperties}>
+                <Link to="/admin" style={styles.adminBtn as CSSProperties} onClick={closeMobileMenu}>
                   Admin
                 </Link>
               ) : null}
               <button
-                onClick={logout}
+                onClick={() => {
+                  closeMobileMenu();
+                  logout();
+                }}
                 style={styles.logoutBtn as CSSProperties}
               >
                 Sair
@@ -286,18 +354,22 @@ export default function Header() {
             >
               <Link
                 to="/login"
+                onClick={closeMobileMenu}
                 style={{ ...styles.loginBtn, fontSize: 14, padding: "8px 12px", flex: 1, textAlign: "center" } as CSSProperties}
               >
                 Entrar
               </Link>
               <Link
                 to="/cadastro"
+                onClick={closeMobileMenu}
                 style={{ ...styles.signupBtn, fontSize: 14, padding: "8px 12px", flex: 1, textAlign: "center" } as CSSProperties}
               >
                 Criar Conta
               </Link>
             </div>
           )
+            )}
+          </>
         )}
       </div>
     </header>
@@ -320,6 +392,28 @@ const styles: Record<string, CSSProperties> = {
     maxWidth: 1400,
     margin: "0 auto",
     padding: "16px 32px",
+  },
+  mobileTopRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  hamburgerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    border: "1px solid rgba(255,255,255,0.2)",
+    background: "rgba(255,255,255,0.08)",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+  },
+  hamburgerIcon: {
+    fontSize: 22,
+    lineHeight: 1,
   },
   logoLink: {
     display: "flex",
