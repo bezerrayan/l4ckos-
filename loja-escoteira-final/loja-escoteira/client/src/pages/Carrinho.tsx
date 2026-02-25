@@ -71,45 +71,39 @@ export default function Carrinho() {
             <h2 style={styles.sectionTitle}>Seu Pedido</h2>
 
             <div style={styles.itemsList}>
-              {cart.items.map((item) => (
-                <div key={getItemKey(item.product.id, item.selectedOptions)} style={isMobile ? styles.cartItemScroller : undefined}>
-                  <div
-                    style={{
-                      ...styles.cartItem,
-                      gridTemplateColumns: isMobile
-                        ? "84px minmax(180px, 1fr) 120px 100px 32px"
-                        : styles.cartItem.gridTemplateColumns,
-                      gap: isMobile ? 12 : styles.cartItem.gap,
-                      minWidth: isMobile ? 540 : undefined,
-                    }}
-                  >
-                    <div style={styles.itemImageContainer}>
-                      <img
-                        src={item.product.image}
-                        alt={item.product.name}
-                        style={styles.itemImage}
-                        onError={(event) => {
-                          event.currentTarget.src = "/images/camisa.png";
-                        }}
-                      />
+              {cart.items.map((item) =>
+                isMobile ? (
+                  <div key={getItemKey(item.product.id, item.selectedOptions)} style={styles.mobileCard}>
+                    <div style={styles.mobileTopRow}>
+                      <div style={styles.mobileImageWrap}>
+                        <img
+                          src={item.product.image}
+                          alt={item.product.name}
+                          style={styles.mobileImage}
+                          onError={(event) => {
+                            event.currentTarget.src = "/images/camisa.png";
+                          }}
+                        />
+                      </div>
+
+                      <div style={styles.mobileInfoCol}>
+                        <h3 style={styles.mobileItemName}>{item.product.name}</h3>
+                        <p style={styles.mobileItemSub}>Materiais Escoteiros</p>
+                        {item.selectedOptions && (
+                          <p style={styles.mobileItemSub}>{formatSelectedOptions(item.selectedOptions)}</p>
+                        )}
+                      </div>
+
+                      <div style={styles.mobilePriceCol}>
+                        <p style={styles.mobilePriceLabel}>Subtotal</p>
+                        <p style={styles.mobilePriceValue}>{formatPrice(item.product.price * item.quantity)}</p>
+                      </div>
                     </div>
 
-                    <div style={{ ...styles.itemDetails, paddingLeft: isMobile ? 0 : styles.itemDetails.paddingLeft }}>
-                      <h3 style={styles.itemName}>{item.product.name}</h3>
-                      <p style={styles.itemCategory}>Materiais Escoteiros</p>
-                      {item.selectedOptions && (
-                        <p style={styles.itemOptions}>{formatSelectedOptions(item.selectedOptions)}</p>
-                      )}
-                      <p style={styles.itemPrice}>
-                        {formatPrice(item.product.price)}/unidade
-                      </p>
-                    </div>
-
-                    <div style={{ ...styles.itemQuantity, textAlign: isMobile ? "center" : styles.itemQuantity.textAlign }}>
-                      <label style={styles.quantityLabel}>Qtd.</label>
-                      <div style={styles.quantityControl}>
+                    <div style={styles.mobileBottomRow}>
+                      <div style={styles.mobileQtyWrap}>
                         <button
-                          style={styles.quantityBtn}
+                          style={styles.mobileQtyBtn}
                           onClick={() =>
                             updateQuantity(
                               item.product.id,
@@ -120,21 +114,9 @@ export default function Carrinho() {
                         >
                           −
                         </button>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            updateQuantity(
-                              item.product.id,
-                              parseInt(e.target.value) || 1,
-                              item.selectedOptions
-                            )
-                          }
-                          style={styles.quantityInput}
-                        />
+                        <span style={styles.mobileQtyValue}>{item.quantity}</span>
                         <button
-                          style={styles.quantityBtn}
+                          style={styles.mobileQtyBtn}
                           onClick={() =>
                             updateQuantity(item.product.id, item.quantity + 1, item.selectedOptions)
                           }
@@ -142,30 +124,114 @@ export default function Carrinho() {
                           +
                         </button>
                       </div>
-                    </div>
 
-                    <div style={{ ...styles.itemTotal, textAlign: isMobile ? "center" : styles.itemTotal.textAlign }}>
-                      <p style={styles.itemTotalLabel}>Subtotal</p>
-                      <p style={styles.totalPrice}>
-                        {formatPrice(item.product.price * item.quantity)}
-                      </p>
+                      <button
+                        style={styles.mobileRemoveBtn}
+                        onClick={() => removeFromCart(item.product.id, item.selectedOptions)}
+                        title="Remover item"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#9b9b9b"}}>
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                      </button>
                     </div>
-
-                    <button
-                      style={styles.removeBtn}
-                      onClick={() => removeFromCart(item.product.id, item.selectedOptions)}
-                      title="Remover item"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#9b9b9b"}}>
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                      </svg>
-                    </button>
                   </div>
-                </div>
-              ))}
+                ) : (
+                  <div key={getItemKey(item.product.id, item.selectedOptions)} style={styles.cartItemScroller}>
+                    <div
+                      style={{
+                        ...styles.cartItem,
+                        gridTemplateColumns: styles.cartItem.gridTemplateColumns,
+                        gap: styles.cartItem.gap,
+                      }}
+                    >
+                      <div style={styles.itemImageContainer}>
+                        <img
+                          src={item.product.image}
+                          alt={item.product.name}
+                          style={styles.itemImage}
+                          onError={(event) => {
+                            event.currentTarget.src = "/images/camisa.png";
+                          }}
+                        />
+                      </div>
+
+                      <div style={styles.itemDetails}>
+                        <h3 style={styles.itemName}>{item.product.name}</h3>
+                        <p style={styles.itemCategory}>Materiais Escoteiros</p>
+                        {item.selectedOptions && (
+                          <p style={styles.itemOptions}>{formatSelectedOptions(item.selectedOptions)}</p>
+                        )}
+                        <p style={styles.itemPrice}>
+                          {formatPrice(item.product.price)}/unidade
+                        </p>
+                      </div>
+
+                      <div style={styles.itemQuantity}>
+                        <label style={styles.quantityLabel}>Qtd.</label>
+                        <div style={styles.quantityControl}>
+                          <button
+                            style={styles.quantityBtn}
+                            onClick={() =>
+                              updateQuantity(
+                                item.product.id,
+                                Math.max(1, item.quantity - 1),
+                                item.selectedOptions
+                              )
+                            }
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) =>
+                              updateQuantity(
+                                item.product.id,
+                                parseInt(e.target.value) || 1,
+                                item.selectedOptions
+                              )
+                            }
+                            style={styles.quantityInput}
+                          />
+                          <button
+                            style={styles.quantityBtn}
+                            onClick={() =>
+                              updateQuantity(item.product.id, item.quantity + 1, item.selectedOptions)
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={styles.itemTotal}>
+                        <p style={styles.itemTotalLabel}>Subtotal</p>
+                        <p style={styles.totalPrice}>
+                          {formatPrice(item.product.price * item.quantity)}
+                        </p>
+                      </div>
+
+                      <button
+                        style={styles.removeBtn}
+                        onClick={() => removeFromCart(item.product.id, item.selectedOptions)}
+                        title="Remover item"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#9b9b9b"}}>
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
@@ -311,6 +377,104 @@ const styles: Record<string, CSSProperties> = {
     overflowY: "hidden",
     overscrollBehaviorX: "contain",
     WebkitOverflowScrolling: "touch",
+  },
+  mobileCard: {
+    background: "#ffffff",
+    border: "1px solid #e2e8f0",
+    borderRadius: 12,
+    padding: 10,
+  },
+  mobileTopRow: {
+    display: "flex",
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  mobileImageWrap: {
+    width: 78,
+    height: 78,
+    borderRadius: 8,
+    overflow: "hidden",
+    flexShrink: 0,
+    background: "#f8fafc",
+  },
+  mobileImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  mobileInfoCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  mobileItemName: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#1a1a1a",
+    margin: 0,
+    lineHeight: 1.2,
+    textTransform: "uppercase",
+  },
+  mobileItemSub: {
+    fontSize: 12,
+    color: "#666666",
+    margin: "2px 0 0 0",
+    lineHeight: 1.25,
+  },
+  mobilePriceCol: {
+    minWidth: 96,
+    textAlign: "right",
+  },
+  mobilePriceLabel: {
+    fontSize: 11,
+    color: "#6b7280",
+    margin: 0,
+  },
+  mobilePriceValue: {
+    fontSize: 26,
+    fontWeight: 800,
+    color: "#1a1a1a",
+    margin: "2px 0 0 0",
+    lineHeight: 1,
+  },
+  mobileBottomRow: {
+    marginTop: 8,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  mobileQtyWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+  },
+  mobileQtyBtn: {
+    width: 24,
+    height: 24,
+    border: "none",
+    background: "transparent",
+    color: "#1a1a1a",
+    fontSize: 20,
+    lineHeight: 1,
+    cursor: "pointer",
+    padding: 0,
+  },
+  mobileQtyValue: {
+    minWidth: 16,
+    textAlign: "center",
+    color: "#1a1a1a",
+    fontSize: 15,
+    fontWeight: 600,
+  },
+  mobileRemoveBtn: {
+    border: "none",
+    background: "transparent",
+    width: 24,
+    height: 24,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    padding: 0,
   },
   cartItem: {
     display: "grid",

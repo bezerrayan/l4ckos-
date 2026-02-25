@@ -178,7 +178,20 @@ export default function ProductDetail() {
           {/* Título e Badge */}
           <div style={styles.headerSection as CSSProperties}>
             <h1 style={{ ...styles.productTitle, fontSize: isMobile ? 24 : styles.productTitle.fontSize } as CSSProperties}>{product.name}</h1>
-            <span style={styles.badge as CSSProperties}>⭐ BESTSELLER</span>
+            <div style={styles.headerMetaRow as CSSProperties}>
+              <span style={styles.badge as CSSProperties}>⭐ BESTSELLER</span>
+              <button
+                onClick={handleAddToFavorites}
+                style={{
+                  ...styles.favoriteQuickBtn,
+                  background: isFav ? "#dc2626" : "#ffffff",
+                  color: isFav ? "#ffffff" : "#dc2626",
+                  borderColor: "#dc2626",
+                } as CSSProperties}
+              >
+                {isFav ? "★ Nos Favoritos" : "★ Favoritar"}
+              </button>
+            </div>
           </div>
 
           {/* Rating */}
@@ -311,46 +324,19 @@ export default function ProductDetail() {
           >
             <button
               onClick={handleAddToCart}
-              disabled={!canAddToCart}
-              style={{
-                ...styles.addToCartBtn,
-                opacity: canAddToCart ? 1 : 0.6,
-                cursor: canAddToCart ? "pointer" : "not-allowed",
-              } as CSSProperties}
+              style={styles.addToCartBtn as CSSProperties}
               onMouseEnter={(e) => {
-                if (!canAddToCart) return;
                 const btn = e.currentTarget as HTMLElement;
                 btn.style.transform = "scale(1.02)";
                 btn.style.boxShadow = "0 12px 24px rgba(26,26,26,0.3)";
               }}
               onMouseLeave={(e) => {
-                if (!canAddToCart) return;
                 const btn = e.currentTarget as HTMLElement;
                 btn.style.transform = "scale(1)";
                 btn.style.boxShadow = "0 4px 12px rgba(26,26,26,0.2)";
               }}
             >
               🛒 Adicionar ao Carrinho
-            </button>
-            <button
-              onClick={handleAddToFavorites}
-              style={{
-                ...styles.favoriteBtn,
-                background: isFav ? "#dc2626" : "white",
-                color: isFav ? "white" : "#dc2626",
-                minWidth: isMobile ? 0 : styles.favoriteBtn.minWidth,
-                width: isMobile ? "100%" : undefined,
-              } as CSSProperties}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLElement;
-                btn.style.transform = "scale(1.05)";
-              }}
-              onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLElement;
-                btn.style.transform = "scale(1)";
-              }}
-            >
-              {isFav ? "★ Nos Favoritos" : "★ Adicionar aos Favoritos"}
             </button>
           </div>
 
@@ -436,6 +422,13 @@ const styles: Record<string, CSSProperties> = {
   },
   headerSection: {
     marginBottom: 24,
+  },
+  headerMetaRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    flexWrap: "wrap",
   },
   productTitle: {
     fontSize: 32,
@@ -591,15 +584,15 @@ const styles: Record<string, CSSProperties> = {
     transition: "all 0.3s ease",
     boxShadow: "0 4px 12px rgba(26,26,26,0.2)",
   },
-  favoriteBtn: {
-    padding: "14px 24px",
-    border: "2px solid #dc2626",
+  favoriteQuickBtn: {
+    padding: "8px 12px",
+    border: "1px solid #dc2626",
     borderRadius: 8,
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: 700,
     cursor: "pointer",
-    transition: "all 0.3s ease",
-    minWidth: 180,
+    transition: "all 0.2s ease",
+    whiteSpace: "nowrap",
   },
   selectionWarning: {
     margin: "-18px 0 24px 0",
