@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
 import { useEffect, useState, type CSSProperties } from "react";
@@ -8,6 +8,7 @@ export default function Header() {
   const { favorites } = useFavorites();
   const { user, logout } = useUser();
   const isMobile = useIsMobile();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -21,6 +22,12 @@ export default function Header() {
       setIsMenuOpen(false);
     }
   };
+
+  const isHomeActive = location.pathname === "/";
+  const isProductsActive =
+    location.pathname === "/produtos" || location.pathname.startsWith("/produto/");
+  const isFavoritesActive = location.pathname === "/favoritos";
+  const isCartActive = location.pathname === "/carrinho";
 
   const getDisplayFirstName = (name?: string, email?: string) => {
     const trimmedName = name?.trim();
@@ -99,13 +106,35 @@ export default function Header() {
               style={{
                 ...styles.hamburgerBtn,
                 position: "absolute",
-                right: 0,
+                left: 0,
                 top: "50%",
                 transform: "translateY(-50%)",
               } as CSSProperties}
             >
               <span style={styles.hamburgerIcon as CSSProperties}>{isMenuOpen ? "✕" : "☰"}</span>
             </button>
+          )}
+
+          {isMobile && (
+            <Link
+              to="/carrinho"
+              aria-label="Carrinho"
+              onClick={closeMobileMenu}
+              style={{
+                ...styles.mobileCartBtn,
+                ...(isCartActive ? styles.mobileCartBtnActive : {}),
+                position: "absolute",
+                right: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+              } as CSSProperties}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "white" }}>
+                <path d="M6 6h15l-1.5 9h-13z"></path>
+                <circle cx="9" cy="20" r="1"></circle>
+                <circle cx="19" cy="20" r="1"></circle>
+              </svg>
+            </Link>
           )}
         </div>
 
@@ -123,7 +152,7 @@ export default function Header() {
               }}
             >
               <Link
-                style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                style={{ ...styles.link, ...(isHomeActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
                 onClick={closeMobileMenu}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement;
@@ -132,7 +161,9 @@ export default function Header() {
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "transparent";
+                  el.style.backgroundColor = isHomeActive
+                    ? "rgba(255,255,255,0.2)"
+                    : "transparent";
                   el.style.transform = "translateY(0)";
                 }}
                 to="/"
@@ -140,7 +171,7 @@ export default function Header() {
                 Início
               </Link>
               <Link
-                style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                style={{ ...styles.link, ...(isProductsActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
                 onClick={closeMobileMenu}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement;
@@ -149,7 +180,9 @@ export default function Header() {
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "transparent";
+                  el.style.backgroundColor = isProductsActive
+                    ? "rgba(255,255,255,0.2)"
+                    : "transparent";
                   el.style.transform = "translateY(0)";
                 }}
                 to="/produtos"
@@ -157,7 +190,7 @@ export default function Header() {
                 Produtos
               </Link>
               <Link
-                style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                style={{ ...styles.link, ...(isFavoritesActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
                 onClick={closeMobileMenu}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement;
@@ -166,7 +199,9 @@ export default function Header() {
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "transparent";
+                  el.style.backgroundColor = isFavoritesActive
+                    ? "rgba(255,255,255,0.2)"
+                    : "transparent";
                   el.style.transform = "translateY(0)";
                 }}
                 to="/favoritos"
@@ -197,30 +232,34 @@ export default function Header() {
                   )}
                 </span>
               </Link>
-              <Link
-                style={{ ...styles.link, fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
-                onClick={closeMobileMenu}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "transparent";
-                  el.style.transform = "translateY(0)";
-                }}
-                to="/carrinho"
-              >
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "white" }}>
-                    <path d="M6 6h15l-1.5 9h-13z"></path>
-                    <circle cx="9" cy="20" r="1"></circle>
-                    <circle cx="19" cy="20" r="1"></circle>
-                  </svg>
-                  Carrinho
-                </span>
-              </Link>
+              {!isMobile && (
+                <Link
+                  style={{ ...styles.link, ...(isCartActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                  onClick={closeMobileMenu}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.backgroundColor = "rgba(255,255,255,0.1)";
+                    el.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.backgroundColor = isCartActive
+                      ? "rgba(255,255,255,0.2)"
+                      : "transparent";
+                    el.style.transform = "translateY(0)";
+                  }}
+                  to="/carrinho"
+                >
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "white" }}>
+                      <path d="M6 6h15l-1.5 9h-13z"></path>
+                      <circle cx="9" cy="20" r="1"></circle>
+                      <circle cx="19" cy="20" r="1"></circle>
+                    </svg>
+                    Carrinho
+                  </span>
+                </Link>
+              )}
               {!isMobile && (user && user.isAuthenticated ? (
                 <div
                   style={{
@@ -415,6 +454,22 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 22,
     lineHeight: 1,
   },
+  mobileCartBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    border: "1px solid rgba(255,255,255,0.2)",
+    background: "rgba(255,255,255,0.08)",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textDecoration: "none",
+  },
+  mobileCartBtnActive: {
+    background: "rgba(255,255,255,0.2)",
+    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
+  },
   logoLink: {
     display: "flex",
     flexDirection: "column",
@@ -469,6 +524,10 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 6,
     transition: "all 0.3s ease",
     cursor: "pointer",
+  },
+  linkActive: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
   },
   userMenu: {
     display: "flex",
@@ -546,6 +605,11 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
   },
   signupBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
     color: "#1a1a1a",
     fontWeight: 600,
     fontSize: 15,

@@ -39,9 +39,10 @@ export default function ProductDetail() {
   const { addToFavorites, removeFromFavorites, isFavorited } = useFavorites();
   const { showToast } = useToast();
   
-  const [selectedColor, setSelectedColor] = useState<string>(COLORS[0].name);
-  const [selectedSize, setSelectedSize] = useState<string>(SIZES[2]);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [showSelectionWarning, setShowSelectionWarning] = useState(false);
 
   const productId = id ? parseInt(id) : null;
   const product = productId ? getProductById(productId) : null;
@@ -51,6 +52,12 @@ export default function ProductDetail() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  useEffect(() => {
+    if (selectedColor && selectedSize) {
+      setShowSelectionWarning(false);
+    }
+  }, [selectedColor, selectedSize]);
 
   // Função para voltar à página anterior ou home
   const handleGoBack = () => {
@@ -79,15 +86,32 @@ export default function ProductDetail() {
   const totalRatings = RATINGS.reduce((sum, r) => sum + r.count, 0);
   const averageRating =
     RATINGS.reduce((sum, r) => sum + r.stars * r.count, 0) / totalRatings;
+  const canAddToCart = Boolean(selectedColor && selectedSize);
+  const missingSelections: string[] = [];
+  if (!selectedColor) missingSelections.push("cor");
+  if (!selectedSize) missingSelections.push("tamanho");
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    if (!selectedColor || !selectedSize) {
+      setShowSelectionWarning(true);
+      showToast({
+        message: "Selecione cor e tamanho antes de adicionar ao carrinho",
+        duration: 3500,
+      });
+      return;
+    }
+
+    addToCart(product, quantity, {
+      cor: selectedColor,
+      tamanho: selectedSize,
+    });
     showToast({
       message: `${product.name} adicionado ao carrinho! (${quantity}x)`,
       actionLabel: "Ver carrinho",
       action: () => navigate("/carrinho"),
       duration: 4500,
     });
+    setShowSelectionWarning(false);
     setQuantity(1);
   };
 
@@ -144,7 +168,12 @@ export default function ProductDetail() {
         </div>
 
         {/* Coluna direita - Informações */}
-        <div style={styles.rightColumn as CSSProperties}>
+        <div
+          style={{
+            ...styles.rightColumn,
+            paddingBottom: isMobile ? 120 : styles.rightColumn.paddingBottom,
+          } as CSSProperties}
+        >
           
           {/* Título e Badge */}
           <div style={styles.headerSection as CSSProperties}>
@@ -204,7 +233,7 @@ export default function ProductDetail() {
               ))}
             </div>
             <p style={styles.selectedLabel as CSSProperties}>
-              Selecionado: <strong>{selectedColor}</strong>
+              Selecionado: <strong>{selectedColor || "Nenhuma cor"}</strong>
             </p>
           </div>
 
@@ -232,7 +261,7 @@ export default function ProductDetail() {
               ))}
             </div>
             <p style={styles.selectedLabel as CSSProperties}>
-              Selecionado: <strong>{selectedSize}</strong>
+              Selecionado: <strong>{selectedSize || "Nenhum tamanho"}</strong>
             </p>
           </div>
 
@@ -267,18 +296,35 @@ export default function ProductDetail() {
           <div
             style={{
               ...styles.actionButtons,
-              flexDirection: isMobile ? "column" : "row",
+              flexDirection: isMobile ? "row" : "row",
+              position: isMobile ? "fixed" : styles.actionButtons.position,
+              left: isMobile ? 0 : styles.actionButtons.left,
+              right: isMobile ? 0 : styles.actionButtons.right,
+              bottom: isMobile ? 0 : styles.actionButtons.bottom,
+              zIndex: isMobile ? 95 : styles.actionButtons.zIndex,
+              marginBottom: isMobile ? 0 : styles.actionButtons.marginBottom,
+              padding: isMobile ? "10px 14px calc(10px + env(safe-area-inset-bottom, 0px))" : styles.actionButtons.padding,
+              background: isMobile ? "#ffffff" : styles.actionButtons.background,
+              borderTop: isMobile ? "1px solid #e5e7eb" : styles.actionButtons.borderTop,
+              boxShadow: isMobile ? "0 -6px 16px rgba(0,0,0,0.08)" : styles.actionButtons.boxShadow,
             } as CSSProperties}
           >
             <button
               onClick={handleAddToCart}
-              style={styles.addToCartBtn as CSSProperties}
+              disabled={!canAddToCart}
+              style={{
+                ...styles.addToCartBtn,
+                opacity: canAddToCart ? 1 : 0.6,
+                cursor: canAddToCart ? "pointer" : "not-allowed",
+              } as CSSProperties}
               onMouseEnter={(e) => {
+                if (!canAddToCart) return;
                 const btn = e.currentTarget as HTMLElement;
                 btn.style.transform = "scale(1.02)";
                 btn.style.boxShadow = "0 12px 24px rgba(26,26,26,0.3)";
               }}
               onMouseLeave={(e) => {
+                if (!canAddToCart) return;
                 const btn = e.currentTarget as HTMLElement;
                 btn.style.transform = "scale(1)";
                 btn.style.boxShadow = "0 4px 12px rgba(26,26,26,0.2)";
@@ -308,6 +354,12 @@ export default function ProductDetail() {
             </button>
           </div>
 
+          {showSelectionWarning && !canAddToCart && (
+            <p style={styles.selectionWarning as CSSProperties}>
+              Selecione {missingSelections.join(" e ")} antes de adicionar ao carrinho.
+            </p>
+          )}
+
           {/* Descrição */}
           <div style={styles.descriptionSection as CSSProperties}>
             <h3 style={styles.sectionTitle as CSSProperties}>Descrição do Produto</h3>
@@ -320,7 +372,7 @@ export default function ProductDetail() {
           {product.stock && (
             <div style={styles.stockInfo as CSSProperties}>
               <span style={{
-                color: product.stock > 5 ? "#15803d" : "#dc2626"
+                color: product.stock > 5 ? "#1a1a1a" : "#dc2626"
               }}>
                 {product.stock > 0 
                   ? `✓ ${product.stock} em estoque` 
@@ -380,6 +432,7 @@ const styles: Record<string, CSSProperties> = {
   },
   rightColumn: {
     paddingTop: 12,
+    paddingBottom: 0,
   },
   headerSection: {
     marginBottom: 24,
@@ -393,7 +446,7 @@ const styles: Record<string, CSSProperties> = {
   },
   badge: {
     display: "inline-block",
-    background: "#15803d",
+    background: "#1a1a1a",
     color: "white",
     padding: "8px 16px",
     borderRadius: 20,
@@ -428,7 +481,7 @@ const styles: Record<string, CSSProperties> = {
   },
   priceNote: {
     fontSize: 13,
-    color: "#15803d",
+    color: "#555555",
     margin: 0,
     fontWeight: 600,
   },
@@ -515,6 +568,15 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     gap: 12,
     marginBottom: 32,
+    position: "static",
+    left: "auto",
+    right: "auto",
+    bottom: "auto",
+    zIndex: 0,
+    padding: 0,
+    background: "transparent",
+    borderTop: "none",
+    boxShadow: "none",
   },
   addToCartBtn: {
     flex: 1,
@@ -538,6 +600,12 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
     transition: "all 0.3s ease",
     minWidth: 180,
+  },
+  selectionWarning: {
+    margin: "-18px 0 24px 0",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#dc2626",
   },
   descriptionSection: {
     paddingTop: 24,

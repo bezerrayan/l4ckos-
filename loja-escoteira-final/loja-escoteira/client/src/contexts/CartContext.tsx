@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
-import type { CartItem, Cart } from "../types/cart";
+import type { CartItem, Cart, SelectedOptions } from "../types/cart";
 import type { Product } from "../types/product";
 import { calculateCartTotal, calculateItemCount } from "../types/cart";
 
@@ -12,9 +12,9 @@ import { calculateCartTotal, calculateItemCount } from "../types/cart";
 
 type CartContextType = {
   cart: Cart;
-  addToCart: (product: Product, quantity: number) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  addToCart: (product: Product, quantity: number, selectedOptions?: SelectedOptions) => void;
+  removeFromCart: (productId: number, selectedOptions?: SelectedOptions) => void;
+  updateQuantity: (productId: number, quantity: number, selectedOptions?: SelectedOptions) => void;
   clearCart: () => void;
 };
 
@@ -27,6 +27,18 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
+  const normalizeOptions = (selectedOptions?: SelectedOptions) => {
+    if (!selectedOptions) return "";
+    return JSON.stringify(
+      Object.keys(selectedOptions)
+        .sort()
+        .reduce((acc, key) => {
+          acc[key] = selectedOptions[key];
+          return acc;
+        }, {} as SelectedOptions)
+    );
+  };
+
   const cart: Cart = {
     items,
     total: calculateCartTotal(items),
@@ -34,39 +46,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   // 📌 Adicionar produto ao carrinho
-  const addToCart = useCallback((product: Product, quantity: number = 1) => {
+  const addToCart = useCallback((product: Product, quantity: number = 1, selectedOptions?: SelectedOptions) => {
     setItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
+      const currentOptionsKey = normalizeOptions(selectedOptions);
+      const existing = prev.find(
+        (item) => item.product.id === product.id && normalizeOptions(item.selectedOptions) === currentOptionsKey
+      );
       
       if (existing) {
         // Se já existe, aumenta a quantidade
         return prev.map((item) =>
-          item.product.id === product.id
+          item.product.id === product.id && normalizeOptions(item.selectedOptions) === currentOptionsKey
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
       
       // Senão, adiciona novo
-      return [...prev, { product, quantity, addedAt: new Date() }];
+      return [...prev, { product, quantity, selectedOptions, addedAt: new Date() }];
     });
   }, []);
 
   // 📌 Remover produto do carrinho
-  const removeFromCart = useCallback((productId: number) => {
-    setItems((prev) => prev.filter((item) => item.product.id !== productId));
+  const removeFromCart = useCallback((productId: number, selectedOptions?: SelectedOptions) => {
+    const currentOptionsKey = normalizeOptions(selectedOptions);
+    setItems((prev) =>
+      prev.filter((item) => {
+        if (item.product.id !== productId) return true;
+        if (!selectedOptions) return false;
+        return normalizeOptions(item.selectedOptions) !== currentOptionsKey;
+      })
+    );
   }, []);
 
   // 📌 Atualizar quantidade
-  const updateQuantity = useCallback((productId: number, quantity: number) => {
+  const updateQuantity = useCallback((productId: number, quantity: number, selectedOptions?: SelectedOptions) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, selectedOptions);
       return;
     }
+    const currentOptionsKey = normalizeOptions(selectedOptions);
     
     setItems((prev) =>
       prev.map((item) =>
-        item.product.id === productId
+        item.product.id === productId && (!selectedOptions || normalizeOptions(item.selectedOptions) === currentOptionsKey)
           ? { ...item, quantity }
           : item
       )

@@ -3,9 +3,12 @@
  */
 import type { Product } from "./product";
 
+export type SelectedOptions = Record<string, string>;
+
 export type CartItem = {
   product: Product;
   quantity: number;
+  selectedOptions?: SelectedOptions;
   addedAt: Date;
 };
 

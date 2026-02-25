@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useCart } from "../contexts/CartContext";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import type { Product } from "../types/product";
@@ -11,7 +10,6 @@ type Props = {
 export default function ProductCard({ product }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addToCart } = useCart();
   const { showToast } = useToast();
 
   // Determinar tipo de badge baseado no nome
@@ -77,17 +75,17 @@ export default function ProductCard({ product }: Props) {
           style={styles.button as CSSProperties}
           onClick={(e) => {
             e.stopPropagation();
-            addToCart(product, 1);
             showToast({
-              message: `${product.name} adicionado ao carrinho`,
-              actionLabel: "Ver carrinho",
-              action: () => navigate("/carrinho"),
+              message: "Selecione cor e tamanho para adicionar ao carrinho",
+              actionLabel: "Escolher opções",
+              action: () => navigate(`/produto/${product.id}`, { state: { from: location.pathname } }),
               duration: 4500,
             });
+            navigate(`/produto/${product.id}`, { state: { from: location.pathname } });
           }}
           onMouseEnter={(e) => {
             const btn = e.currentTarget as HTMLElement;
-            btn.style.boxShadow = "0 8px 16px rgba(45,80,22,0.3)";
+            btn.style.boxShadow = "0 8px 16px rgba(26,26,26,0.3)";
             btn.style.transform = "scale(1.02)";
           }}
           onMouseLeave={(e) => {

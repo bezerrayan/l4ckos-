@@ -11,7 +11,31 @@ import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Carrinho() {
   const isMobile = useIsMobile();
-  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cart, removeFromCart, updateQuantity } = useCart();
+
+  const getItemKey = (productId: number, selectedOptions?: Record<string, string>) => {
+    if (!selectedOptions) return `${productId}`;
+    const optionString = Object.entries(selectedOptions)
+      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+      .map(([key, value]) => `${key}:${value}`)
+      .join("|");
+    return `${productId}-${optionString}`;
+  };
+
+  const formatSelectedOptions = (selectedOptions?: Record<string, string>) => {
+    if (!selectedOptions) return "";
+
+    const labelMap: Record<string, string> = {
+      cor: "Cor",
+      tamanho: "Tamanho",
+      size: "Tamanho",
+      color: "Cor",
+    };
+
+    return Object.entries(selectedOptions)
+      .map(([key, value]) => `${labelMap[key] || key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`)
+      .join(" • ");
+  };
 
   return (
     <div>
@@ -48,89 +72,98 @@ export default function Carrinho() {
 
             <div style={styles.itemsList}>
               {cart.items.map((item) => (
-                <div
-                  key={item.product.id}
-                  style={{
-                    ...styles.cartItem,
-                    gridTemplateColumns: isMobile ? "1fr" : styles.cartItem.gridTemplateColumns,
-                    gap: isMobile ? 10 : styles.cartItem.gap,
-                  }}
-                >
-                  <div style={styles.itemImageContainer}>
-                    <img
-                      src={item.product.image}
-                      alt={item.product.name}
-                      style={styles.itemImage}
-                      onError={(event) => {
-                        event.currentTarget.src = "/images/camisa.png";
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ ...styles.itemDetails, paddingLeft: isMobile ? 0 : styles.itemDetails.paddingLeft }}>
-                    <h3 style={styles.itemName}>{item.product.name}</h3>
-                    <p style={styles.itemCategory}>Materiais Escoteiros</p>
-                    <p style={styles.itemPrice}>
-                      {formatPrice(item.product.price)}/unidade
-                    </p>
-                  </div>
-
-                  <div style={{ ...styles.itemQuantity, textAlign: isMobile ? "left" : styles.itemQuantity.textAlign }}>
-                    <label style={styles.quantityLabel}>Qtd.</label>
-                    <div style={styles.quantityControl}>
-                      <button
-                        style={styles.quantityBtn}
-                        onClick={() =>
-                          updateQuantity(
-                            item.product.id,
-                            Math.max(1, item.quantity - 1)
-                          )
-                        }
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateQuantity(
-                            item.product.id,
-                            parseInt(e.target.value) || 1
-                          )
-                        }
-                        style={styles.quantityInput}
-                      />
-                      <button
-                        style={styles.quantityBtn}
-                        onClick={() =>
-                          updateQuantity(item.product.id, item.quantity + 1)
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <div style={{ ...styles.itemTotal, textAlign: isMobile ? "left" : styles.itemTotal.textAlign }}>
-                    <p style={styles.itemTotalLabel}>Subtotal</p>
-                    <p style={styles.totalPrice}>
-                      {formatPrice(item.product.price * item.quantity)}
-                    </p>
-                  </div>
-
-                  <button
-                    style={{ ...styles.removeBtn, justifySelf: isMobile ? "flex-end" : undefined }}
-                    onClick={() => removeFromCart(item.product.id)}
-                    title="Remover item"
+                <div key={getItemKey(item.product.id, item.selectedOptions)} style={isMobile ? styles.cartItemScroller : undefined}>
+                  <div
+                    style={{
+                      ...styles.cartItem,
+                      gridTemplateColumns: isMobile
+                        ? "84px minmax(180px, 1fr) 120px 100px 32px"
+                        : styles.cartItem.gridTemplateColumns,
+                      gap: isMobile ? 12 : styles.cartItem.gap,
+                      minWidth: isMobile ? 540 : undefined,
+                    }}
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#9b9b9b"}}>
-                      <polyline points="3 6 5 6 21 6"></polyline>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                      <line x1="10" y1="11" x2="10" y2="17"></line>
-                      <line x1="14" y1="11" x2="14" y2="17"></line>
-                    </svg>
-                  </button>
+                    <div style={styles.itemImageContainer}>
+                      <img
+                        src={item.product.image}
+                        alt={item.product.name}
+                        style={styles.itemImage}
+                        onError={(event) => {
+                          event.currentTarget.src = "/images/camisa.png";
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ ...styles.itemDetails, paddingLeft: isMobile ? 0 : styles.itemDetails.paddingLeft }}>
+                      <h3 style={styles.itemName}>{item.product.name}</h3>
+                      <p style={styles.itemCategory}>Materiais Escoteiros</p>
+                      {item.selectedOptions && (
+                        <p style={styles.itemOptions}>{formatSelectedOptions(item.selectedOptions)}</p>
+                      )}
+                      <p style={styles.itemPrice}>
+                        {formatPrice(item.product.price)}/unidade
+                      </p>
+                    </div>
+
+                    <div style={{ ...styles.itemQuantity, textAlign: isMobile ? "center" : styles.itemQuantity.textAlign }}>
+                      <label style={styles.quantityLabel}>Qtd.</label>
+                      <div style={styles.quantityControl}>
+                        <button
+                          style={styles.quantityBtn}
+                          onClick={() =>
+                            updateQuantity(
+                              item.product.id,
+                              Math.max(1, item.quantity - 1),
+                              item.selectedOptions
+                            )
+                          }
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            updateQuantity(
+                              item.product.id,
+                              parseInt(e.target.value) || 1,
+                              item.selectedOptions
+                            )
+                          }
+                          style={styles.quantityInput}
+                        />
+                        <button
+                          style={styles.quantityBtn}
+                          onClick={() =>
+                            updateQuantity(item.product.id, item.quantity + 1, item.selectedOptions)
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ ...styles.itemTotal, textAlign: isMobile ? "center" : styles.itemTotal.textAlign }}>
+                      <p style={styles.itemTotalLabel}>Subtotal</p>
+                      <p style={styles.totalPrice}>
+                        {formatPrice(item.product.price * item.quantity)}
+                      </p>
+                    </div>
+
+                    <button
+                      style={styles.removeBtn}
+                      onClick={() => removeFromCart(item.product.id, item.selectedOptions)}
+                      title="Remover item"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#9b9b9b"}}>
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -184,12 +217,12 @@ export default function Carrinho() {
                   const btn = e.currentTarget as HTMLElement;
                   btn.style.transform = "translateY(-2px)";
                   btn.style.boxShadow =
-                    "0 12px 24px rgba(45,80,22,0.3)";
+                    "0 12px 24px rgba(26,26,26,0.3)";
                 }}
                 onMouseLeave={(e) => {
                   const btn = e.currentTarget as HTMLElement;
                   btn.style.transform = "translateY(0)";
-                  btn.style.boxShadow = "0 4px 12px rgba(31,77,61,0.15)";
+                  btn.style.boxShadow = "0 4px 12px rgba(26,26,26,0.2)";
                 }}
               >
                 Finalizar Compra
@@ -198,19 +231,6 @@ export default function Carrinho() {
               <Link to="/produtos" style={styles.continueShopping}>
                 ← Continuar Comprando
               </Link>
-
-              <button
-                style={styles.clearCartBtn}
-                onClick={() => {
-                  if (
-                    confirm("Tem certeza que deseja limpar o carrinho?")
-                  ) {
-                    clearCart();
-                  }
-                }}
-              >
-                Limpar Carrinho
-              </button>
             </div>
 
             {/* Info extra */}
@@ -267,9 +287,11 @@ const styles: Record<string, CSSProperties> = {
     display: "grid",
     gridTemplateColumns: "1fr 380px",
     gap: 40,
-    marginBottom: 60,
+    marginBottom: 0,
   },
-  itemsSection: {},
+  itemsSection: {
+    minWidth: 0,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 700,
@@ -280,6 +302,15 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 16,
+  },
+  cartItemScroller: {
+    display: "block",
+    width: "100%",
+    maxWidth: "100%",
+    overflowX: "auto",
+    overflowY: "hidden",
+    overscrollBehaviorX: "contain",
+    WebkitOverflowScrolling: "touch",
   },
   cartItem: {
     display: "grid",
@@ -316,6 +347,12 @@ const styles: Record<string, CSSProperties> = {
     color: "#6b7280",
     margin: "0 0 4px 0",
   },
+  itemOptions: {
+    fontSize: 12,
+    color: "#374151",
+    margin: "0 0 4px 0",
+    fontWeight: 600,
+  },
   itemPrice: {
     fontSize: 14,
     fontWeight: 700,
@@ -333,7 +370,7 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 600,
   },
   quantityControl: {
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     gap: 0,
     border: "1px solid #e2e8f0",
@@ -353,6 +390,10 @@ const styles: Record<string, CSSProperties> = {
   quantityInput: {
     border: "none",
     width: 40,
+    height: 32,
+    boxSizing: "border-box",
+    padding: 0,
+    appearance: "textfield",
     textAlign: "center",
     fontSize: 14,
     fontWeight: 700,
@@ -369,7 +410,7 @@ const styles: Record<string, CSSProperties> = {
   totalPrice: {
     fontSize: 16,
     fontWeight: 700,
-    color: "#2d5016",
+    color: "#1a1a1a",
     margin: 0,
   },
   removeBtn: {
@@ -432,40 +473,29 @@ const styles: Record<string, CSSProperties> = {
   },
   checkoutBtn: {
     width: "100%",
-    padding: "14px",
+    padding: "18px",
     background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
     color: "white",
     border: "none",
-    borderRadius: 8,
-    fontWeight: 700,
+    borderRadius: 10,
+    fontWeight: 800,
     cursor: "pointer",
     transition: "all 0.3s ease",
     marginBottom: 12,
-    fontSize: 16,
+    fontSize: 18,
   },
   continueShopping: {
-    display: "block",
+    display: "inline-block",
     textAlign: "center",
-    padding: "12px",
+    padding: "8px 12px",
     color: "#555555",
-    border: "2px solid #555555",
-    borderRadius: 8,
-    fontWeight: 700,
+    border: "1px solid #555555",
+    borderRadius: 6,
+    fontWeight: 600,
     marginBottom: 12,
+    fontSize: 13,
     transition: "all 0.3s ease",
     background: "transparent",
-  },
-  clearCartBtn: {
-    width: "100%",
-    padding: "12px",
-    background: "transparent",
-    color: "#dc2626",
-    border: "1px solid #fecaca",
-    borderRadius: 8,
-    fontWeight: 700,
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontSize: 14,
   },
   infoBox: {
     marginTop: 24,

@@ -221,7 +221,7 @@ const styles: Record<string, CSSProperties> = {
     transition: "all 0.3s ease",
   },
   dotActive: {
-    background: "#2d5016",
+    background: "#1a1a1a",
     width: 28,
   },
 };
