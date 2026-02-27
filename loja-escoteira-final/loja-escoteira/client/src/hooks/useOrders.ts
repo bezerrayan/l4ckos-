@@ -15,8 +15,8 @@ export function useCreateOrder() {
 }
 
 /**
- * Hook para criar pedido com cobranca PIX (Asaas)
+ * Hook para criar pedido com cobranca Asaas (PIX, boleto, cartao via invoice)
  */
-export function useCreatePixCharge() {
-  return trpc.orders.createPixCharge.useMutation();
+export function useCreateAsaasCharge() {
+  return trpc.orders.createAsaasCharge.useMutation();
 }

@@ -2,6 +2,8 @@ import { updateOrderStatus } from "../db";
 
 const DEFAULT_ASAAS_API_URL = "https://api.asaas.com/v3";
 
+export type CheckoutMethod = "PIX" | "BOLETO" | "CARD";
+
 type AsaasRequestInit = {
   method?: "GET" | "POST";
   body?: Record<string, unknown>;
@@ -16,6 +18,10 @@ type AsaasPaymentResponse = {
   invoiceUrl?: string;
   pixQrCode?: string;
   pixCopyPaste?: string;
+  bankSlipUrl?: string;
+  identificationField?: string;
+  nossoNumero?: string;
+  billingType?: string;
 };
 
 type AsaasPixQrCodeResponse = {
@@ -34,10 +40,17 @@ function getAsaasConfig() {
   const apiUrl = (process.env.ASAAS_API_URL?.trim() || DEFAULT_ASAAS_API_URL).replace(/\/+$/, "");
 
   if (!apiKey) {
-    throw new Error("ASAAS_API_KEY não configurada.");
+    throw new Error("ASAAS_API_KEY not configured.");
   }
 
   return { apiKey, apiUrl };
+}
+
+function getAsaasBillingType(method: CheckoutMethod): "PIX" | "BOLETO" | "UNDEFINED" {
+  if (method === "PIX") return "PIX";
+  if (method === "BOLETO") return "BOLETO";
+  // CARD flow: do not collect raw card data in this backend, customer pays by card in invoiceUrl
+  return "UNDEFINED";
 }
 
 async function asaasRequest<T>(path: string, init: AsaasRequestInit = {}) {
@@ -57,7 +70,7 @@ async function asaasRequest<T>(path: string, init: AsaasRequestInit = {}) {
   };
 
   if (!response.ok) {
-    const asaasMessage = data.errors?.[0]?.description || data.message || "Falha na API do Asaas";
+    const asaasMessage = data.errors?.[0]?.description || data.message || "Asaas API request failed";
     throw new Error(asaasMessage);
   }
 
@@ -70,8 +83,9 @@ function getDefaultDueDate(): string {
   return dueDate.toISOString().slice(0, 10);
 }
 
-export async function createPixChargeForOrder(input: {
+export async function createAsaasChargeForOrder(input: {
   orderId: number;
+  method: CheckoutMethod;
   value: number;
   customer: {
     name: string;
@@ -94,7 +108,7 @@ export async function createPixChargeForOrder(input: {
     method: "POST",
     body: {
       customer: customer.id,
-      billingType: "PIX",
+      billingType: getAsaasBillingType(input.method),
       value: Number(input.value.toFixed(2)),
       dueDate: input.dueDate || getDefaultDueDate(),
       description: input.description,
@@ -105,18 +119,23 @@ export async function createPixChargeForOrder(input: {
   let pixQrCode = payment.pixQrCode ?? null;
   let pixCopyPaste = payment.pixCopyPaste ?? null;
 
-  if ((!pixQrCode || !pixCopyPaste) && payment.id) {
+  if (input.method === "PIX" && (!pixQrCode || !pixCopyPaste) && payment.id) {
     const pixData = await asaasRequest<AsaasPixQrCodeResponse>(`/payments/${payment.id}/pixQrCode`);
     pixQrCode = pixQrCode || pixData.encodedImage || null;
     pixCopyPaste = pixCopyPaste || pixData.payload || null;
   }
 
   return {
+    method: input.method,
     customerId: customer.id,
     paymentId: payment.id,
     invoiceUrl: payment.invoiceUrl || null,
     pixQrCode,
     pixCopyPaste,
+    bankSlipUrl: payment.bankSlipUrl || null,
+    digitableLine: payment.identificationField || null,
+    nossoNumero: payment.nossoNumero || null,
+    billingType: payment.billingType || null,
   };
 }
 

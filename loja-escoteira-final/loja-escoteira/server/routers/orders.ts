@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
 import { createOrder, createOrderWithId, getOrdersByUserId } from "../db";
-import { createPixChargeForOrder } from "../services/asaas";
+import { createAsaasChargeForOrder } from "../services/asaas";
 
 export const ordersRouter = router({
   // List user orders
@@ -23,10 +23,11 @@ export const ordersRouter = router({
       return result;
     }),
 
-  // Create order + PIX charge in Asaas
-  createPixCharge: protectedProcedure
+  // Create order + Asaas charge (PIX, boleto, card via invoice)
+  createAsaasCharge: protectedProcedure
     .input(
       z.object({
+        method: z.enum(["PIX", "BOLETO", "CARD"]),
         totalPrice: z.number().positive(),
         description: z.string().min(3).max(255),
         dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -48,8 +49,9 @@ export const ordersRouter = router({
       try {
         orderId = await createOrderWithId(ctx.user.id, input.totalPrice);
 
-        const payment = await createPixChargeForOrder({
+        const payment = await createAsaasChargeForOrder({
           orderId,
+          method: input.method,
           value: input.totalPrice,
           description: input.description,
           dueDate: input.dueDate,
@@ -65,7 +67,7 @@ export const ordersRouter = router({
           ...payment,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to create PIX charge";
+        const message = error instanceof Error ? error.message : "Failed to create Asaas charge";
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: orderId ? `${message} (order #${orderId})` : message,

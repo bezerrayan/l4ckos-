@@ -8,27 +8,33 @@ import { useCart } from "../contexts/CartContext";
 import { formatPrice } from "../lib/utils";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { useCreatePixCharge } from "../hooks/useOrders";
+import { useCreateAsaasCharge } from "../hooks/useOrders";
 import { useUser } from "../contexts/UserContext";
 
-type PixChargeResult = {
+type CheckoutMethod = "PIX" | "BOLETO" | "CARD";
+
+type ChargeResult = {
+  method: CheckoutMethod;
   orderId: number;
   paymentId: string;
   invoiceUrl: string | null;
   pixQrCode: string | null;
   pixCopyPaste: string | null;
+  bankSlipUrl: string | null;
+  digitableLine: string | null;
 };
 
 export default function Carrinho() {
   const isMobile = useIsMobile();
   const { cart, removeFromCart, updateQuantity } = useCart();
   const { user, isAuthenticated } = useUser();
-  const createPixCharge = useCreatePixCharge();
+  const createAsaasCharge = useCreateAsaasCharge();
+  const [checkoutMethod, setCheckoutMethod] = useState<CheckoutMethod>("PIX");
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [cpfCnpj, setCpfCnpj] = useState("");
   const [paymentError, setPaymentError] = useState("");
-  const [paymentData, setPaymentData] = useState<PixChargeResult | null>(null);
+  const [paymentData, setPaymentData] = useState<ChargeResult | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -67,9 +73,9 @@ export default function Carrinho() {
     return `data:image/png;base64,${pixQrCode}`;
   };
 
-  const handleCopyPixCode = async () => {
-    if (!paymentData?.pixCopyPaste) return;
-    await navigator.clipboard.writeText(paymentData.pixCopyPaste);
+  const handleCopyText = async (value?: string | null) => {
+    if (!value) return;
+    await navigator.clipboard.writeText(value);
   };
 
   const handleCheckout = async () => {
@@ -81,7 +87,7 @@ export default function Carrinho() {
     }
 
     if (!customerName.trim() || !customerEmail.trim() || !cpfCnpj.trim()) {
-      setPaymentError("Preencha nome, email e CPF/CNPJ para gerar o PIX.");
+      setPaymentError("Preencha nome, email e CPF/CNPJ para gerar a cobranca.");
       return;
     }
 
@@ -91,7 +97,8 @@ export default function Carrinho() {
         .map(item => item.product.name)
         .join(" + ");
 
-      const result = await createPixCharge.mutateAsync({
+      const result = await createAsaasCharge.mutateAsync({
+        method: checkoutMethod,
         totalPrice: Number(cart.total.toFixed(2)),
         description: description || "Pedido Loja Escoteira",
         customer: {
@@ -103,7 +110,7 @@ export default function Carrinho() {
 
       setPaymentData(result);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Nao foi possivel gerar o PIX.";
+      const message = error instanceof Error ? error.message : "Nao foi possivel gerar a cobranca.";
       setPaymentError(message);
     }
   };
@@ -348,6 +355,36 @@ export default function Carrinho() {
               </div>
 
               {/* Botões */}
+              <div style={styles.methodSelector}>
+                <button
+                  style={{
+                    ...styles.methodButton,
+                    ...(checkoutMethod === "PIX" ? styles.methodButtonActive : {}),
+                  }}
+                  onClick={() => setCheckoutMethod("PIX")}
+                >
+                  PIX
+                </button>
+                <button
+                  style={{
+                    ...styles.methodButton,
+                    ...(checkoutMethod === "BOLETO" ? styles.methodButtonActive : {}),
+                  }}
+                  onClick={() => setCheckoutMethod("BOLETO")}
+                >
+                  Boleto
+                </button>
+                <button
+                  style={{
+                    ...styles.methodButton,
+                    ...(checkoutMethod === "CARD" ? styles.methodButtonActive : {}),
+                  }}
+                  onClick={() => setCheckoutMethod("CARD")}
+                >
+                  Cartao
+                </button>
+              </div>
+
               <div style={styles.checkoutFields}>
                 <input
                   style={styles.checkoutInput}
@@ -375,18 +412,20 @@ export default function Carrinho() {
                 onClick={() => {
                   void handleCheckout();
                 }}
-                disabled={createPixCharge.isPending}
+                disabled={createAsaasCharge.isPending}
               >
-                {createPixCharge.isPending ? "Gerando PIX..." : "Finalizar Compra"}
+                {createAsaasCharge.isPending ? "Gerando cobranca..." : "Finalizar Compra"}
               </button>
 
               {paymentError ? <p style={styles.checkoutError}>{paymentError}</p> : null}
 
               {paymentData ? (
                 <div style={styles.pixBox}>
-                  <p style={styles.pixTitle}>PIX gerado para o pedido #{paymentData.orderId}</p>
+                  <p style={styles.pixTitle}>
+                    Cobranca {paymentData.method} gerada para o pedido #{paymentData.orderId}
+                  </p>
 
-                  {paymentData.pixQrCode ? (
+                  {paymentData.method === "PIX" && paymentData.pixQrCode ? (
                     <img
                       src={getPixQrCodeSource(paymentData.pixQrCode)}
                       alt="QR Code PIX"
@@ -394,7 +433,7 @@ export default function Carrinho() {
                     />
                   ) : null}
 
-                  {paymentData.pixCopyPaste ? (
+                  {paymentData.method === "PIX" && paymentData.pixCopyPaste ? (
                     <>
                       <textarea
                         style={styles.pixCopyTextarea}
@@ -404,7 +443,7 @@ export default function Carrinho() {
                       <button
                         style={styles.pixCopyButton}
                         onClick={() => {
-                          void handleCopyPixCode();
+                          void handleCopyText(paymentData.pixCopyPaste);
                         }}
                       >
                         Copiar codigo PIX
@@ -412,9 +451,39 @@ export default function Carrinho() {
                     </>
                   ) : null}
 
+                  {paymentData.method === "BOLETO" && paymentData.digitableLine ? (
+                    <>
+                      <textarea
+                        style={styles.pixCopyTextarea}
+                        readOnly
+                        value={paymentData.digitableLine}
+                      />
+                      <button
+                        style={styles.pixCopyButton}
+                        onClick={() => {
+                          void handleCopyText(paymentData.digitableLine);
+                        }}
+                      >
+                        Copiar linha digitavel
+                      </button>
+                    </>
+                  ) : null}
+
+                  {paymentData.method === "CARD" ? (
+                    <p style={styles.pixTitle}>
+                      Para pagar no cartao, abra o link da fatura e escolha cartao na tela do Asaas.
+                    </p>
+                  ) : null}
+
                   {paymentData.invoiceUrl ? (
                     <a href={paymentData.invoiceUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
                       Abrir fatura no Asaas
+                    </a>
+                  ) : null}
+
+                  {paymentData.method === "BOLETO" && paymentData.bankSlipUrl ? (
+                    <a href={paymentData.bankSlipUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
+                      Abrir boleto
                     </a>
                   ) : null}
                 </div>
@@ -760,6 +829,27 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 24,
     fontWeight: 900,
     color: "#555555",
+  },
+  methodSelector: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: 8,
+    marginBottom: 12,
+  },
+  methodButton: {
+    border: "1px solid #d1d5db",
+    borderRadius: 8,
+    padding: "10px 8px",
+    background: "#ffffff",
+    color: "#1a1a1a",
+    fontSize: 13,
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  methodButtonActive: {
+    background: "#1a1a1a",
+    color: "#ffffff",
+    border: "1px solid #1a1a1a",
   },
   checkoutFields: {
     display: "flex",
