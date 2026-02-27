@@ -205,6 +205,21 @@ async function startServer() {
   registerOAuthRoutes(app);
   app.post("/webhook/asaas", async (req, res) => {
     try {
+      const configuredWebhookToken = process.env.ASAAS_WEBHOOK_TOKEN?.trim();
+      const requestWebhookToken = req.header("asaas-access-token")?.trim();
+
+      if (process.env.NODE_ENV === "production" && !configuredWebhookToken) {
+        console.error("[Asaas] ASAAS_WEBHOOK_TOKEN is not configured in production");
+        res.sendStatus(500);
+        return;
+      }
+
+      if (configuredWebhookToken && requestWebhookToken !== configuredWebhookToken) {
+        console.warn("[Asaas] Invalid webhook token");
+        res.sendStatus(401);
+        return;
+      }
+
       const result = await handleAsaasWebhookEvent(req.body);
 
       if (result.handled) {
