@@ -14,6 +14,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import uploadRouter from "../routers/upload";
 import { getBackupPayload } from "../db";
+import { handleAsaasWebhookEvent } from "../services/asaas";
 
 function scheduleDailyBackup() {
   const dir = process.env.BACKUP_DIR || "backups";
@@ -202,6 +203,22 @@ async function startServer() {
   });
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  app.post("/webhook/asaas", async (req, res) => {
+    try {
+      const result = await handleAsaasWebhookEvent(req.body);
+
+      if (result.handled) {
+        console.log(
+          `[Asaas] Payment confirmed: event=${result.event} orderId=${result.orderId} paymentId=${result.paymentId}`,
+        );
+      }
+
+      res.sendStatus(200);
+    } catch (error) {
+      console.error("[Asaas] Webhook processing failed", error);
+      res.sendStatus(500);
+    }
+  });
   // REST API (upload)
   app.use("/api/upload", uploadRouter);
   // tRPC API

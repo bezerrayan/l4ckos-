@@ -7,7 +7,7 @@
  * Configuração global da aplicação
  */
 const AppConfig = {
-    name: 'Sempre Alerta',
+    name: 'L4CKOS',
     version: '1.0.0',
     currency: 'BRL',
     currencySymbol: 'R$',
@@ -51,7 +51,7 @@ function isLocalStorageAvailable() {
 }
 
 /**
- * Inicializa o header sticky com sombra ao scroll
+ * Inicializa o header sticky com sombra ao scroll basicamente 
  */
 function initializeStickyHeader() {
     const header = document.getElementById('header');

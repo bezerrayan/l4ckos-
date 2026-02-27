@@ -172,6 +172,20 @@ export async function createOrder(userId: number, totalPrice: number) {
   return result;
 }
 
+export async function createOrderWithId(userId: number, totalPrice: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(orders).values({ userId, totalPrice });
+  const insertId = Number((result as { insertId?: number }).insertId ?? 0);
+
+  if (!insertId) {
+    throw new Error("Failed to create order id");
+  }
+
+  return insertId;
+}
+
 export async function getOrdersByUserId(userId: number) {
   const db = await getDb();
   if (!db) return [];

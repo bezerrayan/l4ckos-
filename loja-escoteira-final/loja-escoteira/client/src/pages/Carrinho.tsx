@@ -6,12 +6,35 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { formatPrice } from "../lib/utils";
-import type { CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useCreatePixCharge } from "../hooks/useOrders";
+import { useUser } from "../contexts/UserContext";
+
+type PixChargeResult = {
+  orderId: number;
+  paymentId: string;
+  invoiceUrl: string | null;
+  pixQrCode: string | null;
+  pixCopyPaste: string | null;
+};
 
 export default function Carrinho() {
   const isMobile = useIsMobile();
   const { cart, removeFromCart, updateQuantity } = useCart();
+  const { user, isAuthenticated } = useUser();
+  const createPixCharge = useCreatePixCharge();
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [cpfCnpj, setCpfCnpj] = useState("");
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentData, setPaymentData] = useState<PixChargeResult | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    setCustomerName(user.name || "");
+    setCustomerEmail(user.email || "");
+  }, [user]);
 
   const getItemKey = (productId: number, selectedOptions?: Record<string, string>) => {
     if (!selectedOptions) return `${productId}`;
@@ -35,6 +58,54 @@ export default function Carrinho() {
     return Object.entries(selectedOptions)
       .map(([key, value]) => `${labelMap[key] || key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`)
       .join(" • ");
+  };
+
+  const getPixQrCodeSource = (pixQrCode: string) => {
+    if (pixQrCode.startsWith("data:image")) {
+      return pixQrCode;
+    }
+    return `data:image/png;base64,${pixQrCode}`;
+  };
+
+  const handleCopyPixCode = async () => {
+    if (!paymentData?.pixCopyPaste) return;
+    await navigator.clipboard.writeText(paymentData.pixCopyPaste);
+  };
+
+  const handleCheckout = async () => {
+    setPaymentError("");
+
+    if (!isAuthenticated) {
+      setPaymentError("Faca login para finalizar a compra.");
+      return;
+    }
+
+    if (!customerName.trim() || !customerEmail.trim() || !cpfCnpj.trim()) {
+      setPaymentError("Preencha nome, email e CPF/CNPJ para gerar o PIX.");
+      return;
+    }
+
+    try {
+      const description = cart.items
+        .slice(0, 2)
+        .map(item => item.product.name)
+        .join(" + ");
+
+      const result = await createPixCharge.mutateAsync({
+        totalPrice: Number(cart.total.toFixed(2)),
+        description: description || "Pedido Loja Escoteira",
+        customer: {
+          name: customerName.trim(),
+          email: customerEmail.trim(),
+          cpfCnpj: cpfCnpj.trim(),
+        },
+      });
+
+      setPaymentData(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Nao foi possivel gerar o PIX.";
+      setPaymentError(message);
+    }
   };
 
   return (
@@ -277,22 +348,77 @@ export default function Carrinho() {
               </div>
 
               {/* Botões */}
+              <div style={styles.checkoutFields}>
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Nome completo"
+                  value={customerName}
+                  onChange={event => setCustomerName(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Email"
+                  type="email"
+                  value={customerEmail}
+                  onChange={event => setCustomerEmail(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="CPF ou CNPJ"
+                  value={cpfCnpj}
+                  onChange={event => setCpfCnpj(event.target.value)}
+                />
+              </div>
+
               <button
                 style={styles.checkoutBtn}
-                onMouseEnter={(e) => {
-                  const btn = e.currentTarget as HTMLElement;
-                  btn.style.transform = "translateY(-2px)";
-                  btn.style.boxShadow =
-                    "0 12px 24px rgba(26,26,26,0.3)";
+                onClick={() => {
+                  void handleCheckout();
                 }}
-                onMouseLeave={(e) => {
-                  const btn = e.currentTarget as HTMLElement;
-                  btn.style.transform = "translateY(0)";
-                  btn.style.boxShadow = "0 4px 12px rgba(26,26,26,0.2)";
-                }}
+                disabled={createPixCharge.isPending}
               >
-                Finalizar Compra
+                {createPixCharge.isPending ? "Gerando PIX..." : "Finalizar Compra"}
               </button>
+
+              {paymentError ? <p style={styles.checkoutError}>{paymentError}</p> : null}
+
+              {paymentData ? (
+                <div style={styles.pixBox}>
+                  <p style={styles.pixTitle}>PIX gerado para o pedido #{paymentData.orderId}</p>
+
+                  {paymentData.pixQrCode ? (
+                    <img
+                      src={getPixQrCodeSource(paymentData.pixQrCode)}
+                      alt="QR Code PIX"
+                      style={styles.pixQrImage}
+                    />
+                  ) : null}
+
+                  {paymentData.pixCopyPaste ? (
+                    <>
+                      <textarea
+                        style={styles.pixCopyTextarea}
+                        readOnly
+                        value={paymentData.pixCopyPaste}
+                      />
+                      <button
+                        style={styles.pixCopyButton}
+                        onClick={() => {
+                          void handleCopyPixCode();
+                        }}
+                      >
+                        Copiar codigo PIX
+                      </button>
+                    </>
+                  ) : null}
+
+                  {paymentData.invoiceUrl ? (
+                    <a href={paymentData.invoiceUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
+                      Abrir fatura no Asaas
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
 
               <Link to="/produtos" style={styles.continueShopping}>
                 ← Continuar Comprando
@@ -635,6 +761,22 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 900,
     color: "#555555",
   },
+  checkoutFields: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    marginBottom: 12,
+  },
+  checkoutInput: {
+    width: "100%",
+    border: "1px solid #d1d5db",
+    borderRadius: 8,
+    padding: "10px 12px",
+    fontSize: 14,
+    color: "#1a1a1a",
+    background: "#ffffff",
+    outline: "none",
+  },
   checkoutBtn: {
     width: "100%",
     padding: "18px",
@@ -647,6 +789,63 @@ const styles: Record<string, CSSProperties> = {
     transition: "all 0.3s ease",
     marginBottom: 12,
     fontSize: 18,
+  },
+  checkoutError: {
+    color: "#b91c1c",
+    fontSize: 13,
+    margin: "0 0 12px 0",
+    fontWeight: 600,
+  },
+  pixBox: {
+    border: "1px solid #d1fae5",
+    background: "#ecfdf5",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  pixTitle: {
+    margin: "0 0 10px 0",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#065f46",
+  },
+  pixQrImage: {
+    width: "100%",
+    maxWidth: 220,
+    display: "block",
+    margin: "0 auto 10px auto",
+    borderRadius: 8,
+    border: "1px solid #a7f3d0",
+  },
+  pixCopyTextarea: {
+    width: "100%",
+    minHeight: 96,
+    resize: "vertical",
+    border: "1px solid #a7f3d0",
+    borderRadius: 8,
+    padding: 8,
+    boxSizing: "border-box",
+    fontSize: 12,
+    color: "#1a1a1a",
+    marginBottom: 8,
+  },
+  pixCopyButton: {
+    width: "100%",
+    border: "none",
+    borderRadius: 8,
+    padding: "10px 12px",
+    fontWeight: 700,
+    color: "#ffffff",
+    background: "#047857",
+    cursor: "pointer",
+    marginBottom: 8,
+  },
+  pixInvoiceLink: {
+    display: "inline-block",
+    fontSize: 13,
+    color: "#065f46",
+    fontWeight: 700,
+    textDecoration: "underline",
   },
   continueShopping: {
     display: "inline-block",

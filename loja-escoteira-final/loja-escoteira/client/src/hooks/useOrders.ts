@@ -13,3 +13,10 @@ export function useOrders() {
 export function useCreateOrder() {
   return trpc.orders.create.useMutation();
 }
+
+/**
+ * Hook para criar pedido com cobranca PIX (Asaas)
+ */
+export function useCreatePixCharge() {
+  return trpc.orders.createPixCharge.useMutation();
+}
