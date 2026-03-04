@@ -111,6 +111,12 @@ export default function Carrinho() {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [cpfCnpj, setCpfCnpj] = useState("");
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressNeighborhood, setAddressNeighborhood] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressState, setAddressState] = useState("");
+  const [addressNumber, setAddressNumber] = useState("");
+  const [addressLoading, setAddressLoading] = useState(false);
   const [cep, setCep] = useState("");
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShippingId, setSelectedShippingId] = useState<ShippingOption["id"] | null>(null);
@@ -206,6 +212,46 @@ export default function Carrinho() {
     setSelectedShippingId(options[0]?.id ?? null);
   };
 
+  const handleLookupCep = async () => {
+    setShippingError("");
+    const normalizedCep = sanitizeCep(cep);
+    if (normalizedCep.length !== 8) {
+      setShippingError("Informe um CEP valido com 8 digitos.");
+      return;
+    }
+
+    setAddressLoading(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${normalizedCep}/json/`);
+      if (!response.ok) {
+        throw new Error("Falha ao consultar CEP.");
+      }
+
+      const data = (await response.json()) as {
+        erro?: boolean;
+        logradouro?: string;
+        bairro?: string;
+        localidade?: string;
+        uf?: string;
+      };
+
+      if (data.erro) {
+        setShippingError("CEP não encontrado.");
+        return;
+      }
+
+      setAddressStreet(data.logradouro || "");
+      setAddressNeighborhood(data.bairro || "");
+      setAddressCity(data.localidade || "");
+      setAddressState(data.uf || "");
+      handleCalculateShipping();
+    } catch (error) {
+      setShippingError(error instanceof Error ? error.message : "Não foi possível consultar o CEP.");
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
   const handleCheckout = async () => {
     setPaymentError("");
 
@@ -215,7 +261,12 @@ export default function Carrinho() {
     }
 
     if (!customerName.trim() || !customerEmail.trim() || !cpfCnpj.trim()) {
-      setPaymentError("Preencha nome, email e CPF/CNPJ para gerar a cobranca.");
+      setPaymentError("Preencha nome, e-mail e CPF/CNPJ para gerar a cobrança.");
+      return;
+    }
+
+    if (!sanitizeCep(cep) || !addressStreet.trim() || !addressCity.trim() || !addressState.trim()) {
+      setPaymentError("Preencha o CEP e o endereço para continuar.");
       return;
     }
 
@@ -234,6 +285,10 @@ export default function Carrinho() {
         method: checkoutMethod,
         totalPrice: Number(orderTotal.toFixed(2)),
         description: `${description || "Pedido Loja Escoteira"} | Frete: ${selectedShipping.label}`,
+        items: cart.items.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
         customer: {
           name: customerName.trim(),
           email: customerEmail.trim(),
@@ -243,7 +298,7 @@ export default function Carrinho() {
 
       setPaymentData(result);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Nao foi possivel gerar a cobranca.";
+      const message = error instanceof Error ? error.message : "Não foi possível gerar a cobrança.";
       setPaymentError(message);
     }
   };
@@ -496,9 +551,14 @@ export default function Carrinho() {
                     value={formatCep(cep)}
                     onChange={event => setCep(event.target.value)}
                   />
-                  <button style={styles.shippingCalcButton} onClick={handleCalculateShipping}>
-                    Calcular
-                  </button>
+                  <div style={styles.shippingButtonGroup}>
+                    <button style={styles.shippingCalcButton} onClick={handleLookupCep} disabled={addressLoading}>
+                      {addressLoading ? "Buscando..." : "Buscar CEP"}
+                    </button>
+                    <button style={styles.shippingCalcButton} onClick={handleCalculateShipping}>
+                      Calcular
+                    </button>
+                  </div>
                 </div>
 
                 {shippingError ? <p style={styles.checkoutError}>{shippingError}</p> : null}
@@ -520,7 +580,7 @@ export default function Carrinho() {
                         </div>
                         <p style={styles.shippingOptionText}>{option.description}</p>
                         <p style={styles.shippingOptionText}>
-                          Prazo: {option.minDays} a {option.maxDays} dias uteis
+                          Prazo: {option.minDays} a {option.maxDays} dias úteis
                         </p>
                       </button>
                     ))}
@@ -561,7 +621,7 @@ export default function Carrinho() {
                   }}
                   onClick={() => setCheckoutMethod("CARD")}
                 >
-                  Cartao
+                  Cartão
                 </button>
               </div>
 
@@ -585,6 +645,36 @@ export default function Carrinho() {
                   value={cpfCnpj}
                   onChange={event => setCpfCnpj(event.target.value)}
                 />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Rua"
+                  value={addressStreet}
+                  onChange={event => setAddressStreet(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Número"
+                  value={addressNumber}
+                  onChange={event => setAddressNumber(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Bairro"
+                  value={addressNeighborhood}
+                  onChange={event => setAddressNeighborhood(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Cidade"
+                  value={addressCity}
+                  onChange={event => setAddressCity(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="UF"
+                  value={addressState}
+                  onChange={event => setAddressState(event.target.value.toUpperCase().slice(0, 2))}
+                />
               </div>
 
               <button
@@ -594,7 +684,7 @@ export default function Carrinho() {
                 }}
                 disabled={createAsaasCharge.isPending}
               >
-                {createAsaasCharge.isPending ? "Gerando cobranca..." : "Finalizar Compra"}
+                {createAsaasCharge.isPending ? "Gerando cobrança..." : "Finalizar Compra"}
               </button>
 
               {paymentError ? <p style={styles.checkoutError}>{paymentError}</p> : null}
@@ -602,7 +692,7 @@ export default function Carrinho() {
               {paymentData ? (
                 <div style={styles.pixBox}>
                   <p style={styles.pixTitle}>
-                    Cobranca {paymentData.method} gerada para o pedido #{paymentData.orderId}
+                    Cobrança {paymentData.method} gerada para o pedido #{paymentData.orderId}
                   </p>
 
                   {paymentData.method === "PIX" && paymentData.pixQrCode ? (
@@ -626,7 +716,7 @@ export default function Carrinho() {
                           void handleCopyText(paymentData.pixCopyPaste);
                         }}
                       >
-                        Copiar codigo PIX
+                        Copiar código PIX
                       </button>
                     </>
                   ) : null}
@@ -651,7 +741,7 @@ export default function Carrinho() {
 
                   {paymentData.method === "CARD" ? (
                     <p style={styles.pixTitle}>
-                      Para pagar no cartao, abra o link da fatura e escolha cartao na tela do Asaas.
+                      Para pagar no cartão, abra o link da fatura e escolha cartão na tela do Asaas.
                     </p>
                   ) : null}
 
@@ -1065,6 +1155,10 @@ const styles: Record<string, CSSProperties> = {
     gridTemplateColumns: "1fr auto",
     gap: 8,
     marginBottom: 10,
+  },
+  shippingButtonGroup: {
+    display: "grid",
+    gap: 6,
   },
   shippingCalcButton: {
     border: "none",

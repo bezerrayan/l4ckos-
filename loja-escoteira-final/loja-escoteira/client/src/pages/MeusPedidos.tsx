@@ -49,7 +49,7 @@ export default function MeusPedidos() {
     return (
       <section style={styles.wrapper}>
         <h1 style={styles.title}>Meus Pedidos</h1>
-        <p style={styles.muted}>Voce precisa entrar para ver seu historico de pedidos.</p>
+        <p style={styles.muted}>Você precisa entrar para ver seu histórico de pedidos.</p>
         <Link to="/login" style={styles.primaryButton}>
           Entrar na conta
         </Link>
@@ -71,10 +71,10 @@ export default function MeusPedidos() {
       </div>
 
       {ordersQuery.isLoading ? <p style={styles.muted}>Carregando pedidos...</p> : null}
-      {ordersQuery.isError ? <p style={styles.error}>Nao foi possivel carregar seus pedidos.</p> : null}
+      {ordersQuery.isError ? <p style={styles.error}>Não foi possível carregar seus pedidos.</p> : null}
 
       {!ordersQuery.isLoading && !ordersQuery.isError && orders.length === 0 ? (
-        <p style={styles.muted}>Voce ainda nao possui pedidos.</p>
+        <p style={styles.muted}>Você ainda não possui pedidos.</p>
       ) : null}
 
       <div style={styles.list}>
@@ -98,12 +98,15 @@ export default function MeusPedidos() {
                   <p style={styles.metaStrong}>{formatMoney(Number(order.totalPrice))}</p>
                 </div>
                 <div>
-                  <p style={styles.metaLabel}>Codigo de rastreio</p>
-                  <p style={styles.metaStrong}>{order.trackingCode || "Ainda nao informado"}</p>
+                  <p style={styles.metaLabel}>Código de rastreio</p>
+                  <p style={styles.metaStrong}>{order.trackingCode || "Ainda não informado"}</p>
                 </div>
               </div>
 
               <div style={styles.cardActions}>
+                <Link to={`/meus-pedidos/${order.id}`} style={styles.secondaryButton}>
+                  Ver detalhes
+                </Link>
                 <Link to={`/acompanhar-pedido?pedido=${order.id}`} style={styles.primaryButton}>
                   Acompanhar este pedido
                 </Link>
@@ -202,7 +205,9 @@ const styles: Record<string, CSSProperties> = {
   },
   cardActions: {
     display: "flex",
+    gap: 8,
     justifyContent: "flex-end",
+    flexWrap: "wrap",
   },
   primaryButton: {
     display: "inline-flex",

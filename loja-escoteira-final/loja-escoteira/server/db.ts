@@ -11,12 +11,14 @@ import {
   favorites,
   productImages,
   productVariants,
+  productReviews,
   coupons,
   auditLogs,
   localAuthUsers,
   userProfiles,
   userAddresses,
   userPaymentMethods,
+  stockReservations,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -118,6 +120,92 @@ export async function getProductById(id: number) {
   if (!db) return undefined;
   const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getProductByIdWithDetails(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const productRows = await db.select().from(products).where(eq(products.id, id)).limit(1);
+  if (productRows.length === 0) return undefined;
+
+  const imageRows = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, id))
+    .orderBy(productImages.order);
+
+  const variantRows = await db
+    .select()
+    .from(productVariants)
+    .where(eq(productVariants.productId, id));
+
+  return {
+    ...productRows[0],
+    images: imageRows.map(item => item.imageUrl).filter(Boolean),
+    variants: variantRows,
+  };
+}
+
+export async function getProductReviews(productId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const reviews = await db
+    .select({
+      id: productReviews.id,
+      productId: productReviews.productId,
+      userId: productReviews.userId,
+      rating: productReviews.rating,
+      comment: productReviews.comment,
+      createdAt: productReviews.createdAt,
+      updatedAt: productReviews.updatedAt,
+      userName: users.name,
+    })
+    .from(productReviews)
+    .leftJoin(users, eq(users.id, productReviews.userId))
+    .where(eq(productReviews.productId, productId))
+    .orderBy(desc(productReviews.id));
+
+  return reviews;
+}
+
+export async function createOrUpdateProductReview(input: {
+  productId: number;
+  userId: number;
+  rating: number;
+  comment?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await db
+    .select()
+    .from(productReviews)
+    .where(and(eq(productReviews.productId, input.productId), eq(productReviews.userId, input.userId)))
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db
+      .update(productReviews)
+      .set({
+        rating: input.rating,
+        comment: input.comment?.trim() || null,
+      })
+      .where(eq(productReviews.id, existing[0].id));
+
+    return { updated: true, id: existing[0].id } as const;
+  }
+
+  const result = await db.insert(productReviews).values({
+    productId: input.productId,
+    userId: input.userId,
+    rating: input.rating,
+    comment: input.comment?.trim() || null,
+  });
+
+  const insertedId = Number((result as any)?.[0]?.insertId ?? 0);
+  return { updated: false, id: insertedId } as const;
 }
 
 export async function createProduct(product: InsertProduct) {
@@ -226,6 +314,118 @@ export async function getOrderByTrackingCodeAndUser(trackingCode: string, userId
     .limit(1);
 
   return result[0];
+}
+
+export async function getOrderReservationItems(orderId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const items = await db
+    .select({
+      id: stockReservations.id,
+      orderId: stockReservations.orderId,
+      productId: stockReservations.productId,
+      quantity: stockReservations.quantity,
+      status: stockReservations.status,
+      expiresAt: stockReservations.expiresAt,
+      createdAt: stockReservations.createdAt,
+      productName: products.name,
+      productImage: products.imageUrl,
+      productPrice: products.price,
+    })
+    .from(stockReservations)
+    .leftJoin(products, eq(products.id, stockReservations.productId))
+    .where(eq(stockReservations.orderId, orderId))
+    .orderBy(desc(stockReservations.id));
+
+  return items;
+}
+
+export async function reserveStockForOrder(input: {
+  userId: number;
+  orderId: number;
+  items: Array<{ productId: number; quantity: number }>;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 20 * 60 * 1000);
+
+  await db.transaction(async tx => {
+    await tx
+      .update(stockReservations)
+      .set({ status: "released" })
+      .where(and(eq(stockReservations.orderId, input.orderId), eq(stockReservations.status, "active")));
+
+    for (const item of input.items) {
+      const productRow = await tx.select().from(products).where(eq(products.id, item.productId)).limit(1);
+      if (productRow.length === 0) {
+        throw new Error(`Produto ${item.productId} nao encontrado.`);
+      }
+
+      const [reservedRow] = await tx
+        .select({
+          total: sql<number>`coalesce(sum(${stockReservations.quantity}), 0)`,
+        })
+        .from(stockReservations)
+        .where(
+          and(
+            eq(stockReservations.productId, item.productId),
+            eq(stockReservations.status, "active"),
+            gte(stockReservations.expiresAt, now),
+          ),
+        );
+
+      const reservedQty = Number(reservedRow?.total ?? 0);
+      const available = Number(productRow[0].stock ?? 0) - reservedQty;
+      if (available < item.quantity) {
+        throw new Error(`Estoque insuficiente para ${productRow[0].name}. Disponivel: ${Math.max(0, available)}.`);
+      }
+
+      await tx.insert(stockReservations).values({
+        orderId: input.orderId,
+        userId: input.userId,
+        productId: item.productId,
+        quantity: item.quantity,
+        status: "active",
+        expiresAt,
+      });
+    }
+  });
+}
+
+export async function consumeStockReservationsForOrder(orderId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const now = new Date();
+  await db.transaction(async tx => {
+    const activeReservations = await tx
+      .select()
+      .from(stockReservations)
+      .where(
+        and(
+          eq(stockReservations.orderId, orderId),
+          eq(stockReservations.status, "active"),
+          gte(stockReservations.expiresAt, now),
+        ),
+      );
+
+    for (const reservation of activeReservations) {
+      await tx
+        .update(products)
+        .set({
+          stock: sql`${products.stock} - ${reservation.quantity}`,
+        })
+        .where(eq(products.id, reservation.productId));
+    }
+
+    await tx
+      .update(stockReservations)
+      .set({ status: "consumed" })
+      .where(and(eq(stockReservations.orderId, orderId), eq(stockReservations.status, "active")));
+  });
 }
 
 export async function getAllOrders() {
@@ -803,6 +1003,8 @@ export async function getBackupPayload() {
     ordersRows,
     orderItemsRows,
     couponsRows,
+    reviewsRows,
+    reservationsRows,
     profilesRows,
     addressesRows,
     paymentRows,
@@ -815,6 +1017,8 @@ export async function getBackupPayload() {
     db.select().from(orders),
     db.select().from(orderItems),
     db.select().from(coupons),
+    db.select().from(productReviews),
+    db.select().from(stockReservations),
     db.select().from(userProfiles),
     db.select().from(userAddresses),
     db.select().from(userPaymentMethods),
@@ -831,6 +1035,8 @@ export async function getBackupPayload() {
       orders: ordersRows,
       orderItems: orderItemsRows,
       coupons: couponsRows,
+      productReviews: reviewsRows,
+      stockReservations: reservationsRows,
       userProfiles: profilesRows,
       userAddresses: addressesRows,
       userPaymentMethods: paymentRows,
@@ -848,6 +1054,8 @@ export async function restoreBackupPayload(payload: {
     orders?: Array<any>;
     orderItems?: Array<any>;
     coupons?: Array<any>;
+    productReviews?: Array<any>;
+    stockReservations?: Array<any>;
     userProfiles?: Array<any>;
     userAddresses?: Array<any>;
     userPaymentMethods?: Array<any>;
@@ -863,6 +1071,8 @@ export async function restoreBackupPayload(payload: {
   await db.delete(productImages);
   await db.delete(products);
   await db.delete(coupons);
+  await db.delete(productReviews);
+  await db.delete(stockReservations);
   await db.delete(userAddresses);
   await db.delete(userPaymentMethods);
   await db.delete(userProfiles);
@@ -876,6 +1086,9 @@ export async function restoreBackupPayload(payload: {
   if (payload.data.orders?.length) await db.insert(orders).values(payload.data.orders);
   if (payload.data.orderItems?.length) await db.insert(orderItems).values(payload.data.orderItems);
   if (payload.data.coupons?.length) await db.insert(coupons).values(payload.data.coupons);
+  if (payload.data.productReviews?.length) await db.insert(productReviews).values(payload.data.productReviews);
+  if (payload.data.stockReservations?.length)
+    await db.insert(stockReservations).values(payload.data.stockReservations);
   if (payload.data.userProfiles?.length) await db.insert(userProfiles).values(payload.data.userProfiles);
   if (payload.data.userAddresses?.length) await db.insert(userAddresses).values(payload.data.userAddresses);
   if (payload.data.userPaymentMethods?.length)

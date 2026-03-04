@@ -3,35 +3,51 @@
  * Usa: getProducts(), useCart() para adicionar ao carrinho
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import ProductCard from "../components/ProductCard";
-import { getProducts, searchProducts } from "../lib/mockProducts";
 import type { Product } from "../types/product";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { trpc } from "../lib/trpc";
+
+function normalizePrice(value: number) {
+  return value > 1000 ? value / 100 : value;
+}
 
 export default function Produtos() {
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 📌 Buscar produtos baseado no termo de busca
-  const produtos: Product[] = searchTerm
-    ? searchProducts(searchTerm)
-    : getProducts();
+  const productsQuery = trpc.products.list.useQuery({
+    search: searchTerm.trim() || undefined,
+    limit: 200,
+  });
+
+  const produtos: Product[] = useMemo(
+    () =>
+      (productsQuery.data ?? []).map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description || "",
+        price: normalizePrice(Number(item.price)),
+        image: item.imageUrl || "/images/camisa.png",
+        category: item.category,
+        stock: Number(item.stock ?? 0),
+      })),
+    [productsQuery.data],
+  );
 
   return (
     <div>
-      {/* Header Section */}
       <div style={{ ...styles.header, marginBottom: isMobile ? 28 : styles.header.marginBottom, paddingBottom: isMobile ? 20 : styles.header.paddingBottom }}>
         <div>
-          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa Coleção</h1>
+          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa Colecao</h1>
           <p style={{ ...styles.subtitle, fontSize: isMobile ? 15 : styles.subtitle.fontSize }}>
             Descubra nossos {produtos.length} produtos de qualidade premium para o seu movimento escoteiro
           </p>
         </div>
       </div>
 
-      {/* Barra de Busca */}
       <div style={{ ...styles.searchContainer, marginBottom: isMobile ? 30 : styles.searchContainer.marginBottom }}>
         <input
           type="text"
@@ -45,13 +61,15 @@ export default function Produtos() {
             onClick={() => setSearchTerm("")}
             style={styles.clearButton as CSSProperties}
           >
-            ✕
+            x
           </button>
         )}
       </div>
 
-      {/* Grid de Produtos */}
-      {produtos.length > 0 ? (
+      {productsQuery.isLoading ? <p style={styles.resultInfo}>Carregando produtos...</p> : null}
+      {productsQuery.isError ? <p style={styles.resultInfo}>Não foi possível carregar produtos do banco.</p> : null}
+
+      {!productsQuery.isLoading && produtos.length > 0 ? (
         <div>
           <div style={styles.resultInfo}>
             <p>
@@ -74,9 +92,9 @@ export default function Produtos() {
             ))}
           </div>
         </div>
-      ) : (
+      ) : !productsQuery.isLoading ? (
         <div style={{ ...styles.emptyState, padding: isMobile ? "40px 16px" : styles.emptyState.padding }}>
-          <div style={styles.emptyIcon}>○</div>
+          <div style={styles.emptyIcon}>o</div>
           <h2 style={styles.emptyTitle}>Nenhum produto encontrado</h2>
           <p style={styles.emptyText}>
             Não encontramos produtos para "{searchTerm}"
@@ -88,7 +106,7 @@ export default function Produtos() {
             Limpar Filtro
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

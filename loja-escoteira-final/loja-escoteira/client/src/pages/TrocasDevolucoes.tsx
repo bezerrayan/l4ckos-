@@ -2,29 +2,29 @@ import type { CSSProperties } from "react";
 
 const sections = [
   {
-    title: "Prazo para troca ou devolucao",
-    text: "Voce pode solicitar troca ou devolucao em ate 7 dias corridos apos o recebimento do pedido.",
+    title: "Prazo para troca ou devolução",
+    text: "Você pode solicitar troca ou devolução em até 7 dias corridos após o recebimento do pedido.",
   },
   {
-    title: "Condicoes do produto",
-    text: "O item deve estar sem sinais de uso, com etiquetas e na embalagem original para aprovacao da solicitacao.",
+    title: "Condições do produto",
+    text: "O item deve estar sem sinais de uso, com etiquetas e na embalagem original para aprovação da solicitação.",
   },
   {
     title: "Como solicitar",
-    text: "Entre em contato pela pagina de Contato informando numero do pedido, motivo da solicitacao e fotos do produto.",
+    text: "Entre em contato pela página de Contato informando número do pedido, motivo da solicitação e fotos do produto.",
   },
   {
     title: "Reembolso",
-    text: "Depois da aprovacao e recebimento do item, o reembolso e processado no mesmo meio de pagamento em ate 10 dias uteis.",
+    text: "Depois da aprovação e recebimento do item, o reembolso é processado no mesmo meio de pagamento em até 10 dias úteis.",
   },
 ];
 
 export default function TrocasDevolucoes() {
   return (
     <section style={styles.wrapper}>
-      <h1 style={styles.title}>Trocas e Devolucoes</h1>
+      <h1 style={styles.title}>Trocas e Devoluções</h1>
       <p style={styles.subtitle}>
-        Regras claras para pos-compra, com mais seguranca na sua experiencia de compra.
+        Regras claras para pós-compra, com mais segurança na sua experiência de compra.
       </p>
 
       <div style={styles.list}>

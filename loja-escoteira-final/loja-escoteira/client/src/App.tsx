@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import MeusPedidos from "./pages/MeusPedidos";
 import AcompanharPedido from "./pages/AcompanharPedido";
 import TrocasDevolucoes from "./pages/TrocasDevolucoes";
+import PedidoDetalhe from "./pages/PedidoDetalhe";
 import { useIsMobile } from "./hooks/useIsMobile";
 
 /**
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/meus-pedidos" element={<MeusPedidos />} />
+          <Route path="/meus-pedidos/:id" element={<PedidoDetalhe />} />
           <Route path="/acompanhar-pedido" element={<AcompanharPedido />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/sobre" element={<Sobre />} />

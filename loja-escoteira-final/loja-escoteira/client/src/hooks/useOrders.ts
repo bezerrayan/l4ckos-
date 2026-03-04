@@ -15,18 +15,28 @@ export function useCreateOrder() {
 }
 
 /**
- * Hook para criar pedido com cobranca Asaas (PIX, boleto, cartao via invoice)
+ * Hook para criar pedido com cobrança Asaas (PIX, boleto, cartão via invoice)
  */
 export function useCreateAsaasCharge() {
   return trpc.orders.createAsaasCharge.useMutation();
 }
 
 /**
- * Hook para rastrear pedido por numero ou codigo de rastreio
+ * Hook para rastrear pedido por número ou código de rastreio
  */
 export function useTrackOrder(input?: { orderId?: number; trackingCode?: string }) {
   return trpc.orders.track.useQuery(input ?? { orderId: 1 }, {
     enabled: Boolean(input?.orderId || input?.trackingCode),
+    retry: false,
+  });
+}
+
+/**
+ * Hook para obter detalhes do pedido (inclui itens)
+ */
+export function useOrderDetail(orderId?: number) {
+  return trpc.orders.detail.useQuery(orderId ?? 0, {
+    enabled: Boolean(orderId),
     retry: false,
   });
 }

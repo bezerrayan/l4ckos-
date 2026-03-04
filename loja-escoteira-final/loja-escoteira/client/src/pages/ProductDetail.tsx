@@ -1,5 +1,5 @@
 /**
- * Página ProductDetail - Detalhes completos do produto
+ * Pagina ProductDetail - Detalhes completos do produto
  * Exibe informações completas, opções de customização e ações de compra
  */
 
@@ -7,10 +7,10 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useToast } from "../contexts/ToastContext";
-import { getProductById } from "../lib/mockProducts";
 import type { CSSProperties } from "react";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { trpc } from "../lib/trpc";
 
 const COLORS = [
   { name: "Preto", hex: "#1a1a1a" },
@@ -30,6 +30,16 @@ const RATINGS = [
   { stars: 1, count: 0 },
 ];
 
+const EXTRA_IMAGES = [
+  "/images/camisa.png",
+  "/images/logo-principal.png",
+  "/images/logo_branco.png",
+];
+
+function normalizePrice(value: number) {
+  return value > 1000 ? value / 100 : value;
+}
+
 export default function ProductDetail() {
   const isMobile = useIsMobile();
   const { id } = useParams<{ id: string }>();
@@ -38,17 +48,35 @@ export default function ProductDetail() {
   const { addToCart } = useCart();
   const { addToFavorites, removeFromFavorites, isFavorited } = useFavorites();
   const { showToast } = useToast();
-  
+
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [showSelectionWarning, setShowSelectionWarning] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const productId = id ? parseInt(id) : null;
-  const product = productId ? getProductById(productId) : null;
+  const productQuery = trpc.products.getById.useQuery(productId ?? 0, {
+    enabled: Boolean(productId),
+  });
+  const product = productQuery.data
+    ? {
+        id: productQuery.data.id,
+        name: productQuery.data.name,
+        description: productQuery.data.description || "",
+        price: normalizePrice(Number(productQuery.data.price)),
+        image: productQuery.data.imageUrl || "/images/camisa.png",
+        category: productQuery.data.category,
+        stock: Number(productQuery.data.stock ?? 0),
+        images:
+          Array.isArray((productQuery.data as any).images) &&
+          (productQuery.data as any).images.length > 0
+            ? ((productQuery.data as any).images as string[])
+            : [],
+      }
+    : null;
   const isFav = product ? isFavorited(product.id) : false;
 
-  // Scroll ao topo quando a página de detalhe é carregada
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
@@ -59,7 +87,11 @@ export default function ProductDetail() {
     }
   }, [selectedColor, selectedSize]);
 
-  // Função para voltar à página anterior ou home
+  useEffect(() => {
+    if (!product) return;
+    setSelectedImage(product.image);
+  }, [product?.id, product?.image]);
+
   const handleGoBack = () => {
     const from = (location.state as any)?.from;
     if (from === "/" || from === "/produtos") {
@@ -70,10 +102,13 @@ export default function ProductDetail() {
   };
 
   if (!product) {
+    if (productQuery.isLoading) {
+      return <p style={styles.loadingText}>Carregando produto...</p>;
+    }
     return (
       <div style={styles.errorContainer as CSSProperties}>
         <h1>Produto não encontrado</h1>
-        <button 
+        <button
           onClick={handleGoBack}
           style={styles.backButton as CSSProperties}
         >
@@ -83,6 +118,7 @@ export default function ProductDetail() {
     );
   }
 
+  const galleryImages = Array.from(new Set([product.image, ...(product.images || []), ...EXTRA_IMAGES].filter(Boolean)));
   const totalRatings = RATINGS.reduce((sum, r) => sum + r.count, 0);
   const averageRating =
     RATINGS.reduce((sum, r) => sum + r.stars * r.count, 0) / totalRatings;
@@ -117,7 +153,7 @@ export default function ProductDetail() {
 
   const handleAddToFavorites = () => {
     if (!product) return;
-    
+
     if (isFav) {
       removeFromFavorites(product.id);
       showToast({
@@ -135,15 +171,13 @@ export default function ProductDetail() {
 
   return (
     <div>
-      {/* Botão voltar */}
-      <button 
+      <button
         onClick={handleGoBack}
         style={{ ...styles.backButton, marginBottom: isMobile ? 18 : styles.backButton.marginBottom } as CSSProperties}
       >
         ← Voltar
       </button>
 
-      {/* Container principal */}
       <div
         style={{
           ...styles.container,
@@ -152,12 +186,10 @@ export default function ProductDetail() {
           marginBottom: isMobile ? 40 : styles.container.marginBottom,
         } as CSSProperties}
       >
-        
-        {/* Coluna esquerda - Imagem */}
         <div style={styles.leftColumn as CSSProperties}>
           <div style={styles.imageContainer as CSSProperties}>
-            <img 
-              src={product.image} 
+            <img
+              src={selectedImage || product.image}
               alt={product.name}
               style={styles.productImage as CSSProperties}
               onError={(event) => {
@@ -165,17 +197,40 @@ export default function ProductDetail() {
               }}
             />
           </div>
+
+          <div style={styles.galleryRow as CSSProperties}>
+            {galleryImages.map((image, idx) => {
+              const active = (selectedImage || product.image) === image;
+              return (
+                <button
+                  key={`${image}-${idx}`}
+                  type="button"
+                  onClick={() => setSelectedImage(image)}
+                  style={{
+                    ...styles.thumbButton,
+                    ...(active ? styles.thumbButtonActive : {}),
+                  } as CSSProperties}
+                >
+                  <img
+                    src={image}
+                    alt={`Foto ${idx + 1}`}
+                    style={styles.thumbImage as CSSProperties}
+                    onError={(event) => {
+                      event.currentTarget.src = "/images/camisa.png";
+                    }}
+                  />
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Coluna direita - Informações */}
         <div
           style={{
             ...styles.rightColumn,
             paddingBottom: isMobile ? 120 : styles.rightColumn.paddingBottom,
           } as CSSProperties}
         >
-          
-          {/* Título e Badge */}
           <div style={styles.headerSection as CSSProperties}>
             <h1 style={{ ...styles.productTitle, fontSize: isMobile ? 24 : styles.productTitle.fontSize } as CSSProperties}>{product.name}</h1>
             <div style={styles.headerMetaRow as CSSProperties}>
@@ -194,11 +249,10 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Rating */}
           <div style={styles.ratingSection as CSSProperties}>
             <div style={styles.ratingStars as CSSProperties}>
               {[...Array(5)].map((_, i) => (
-                <span 
+                <span
                   key={i}
                   style={{
                     color: i < Math.floor(averageRating) ? "#fbbf24" : "#d1d5db",
@@ -214,15 +268,13 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Preço */}
           <div style={styles.priceSection as CSSProperties}>
             <h2 style={{ ...styles.price, fontSize: isMobile ? 30 : styles.price.fontSize } as CSSProperties}>R$ {product.price.toFixed(2)}</h2>
             <p style={styles.priceNote as CSSProperties}>
-              Frete grátis para compras acima de R$ 200
+              Frete gratis para compras acima de R$ 200
             </p>
           </div>
 
-          {/* Seletor de Cores */}
           <div style={styles.sectionBlock as CSSProperties}>
             <h3 style={styles.sectionTitle as CSSProperties}>Cores Disponíveis</h3>
             <div style={styles.colorGrid as CSSProperties}>
@@ -233,8 +285,8 @@ export default function ProductDetail() {
                   style={{
                     ...styles.colorOption,
                     background: color.hex,
-                    border: selectedColor === color.name 
-                      ? "3px solid #1a1a1a" 
+                    border: selectedColor === color.name
+                      ? "3px solid #1a1a1a"
                       : "2px solid #e0e0e0",
                   } as CSSProperties}
                   title={color.name}
@@ -250,7 +302,6 @@ export default function ProductDetail() {
             </p>
           </div>
 
-          {/* Seletor de Tamanho */}
           <div style={styles.sectionBlock as CSSProperties}>
             <h3 style={styles.sectionTitle as CSSProperties}>Tamanho</h3>
             <div
@@ -278,7 +329,6 @@ export default function ProductDetail() {
             </p>
           </div>
 
-          {/* Quantidade */}
           <div style={styles.sectionBlock as CSSProperties}>
             <h3 style={styles.sectionTitle as CSSProperties}>Quantidade</h3>
             <div style={styles.quantityControl as CSSProperties}>
@@ -305,7 +355,6 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Botões de Ação */}
           <div
             style={{
               ...styles.actionButtons,
@@ -346,23 +395,21 @@ export default function ProductDetail() {
             </p>
           )}
 
-          {/* Descrição */}
           <div style={styles.descriptionSection as CSSProperties}>
-            <h3 style={styles.sectionTitle as CSSProperties}>Descrição do Produto</h3>
+            <h3 style={styles.sectionTitle as CSSProperties}>Descricao do Produto</h3>
             <p style={styles.description as CSSProperties}>
               {product.description}
             </p>
           </div>
 
-          {/* Info de Estoque */}
           {product.stock && (
             <div style={styles.stockInfo as CSSProperties}>
               <span style={{
                 color: product.stock > 5 ? "#1a1a1a" : "#dc2626"
               }}>
-                {product.stock > 0 
-                  ? `✓ ${product.stock} em estoque` 
-                  : "⚠️ Fora de estoque"}
+                {product.stock > 0
+                  ? `✓ ${product.stock} em estoque`
+                  : "Fora de estoque"}
               </span>
             </div>
           )}
@@ -399,6 +446,8 @@ const styles: Record<string, CSSProperties> = {
   leftColumn: {
     display: "flex",
     alignItems: "flex-start",
+    flexDirection: "column",
+    gap: 12,
   },
   imageContainer: {
     width: "100%",
@@ -415,6 +464,29 @@ const styles: Record<string, CSSProperties> = {
     width: "100%",
     height: "100%",
     objectFit: "contain",
+  },
+  galleryRow: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+  },
+  thumbButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    border: "2px solid #d1d5db",
+    overflow: "hidden",
+    padding: 0,
+    cursor: "pointer",
+    background: "#ffffff",
+  },
+  thumbButtonActive: {
+    border: "2px solid #1a1a1a",
+  },
+  thumbImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
   },
   rightColumn: {
     paddingTop: 12,
@@ -617,5 +689,10 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 6,
     fontSize: 14,
     fontWeight: 600,
+  },
+  loadingText: {
+    color: "#6b7280",
+    fontSize: 16,
+    margin: 0,
   },
 };

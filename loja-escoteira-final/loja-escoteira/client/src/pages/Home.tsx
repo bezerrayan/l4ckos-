@@ -1,23 +1,36 @@
 /**
  * Página Home - Página inicial com promoções e destaques
- * Exibe carrossel de promoções e alguns produtos featured
+ * Exibe carrossel de promoções e alguns produtos em destaque
  */
 
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import PromoCarousel from "../components/PromoCarousel";
-import { MOCK_PRODUCTS } from "../lib/mockProducts";
+import { trpc } from "../lib/trpc";
+import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Home() {
   const isMobile = useIsMobile();
-  // 📌 Pegar todos os produtos para destaque (3 camisas personalizadas)
-  const destaque = MOCK_PRODUCTS.slice(0, 3);
+  const productsQuery = trpc.products.list.useQuery({ limit: 6 });
+  const destaque = useMemo(
+    () =>
+      (productsQuery.data ?? []).slice(0, 3).map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description || "",
+        price: Number(item.price) > 1000 ? Number(item.price) / 100 : Number(item.price),
+        image: item.imageUrl || "/images/camisa.png",
+        category: item.category,
+        stock: Number(item.stock ?? 0),
+      })),
+    [productsQuery.data],
+  );
 
   return (
     <div>
-      {/* 🎯 Hero Section */}
+      {/* Hero Section */}
       <div
         style={{
           ...styles.heroContainer,
@@ -44,35 +57,31 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Elemento Visual - Logo/Imagem da Marca */}
         <div style={{ ...styles.heroVisual, height: isMobile ? 240 : styles.heroVisual.height }}>
-          <img 
-            src="/images/logo-principal.png" 
-            alt="Logo da marca"
-            style={styles.heroImage}
-          />
+          <img src="/images/logo-principal.png" alt="Logo da marca" style={styles.heroImage} />
         </div>
       </div>
 
-      {/*  Carrossel de Promoções */}
+      {/* Carrossel de Promoções */}
       <section style={{ ...styles.promoSection, marginBottom: isMobile ? 40 : styles.promoSection.marginBottom }}>
         <PromoCarousel />
       </section>
 
-      {/*  Destaques da Loja */}
+      {/* Destaques da Loja */}
       <section id="destaques" style={{ ...styles.section, marginBottom: isMobile ? 44 : styles.section.marginBottom }}>
         <div style={styles.sectionHeader}>
           <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Produtos em Destaque</h2>
-          <p style={styles.sectionSubtitle}>
-            Conheça nossa seleção handpicked dos melhores produtos
-          </p>
+          <p style={styles.sectionSubtitle}>Conheça nossa seleção especial dos melhores produtos</p>
         </div>
 
         <div style={{ ...styles.productsGrid, gap: isMobile ? 16 : styles.productsGrid.gap }}>
           {destaque.map((produto, idx) => (
-            <div key={produto.id} style={{
-              animation: `fadeInUp 0.5s ease-out ${idx * 100}ms backwards`
-            }}>
+            <div
+              key={produto.id}
+              style={{
+                animation: `fadeInUp 0.5s ease-out ${idx * 100}ms backwards`,
+              }}
+            >
               <ProductCard product={produto} />
             </div>
           ))}
@@ -80,25 +89,25 @@ export default function Home() {
 
         <div style={styles.viewAllContainer}>
           <Link to="/produtos" style={styles.viewAllBtn}>
-            Ver Todos os Produtos →
+            Ver Todos os Produtos
           </Link>
         </div>
       </section>
 
-      {/* ℹ Diferenciais */}
+      {/* Diferenciais */}
       <section style={{ ...styles.benefitsSection, marginBottom: isMobile ? 44 : styles.benefitsSection.marginBottom }}>
         <div style={styles.sectionHeader}>
           <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Por Que Comprar Conosco</h2>
         </div>
 
         <div style={styles.benefitsGrid}>
-          <div 
+          <div
             style={styles.benefitCard}
             onMouseEnter={(e) => {
               const el = e.currentTarget;
               el.style.transform = "translateY(-8px)";
               el.style.boxShadow = "0 20px 40px rgba(0, 0, 0, 0.1)";
-            }} 
+            }}
             onMouseLeave={(e) => {
               const el = e.currentTarget;
               el.style.transform = "translateY(0)";
@@ -110,13 +119,13 @@ export default function Home() {
             <p style={styles.benefitText}></p>
           </div>
 
-          <div 
+          <div
             style={styles.benefitCard}
             onMouseEnter={(e) => {
               const el = e.currentTarget;
               el.style.transform = "translateY(-8px)";
               el.style.boxShadow = "0 20px 40px rgba(0,0,0,0.1)";
-            }} 
+            }}
             onMouseLeave={(e) => {
               const el = e.currentTarget;
               el.style.transform = "translateY(0)";
@@ -128,13 +137,13 @@ export default function Home() {
             <p style={styles.benefitText}>Todos os produtos com garantia e proteção ao comprador</p>
           </div>
 
-          <div 
+          <div
             style={styles.benefitCard}
             onMouseEnter={(e) => {
               const el = e.currentTarget;
               el.style.transform = "translateY(-8px)";
               el.style.boxShadow = "0 20px 40px rgba(0,0,0,0.1)";
-            }} 
+            }}
             onMouseLeave={(e) => {
               const el = e.currentTarget;
               el.style.transform = "translateY(0)";
@@ -146,13 +155,13 @@ export default function Home() {
             <p style={styles.benefitText}>Atendimento especializado pronto para ajudar</p>
           </div>
 
-          <div 
+          <div
             style={styles.benefitCard}
             onMouseEnter={(e) => {
               const el = e.currentTarget;
               el.style.transform = "translateY(-8px)";
               el.style.boxShadow = "0 20px 40px rgba(0,0,0,0.1)";
-            }} 
+            }}
             onMouseLeave={(e) => {
               const el = e.currentTarget;
               el.style.transform = "translateY(0)";

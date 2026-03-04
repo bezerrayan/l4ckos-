@@ -217,3 +217,33 @@ export const productImages = mysqlTable("productImages", {
 
 export type ProductImage = typeof productImages.$inferSelect;
 export type InsertProductImage = typeof productImages.$inferInsert;
+
+// Avaliacoes de produto
+export const productReviews = mysqlTable("productReviews", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  userId: int("userId").notNull(),
+  rating: int("rating").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ProductReview = typeof productReviews.$inferSelect;
+export type InsertProductReview = typeof productReviews.$inferInsert;
+
+// Reserva temporaria de estoque no checkout
+export const stockReservations = mysqlTable("stockReservations", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  userId: int("userId").notNull(),
+  productId: int("productId").notNull(),
+  quantity: int("quantity").notNull(),
+  status: mysqlEnum("status", ["active", "consumed", "released", "expired"]).default("active").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type StockReservation = typeof stockReservations.$inferSelect;
+export type InsertStockReservation = typeof stockReservations.$inferInsert;

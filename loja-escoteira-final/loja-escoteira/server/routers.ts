@@ -16,6 +16,34 @@ import { sdk } from "./_core/sdk";
 import { ENV } from "./_core/env";
 import { getLocalAuthCredentialByEmail, getUserByOpenId, upsertLocalAuthCredential, upsertUser } from "./db";
 
+const loginAttemptStore = new Map<string, { count: number; firstAt: number }>();
+const LOGIN_WINDOW_MS = 10 * 60 * 1000;
+const LOGIN_MAX_ATTEMPTS = 8;
+
+function assertLoginAttemptLimit(key: string) {
+  const now = Date.now();
+  const current = loginAttemptStore.get(key);
+
+  if (!current || now - current.firstAt > LOGIN_WINDOW_MS) {
+    loginAttemptStore.set(key, { count: 1, firstAt: now });
+    return;
+  }
+
+  if (current.count >= LOGIN_MAX_ATTEMPTS) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Muitas tentativas. Tente novamente em alguns minutos.",
+    });
+  }
+
+  current.count += 1;
+  loginAttemptStore.set(key, current);
+}
+
+function clearLoginAttemptLimit(key: string) {
+  loginAttemptStore.delete(key);
+}
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -33,6 +61,8 @@ export const appRouter = router({
         }
 
         const normalizedEmail = input.email.trim().toLowerCase();
+        const requestIp = ctx.req.ip || "unknown";
+        assertLoginAttemptLimit(`local-login:${normalizedEmail}:${requestIp}`);
         const credential = await getLocalAuthCredentialByEmail(normalizedEmail);
         if (!credential) {
           throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais inválidas" });
@@ -42,6 +72,8 @@ export const appRouter = router({
         if (!passwordOk) {
           throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais inválidas" });
         }
+
+        clearLoginAttemptLimit(`local-login:${normalizedEmail}:${requestIp}`);
 
         const localOpenId = `local:${normalizedEmail}`;
         const inferredName = normalizedEmail.split("@")[0] || "Usuário Local";
@@ -81,6 +113,8 @@ export const appRouter = router({
         }
 
         const normalizedEmail = input.email.trim().toLowerCase();
+        const requestIp = ctx.req.ip || "unknown";
+        assertLoginAttemptLimit(`local-signup:${normalizedEmail}:${requestIp}`);
         const localOpenId = `local:${normalizedEmail}`;
         const normalizedName = input.name.trim();
         const localRole = normalizedEmail === "admin@local.dev" ? "admin" : "user";

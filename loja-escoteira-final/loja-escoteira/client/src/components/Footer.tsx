@@ -89,7 +89,7 @@ export default function Footer() {
               <Link to="/termos" style={styles.link}>Termos de Serviço</Link>
             </li>
             <li>
-              <Link to="/trocas-e-devolucoes" style={styles.link}>Trocas e Devolucoes</Link>
+              <Link to="/trocas-e-devolucoes" style={styles.link}>Trocas e Devoluções</Link>
             </li>
             <li>
               <Link to="/acompanhar-pedido" style={styles.link}>Rastreio e Entrega</Link>

@@ -92,7 +92,7 @@ export default function AcompanharPedido() {
     <section style={styles.wrapper}>
       <h1 style={styles.title}>Acompanhar Pedido</h1>
       <p style={styles.muted}>
-        Consulte o status do seu pedido usando o numero do pedido ou codigo de rastreio.
+        Consulte o status do seu pedido usando o número do pedido ou código de rastreio.
       </p>
 
       <form style={styles.form} onSubmit={handleSubmit}>
@@ -102,14 +102,14 @@ export default function AcompanharPedido() {
             onClick={() => setSearchMode("pedido")}
             style={{ ...styles.modeButton, ...(searchMode === "pedido" ? styles.modeButtonActive : {}) }}
           >
-            Numero do pedido
+            Número do pedido
           </button>
           <button
             type="button"
             onClick={() => setSearchMode("codigo")}
             style={{ ...styles.modeButton, ...(searchMode === "codigo" ? styles.modeButtonActive : {}) }}
           >
-            Codigo de rastreio
+            Código de rastreio
           </button>
         </div>
 
@@ -127,7 +127,7 @@ export default function AcompanharPedido() {
       </form>
 
       {query.isLoading ? <p style={styles.muted}>Buscando pedido...</p> : null}
-      {query.isError ? <p style={styles.error}>Nao foi possivel localizar este pedido na sua conta.</p> : null}
+      {query.isError ? <p style={styles.error}>Não foi possível localizar este pedido na sua conta.</p> : null}
 
       {query.data ? (
         <article style={styles.card}>
@@ -145,8 +145,8 @@ export default function AcompanharPedido() {
               <p style={styles.metaStrong}>{formatMoney(Number(query.data.totalPrice))}</p>
             </div>
             <div>
-              <p style={styles.metaLabel}>Codigo de rastreio</p>
-              <p style={styles.metaStrong}>{query.data.trackingCode || "Ainda nao informado"}</p>
+              <p style={styles.metaLabel}>Código de rastreio</p>
+              <p style={styles.metaStrong}>{query.data.trackingCode || "Ainda não informado"}</p>
             </div>
             <div>
               <p style={styles.metaLabel}>Atualizado em</p>

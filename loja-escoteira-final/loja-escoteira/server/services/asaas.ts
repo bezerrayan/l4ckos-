@@ -1,4 +1,4 @@
-import { updateOrderStatus } from "../db";
+import { consumeStockReservationsForOrder, updateOrderStatus } from "../db";
 
 const DEFAULT_ASAAS_API_URL = "https://api.asaas.com/v3";
 
@@ -159,6 +159,7 @@ export async function handleAsaasWebhookEvent(payload: unknown) {
   }
 
   await updateOrderStatus(orderId, "processing");
+  await consumeStockReservationsForOrder(orderId);
 
   return {
     handled: true,
