@@ -178,6 +178,25 @@ export const coupons = mysqlTable("coupons", {
 export type Coupon = typeof coupons.$inferSelect;
 export type InsertCoupon = typeof coupons.$inferInsert;
 
+// Banners promocionais editáveis pelo admin
+export const promoBanners = mysqlTable("promoBanners", {
+  id: int("id").autoincrement().primaryKey(),
+  badge: varchar("badge", { length: 80 }).default("PROMOCAO").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  ctaLabel: varchar("ctaLabel", { length: 120 }).default("Aproveitar Oferta").notNull(),
+  discountText: varchar("discountText", { length: 60 }).notNull(),
+  discountLabel: varchar("discountLabel", { length: 40 }).default("OFF").notNull(),
+  bgStyle: varchar("bgStyle", { length: 255 }).default("linear-gradient(135deg, #1a1a1a 0%, #333333 100%)").notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PromoBanner = typeof promoBanners.$inferSelect;
+export type InsertPromoBanner = typeof promoBanners.$inferInsert;
+
 // Auditoria administrativa
 export const auditLogs = mysqlTable("auditLogs", {
   id: int("id").autoincrement().primaryKey(),

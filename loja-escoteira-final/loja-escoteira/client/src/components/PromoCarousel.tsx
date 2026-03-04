@@ -1,42 +1,38 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { trpc } from "../lib/trpc";
 
 interface Promo {
   id: number;
+  badge: string;
   title: string;
   description: string;
+  ctaLabel: string;
   discount: string;
+  discountLabel: string;
   color: string;
 }
 
-const PROMOS: Promo[] = [
+const PROMOS_FALLBACK: Promo[] = [
   {
     id: 1,
+    badge: "PROMOCAO",
     title: "Desconto em camisas escoteiras",
-    description: "Até 30% OFF em modelos drifits, regatas e oversized",
+    description: "Ate 30% OFF em modelos dry fit, regatas e oversized.",
+    ctaLabel: "Aproveitar oferta",
     discount: "30%",
+    discountLabel: "OFF",
     color: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
   },
   {
     id: 2,
-    title: "Promoção de Roupas",
-    description: "Compre 2 e ganhe 1 desconto em camisetas e jaquetas",
+    badge: "PROMOCAO",
+    title: "Promocao de roupas",
+    description: "Compre 2 e ganhe desconto progressivo em camisetas e jaquetas.",
+    ctaLabel: "Ver promocao",
     discount: "50%",
-    color: "linear-gradient(135deg, #333333 0%, #1a1a1a 100%)",
-  },
-  {
-    id: 3,
-    title: "Frete Grátis",
-    description: "Em compras acima de R$ 150 para todo Brasil",
-    discount: "Grátis",
-    color: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
-  },
-  {
-    id: 4,
-    title: "Equipamentos Esportivos",
-    description: "Até 25% em mochilas, bicicletas e acessórios",
-    discount: "25% ",
+    discountLabel: "OFF",
     color: "linear-gradient(135deg, #333333 0%, #1a1a1a 100%)",
   },
 ];
@@ -44,11 +40,27 @@ const PROMOS: Promo[] = [
 export default function PromoCarousel() {
   const isMobile = useIsMobile();
   const [current, setCurrent] = useState(0);
+  const promotionsQuery = trpc.products.promotions.useQuery();
 
-  const next = () => setCurrent((prev) => (prev + 1) % PROMOS.length);
-  const prev = () => setCurrent((prev) => (prev - 1 + PROMOS.length) % PROMOS.length);
+  const promos = useMemo<Promo[]>(() => {
+    const fromApi = (promotionsQuery.data ?? []).map((item: any) => ({
+      id: Number(item.id),
+      badge: String(item.badge ?? "PROMOCAO"),
+      title: String(item.title ?? ""),
+      description: String(item.description ?? ""),
+      ctaLabel: String(item.ctaLabel ?? "Aproveitar oferta"),
+      discount: String(item.discountText ?? ""),
+      discountLabel: String(item.discountLabel ?? "OFF"),
+      color: String(item.bgStyle ?? "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)"),
+    }));
 
-  const promo = PROMOS[current];
+    return fromApi.length > 0 ? fromApi : PROMOS_FALLBACK;
+  }, [promotionsQuery.data]);
+
+  const next = () => setCurrent(prev => (prev + 1) % promos.length);
+  const prev = () => setCurrent(prev => (prev - 1 + promos.length) % promos.length);
+  const promo = promos[current] ?? promos[0];
+  if (!promo) return null;
 
   return (
     <div style={{ ...styles.carousel, marginBottom: isMobile ? 32 : styles.carousel.marginBottom }}>
@@ -63,40 +75,25 @@ export default function PromoCarousel() {
         }}
       >
         <div style={styles.content}>
-          <p style={styles.badge}>PROMOÇÃO</p>
+          <p style={styles.badge}>{promo.badge}</p>
           <h2 style={{ ...styles.title, fontSize: isMobile ? 24 : styles.title.fontSize }}>{promo.title}</h2>
           <p style={{ ...styles.description, fontSize: isMobile ? 14 : styles.description.fontSize }}>{promo.description}</p>
-          <button
-            style={styles.cta}
-            onMouseEnter={(e) => {
-              const btn = e.currentTarget as HTMLElement;
-              btn.style.transform = "translateY(-2px)";
-              btn.style.boxShadow = "0 8px 16px rgba(0,0,0,0.3)";
-            }}
-            onMouseLeave={(e) => {
-              const btn = e.currentTarget as HTMLElement;
-              btn.style.transform = "translateY(0)";
-              btn.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
-            }}
-          >
-            Aproveitar Oferta
-          </button>
+          <button style={styles.cta}>{promo.ctaLabel}</button>
         </div>
 
         <div style={{ ...styles.discount, padding: isMobile ? 16 : styles.discount.padding }}>
           <p style={{ ...styles.discountValue, fontSize: isMobile ? 34 : styles.discountValue.fontSize }}>{promo.discount}</p>
-          <p style={styles.discountLabel}>OFF</p>
+          <p style={styles.discountLabel}>{promo.discountLabel || "OFF"}</p>
         </div>
       </div>
 
-      {/* Controles */}
       <div style={styles.controls}>
         <button style={styles.navBtn} onClick={prev}>
           ←
         </button>
 
         <div style={styles.dots}>
-          {PROMOS.map((_, idx) => (
+          {promos.map((_, idx) => (
             <button
               key={idx}
               style={{
@@ -225,3 +222,4 @@ const styles: Record<string, CSSProperties> = {
     width: 28,
   },
 };
+

@@ -8,9 +8,14 @@ import {
   deleteProduct,
   createOrUpdateProductReview,
   getProductReviews,
+  getPromoBanners,
 } from "../db";
 
 export const productsRouter = router({
+  promotions: publicProcedure.query(async () => {
+    return await getPromoBanners({ activeOnly: true });
+  }),
+
   // Listar todos os produtos com filtros opcionais
   list: publicProcedure
     .input(

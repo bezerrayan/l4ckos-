@@ -36,6 +36,13 @@
       "when": 1772587379937,
       "tag": "0004_bored_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1772597763424,
+      "tag": "0005_nervous_jackpot",
+      "breakpoints": true
     }
   ]
 }

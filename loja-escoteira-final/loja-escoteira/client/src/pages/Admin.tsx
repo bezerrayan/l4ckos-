@@ -9,6 +9,7 @@ type Section =
   | "overview"
   | "customers"
   | "products"
+  | "promos"
   | "orders"
   | "coupons"
   | "reports"
@@ -27,6 +28,18 @@ const emptyProductForm = {
   description: "",
 };
 
+const emptyPromoForm = {
+  badge: "PROMOCAO",
+  title: "",
+  description: "",
+  ctaLabel: "Aproveitar oferta",
+  discountText: "30%",
+  discountLabel: "OFF",
+  bgStyle: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+  sortOrder: "0",
+  isActive: true,
+};
+
 export default function Admin() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useUser();
@@ -43,6 +56,8 @@ export default function Admin() {
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editProduct, setEditProduct] = useState({ ...emptyProductForm });
   const [quickProductEdits, setQuickProductEdits] = useState<Record<number, { price: string; stock: string }>>({});
+  const [newPromo, setNewPromo] = useState({ ...emptyPromoForm });
+  const [editingPromoId, setEditingPromoId] = useState<number | null>(null);
 
   const isAdmin = user?.role === "admin";
 
@@ -53,6 +68,7 @@ export default function Admin() {
     orderFilterStatus ? { status: orderFilterStatus as any } : undefined,
     { enabled: isAuthenticated && isAdmin },
   );
+  const promoBannersQuery = trpc.admin.promoBannersList.useQuery(undefined, { enabled: isAuthenticated && isAdmin });
   const couponsQuery = trpc.admin.couponsList.useQuery(undefined, { enabled: isAuthenticated && isAdmin });
   const auditQuery = trpc.admin.auditList.useQuery({ limit: 200 }, { enabled: isAuthenticated && isAdmin });
   const backupsQuery = trpc.admin.backupsList.useQuery(undefined, { enabled: isAuthenticated && isAdmin });
@@ -138,6 +154,33 @@ export default function Admin() {
     onError: error => showToast({ message: error.message, duration: 2600 }),
   });
 
+  const createPromoBannerMutation = trpc.admin.promoBannerCreate.useMutation({
+    onSuccess: () => {
+      showToast({ message: "Banner promocional criado", duration: 2000 });
+      setNewPromo({ ...emptyPromoForm });
+      void promoBannersQuery.refetch();
+    },
+    onError: error => showToast({ message: error.message, duration: 2600 }),
+  });
+
+  const updatePromoBannerMutation = trpc.admin.promoBannerUpdate.useMutation({
+    onSuccess: () => {
+      showToast({ message: "Banner promocional atualizado", duration: 2000 });
+      setEditingPromoId(null);
+      setNewPromo({ ...emptyPromoForm });
+      void promoBannersQuery.refetch();
+    },
+    onError: error => showToast({ message: error.message, duration: 2600 }),
+  });
+
+  const deletePromoBannerMutation = trpc.admin.promoBannerDelete.useMutation({
+    onSuccess: () => {
+      showToast({ message: "Banner promocional removido", duration: 2000 });
+      void promoBannersQuery.refetch();
+    },
+    onError: error => showToast({ message: error.message, duration: 2600 }),
+  });
+
   const backupManualMutation = trpc.admin.backupManual.useMutation({
     onSuccess: data => {
       showToast({ message: `Backup criado: ${data.fileName}`, duration: 2600 });
@@ -199,6 +242,7 @@ export default function Admin() {
           { key: "overview", label: "KPIs" },
           { key: "customers", label: "Clientes" },
           { key: "products", label: "Produtos" },
+          { key: "promos", label: "Promocoes" },
           { key: "orders", label: "Pedidos" },
           { key: "coupons", label: "Cupons" },
           { key: "reports", label: "Relatórios" },
@@ -576,6 +620,113 @@ export default function Admin() {
                       >
                         Rastreio
                       </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {section === "promos" && (
+        <div style={styles.card}>
+          <h2 style={styles.sectionTitle}>Banners promocionais da Home</h2>
+          <div style={styles.formGrid}>
+            <input style={styles.input} placeholder="Badge" value={newPromo.badge} onChange={e => setNewPromo(prev => ({ ...prev, badge: e.target.value }))} />
+            <input style={styles.input} placeholder="Titulo" value={newPromo.title} onChange={e => setNewPromo(prev => ({ ...prev, title: e.target.value }))} />
+            <input style={styles.input} placeholder="Descricao" value={newPromo.description} onChange={e => setNewPromo(prev => ({ ...prev, description: e.target.value }))} />
+            <input style={styles.input} placeholder="CTA" value={newPromo.ctaLabel} onChange={e => setNewPromo(prev => ({ ...prev, ctaLabel: e.target.value }))} />
+            <input style={styles.input} placeholder="Desconto (ex: 30%)" value={newPromo.discountText} onChange={e => setNewPromo(prev => ({ ...prev, discountText: e.target.value }))} />
+            <input style={styles.input} placeholder="Label desconto" value={newPromo.discountLabel} onChange={e => setNewPromo(prev => ({ ...prev, discountLabel: e.target.value }))} />
+            <input style={styles.input} placeholder="Background CSS" value={newPromo.bgStyle} onChange={e => setNewPromo(prev => ({ ...prev, bgStyle: e.target.value }))} />
+            <input style={styles.input} placeholder="Ordem" value={newPromo.sortOrder} onChange={e => setNewPromo(prev => ({ ...prev, sortOrder: e.target.value }))} />
+          </div>
+          <div style={styles.inlineRow}>
+            <label>
+              <input type="checkbox" checked={newPromo.isActive} onChange={e => setNewPromo(prev => ({ ...prev, isActive: e.target.checked }))} /> Ativo
+            </label>
+            <button
+              style={styles.primaryBtn}
+              onClick={() => {
+                const sortOrder = Number(newPromo.sortOrder || "0");
+                if (!newPromo.title.trim() || !newPromo.description.trim() || !newPromo.discountText.trim()) {
+                  showToast({ message: "Preencha titulo, descricao e desconto", duration: 2400 });
+                  return;
+                }
+
+                const payload = {
+                  badge: newPromo.badge.trim() || "PROMOCAO",
+                  title: newPromo.title.trim(),
+                  description: newPromo.description.trim(),
+                  ctaLabel: newPromo.ctaLabel.trim() || "Aproveitar oferta",
+                  discountText: newPromo.discountText.trim(),
+                  discountLabel: newPromo.discountLabel.trim() || "OFF",
+                  bgStyle: newPromo.bgStyle.trim() || "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+                  sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0,
+                  isActive: newPromo.isActive,
+                };
+
+                if (editingPromoId) {
+                  updatePromoBannerMutation.mutate({ id: editingPromoId, ...payload });
+                } else {
+                  createPromoBannerMutation.mutate(payload);
+                }
+              }}
+            >
+              {editingPromoId ? "Salvar banner" : "Criar banner"}
+            </button>
+            {editingPromoId ? (
+              <button
+                style={styles.smallBtn}
+                onClick={() => {
+                  setEditingPromoId(null);
+                  setNewPromo({ ...emptyPromoForm });
+                }}
+              >
+                Cancelar edicao
+              </button>
+            ) : null}
+          </div>
+
+          <div style={styles.tableWrap}>
+            <table style={styles.table}>
+              <thead><tr><th>ID</th><th>Titulo</th><th>Desconto</th><th>Ordem</th><th>Ativo</th><th>Acoes</th></tr></thead>
+              <tbody>
+                {(promoBannersQuery.data ?? []).map((row: any) => (
+                  <tr key={row.id}>
+                    <td>{row.id}</td>
+                    <td>{row.title}</td>
+                    <td>{row.discountText}</td>
+                    <td>{row.sortOrder}</td>
+                    <td>{row.isActive ? "Sim" : "Nao"}</td>
+                    <td style={styles.actionsCell}>
+                      <button
+                        style={styles.smallBtn}
+                        onClick={() => {
+                          setEditingPromoId(row.id);
+                          setNewPromo({
+                            badge: row.badge ?? "PROMOCAO",
+                            title: row.title ?? "",
+                            description: row.description ?? "",
+                            ctaLabel: row.ctaLabel ?? "Aproveitar oferta",
+                            discountText: row.discountText ?? "",
+                            discountLabel: row.discountLabel ?? "OFF",
+                            bgStyle: row.bgStyle ?? "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+                            sortOrder: String(row.sortOrder ?? 0),
+                            isActive: Boolean(row.isActive),
+                          });
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        style={styles.smallBtn}
+                        onClick={() => updatePromoBannerMutation.mutate({ id: row.id, isActive: !row.isActive })}
+                      >
+                        {row.isActive ? "Desativar" : "Ativar"}
+                      </button>
+                      <button style={styles.dangerBtn} onClick={() => deletePromoBannerMutation.mutate({ id: row.id })}>Excluir</button>
                     </td>
                   </tr>
                 ))}

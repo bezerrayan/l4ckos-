@@ -9,6 +9,10 @@ import {
   getAuditLogs,
   getBackupPayload,
   getCoupons,
+  getPromoBanners,
+  createPromoBanner,
+  updatePromoBanner,
+  deletePromoBanner,
   getDashboardKpis,
   getAllOrders,
   getOrdersByFilters,
@@ -319,6 +323,76 @@ export const adminRouter = router({
         actorUserId: ctx.user.id,
         action: "coupon.delete",
         entity: "coupon",
+        entityId: String(input.id),
+      });
+      return { success: true } as const;
+    }),
+
+  promoBannersList: adminProcedure.query(async () => {
+    return await getPromoBanners();
+  }),
+
+  promoBannerCreate: adminProcedure
+    .input(
+      z.object({
+        badge: z.string().min(1).max(80),
+        title: z.string().min(1).max(255),
+        description: z.string().min(1).max(1000),
+        ctaLabel: z.string().min(1).max(120),
+        discountText: z.string().min(1).max(60),
+        discountLabel: z.string().min(1).max(40).default("OFF"),
+        bgStyle: z.string().min(1).max(255),
+        sortOrder: z.number().int().default(0),
+        isActive: z.boolean().default(true),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await createPromoBanner(input);
+      const insertedId = Number((result as any)?.[0]?.insertId ?? 0);
+      await createAuditLog({
+        actorUserId: ctx.user.id,
+        action: "promoBanner.create",
+        entity: "promoBanner",
+        entityId: String(insertedId || "new"),
+      });
+      return { success: true } as const;
+    }),
+
+  promoBannerUpdate: adminProcedure
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+        badge: z.string().min(1).max(80).optional(),
+        title: z.string().min(1).max(255).optional(),
+        description: z.string().min(1).max(1000).optional(),
+        ctaLabel: z.string().min(1).max(120).optional(),
+        discountText: z.string().min(1).max(60).optional(),
+        discountLabel: z.string().min(1).max(40).optional(),
+        bgStyle: z.string().min(1).max(255).optional(),
+        sortOrder: z.number().int().optional(),
+        isActive: z.boolean().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      await updatePromoBanner(id, data);
+      await createAuditLog({
+        actorUserId: ctx.user.id,
+        action: "promoBanner.update",
+        entity: "promoBanner",
+        entityId: String(id),
+      });
+      return { success: true } as const;
+    }),
+
+  promoBannerDelete: adminProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      await deletePromoBanner(input.id);
+      await createAuditLog({
+        actorUserId: ctx.user.id,
+        action: "promoBanner.delete",
+        entity: "promoBanner",
         entityId: String(input.id),
       });
       return { success: true } as const;
