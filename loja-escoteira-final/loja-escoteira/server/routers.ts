@@ -20,6 +20,10 @@ const loginAttemptStore = new Map<string, { count: number; firstAt: number }>();
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 8;
 
+function isAdminEmail(email: string) {
+  return ENV.adminEmails.includes(email.trim().toLowerCase());
+}
+
 function assertLoginAttemptLimit(key: string) {
   const now = Date.now();
   const current = loginAttemptStore.get(key);
@@ -73,6 +77,17 @@ export const appRouter = router({
           throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais inválidas" });
         }
 
+        if (isAdminEmail(normalizedEmail)) {
+          await upsertUser({
+            openId: `local:${normalizedEmail}`,
+            name: normalizedEmail.split("@")[0] || "Admin",
+            email: normalizedEmail,
+            loginMethod: "local-dev",
+            role: "admin",
+            lastSignedIn: new Date(),
+          });
+        }
+
         clearLoginAttemptLimit(`local-login:${normalizedEmail}:${requestIp}`);
 
         const localOpenId = `local:${normalizedEmail}`;
@@ -94,7 +109,7 @@ export const appRouter = router({
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
         const user = await getUserByOpenId(localOpenId);
-        if (user?.isBlocked === 1) {
+        if (user?.isBlocked === 1 && user.role !== "admin") {
           throw new TRPCError({ code: "FORBIDDEN", message: "Usuário bloqueado" });
         }
         return { success: true, user: user ?? null } as const;
@@ -117,7 +132,7 @@ export const appRouter = router({
         assertLoginAttemptLimit(`local-signup:${normalizedEmail}:${requestIp}`);
         const localOpenId = `local:${normalizedEmail}`;
         const normalizedName = input.name.trim();
-        const localRole = normalizedEmail === "admin@local.dev" ? "admin" : "user";
+        const localRole = isAdminEmail(normalizedEmail) ? "admin" : "user";
 
         await upsertUser({
           openId: localOpenId,

@@ -6,6 +6,10 @@ export const ENV = {
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
   googleRedirectUri: process.env.GOOGLE_REDIRECT_URI ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+  adminEmails: (process.env.ADMIN_EMAILS ?? "admin@local.dev")
+    .split(",")
+    .map(item => item.trim().toLowerCase())
+    .filter(Boolean),
   isProduction: process.env.NODE_ENV === "production",
   allowLocalAuthInProduction: process.env.ALLOW_LOCAL_AUTH_IN_PRODUCTION === "true",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
