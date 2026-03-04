@@ -107,6 +107,13 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   const isProduction = process.env.NODE_ENV === "production";
+
+  // Render/Reverse proxies set X-Forwarded-* headers.
+  // express-rate-limit requires trust proxy enabled to resolve client IP safely.
+  if (isProduction) {
+    app.set("trust proxy", 1);
+  }
+
   const allowedOrigins = (process.env.CORS_ORIGINS || "")
     .split(",")
     .map(item => item.trim())
@@ -203,15 +210,35 @@ async function startServer() {
   });
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  app.get("/api/cep/:cep", async (req, res) => {
+    try {
+      const cep = String(req.params.cep ?? "").replace(/\D/g, "").slice(0, 8);
+      if (cep.length !== 8) {
+        res.status(400).json({ error: "CEP invalido" });
+        return;
+      }
+
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!response.ok) {
+        res.status(502).json({ error: "Falha ao consultar CEP" });
+        return;
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("[CEP] Failed request", error);
+      res.status(500).json({ error: "Erro ao consultar CEP" });
+    }
+  });
+
   app.post("/webhook/asaas", async (req, res) => {
     try {
       const configuredWebhookToken = process.env.ASAAS_WEBHOOK_TOKEN?.trim();
       const requestWebhookToken = req.header("asaas-access-token")?.trim();
 
       if (process.env.NODE_ENV === "production" && !configuredWebhookToken) {
-        console.error("[Asaas] ASAAS_WEBHOOK_TOKEN is not configured in production");
-        res.sendStatus(500);
-        return;
+        console.warn("[Asaas] ASAAS_WEBHOOK_TOKEN not configured; accepting webhook in permissive mode");
       }
 
       if (configuredWebhookToken && requestWebhookToken !== configuredWebhookToken) {

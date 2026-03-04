@@ -24,9 +24,24 @@ const emptyProductForm = {
   stock: "0",
   imageUrl: "",
   imagesCsv: "",
+  colorsCsv: "",
+  sizesCsv: "",
+  sizeType: "alpha",
   variantsCsv: "",
   description: "",
 };
+
+const PREDEFINED_CATEGORIES = [
+  "uniformes",
+  "camisas",
+  "calcas",
+  "bermudas",
+  "acessorios",
+  "equipamentos",
+  "camping",
+  "insignias",
+  "calçados",
+];
 
 const emptyPromoForm = {
   badge: "PROMOCAO",
@@ -39,6 +54,27 @@ const emptyPromoForm = {
   sortOrder: "0",
   isActive: true,
 };
+
+function centsToMoneyInput(cents: number | null | undefined) {
+  if (cents === null || cents === undefined) return "";
+  return (Number(cents) / 100).toFixed(2);
+}
+
+function parseMoneyToCents(raw: string) {
+  const cleaned = raw.trim().replace(/[^\d.,-]/g, "");
+  if (!cleaned) return NaN;
+
+  let normalized = cleaned;
+  if (normalized.includes(",") && normalized.includes(".")) {
+    normalized = normalized.replace(/\./g, "").replace(",", ".");
+  } else if (normalized.includes(",")) {
+    normalized = normalized.replace(",", ".");
+  }
+
+  const value = Number(normalized);
+  if (!Number.isFinite(value)) return NaN;
+  return Math.round(value * 100);
+}
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -297,9 +333,21 @@ export default function Admin() {
           <h2 style={styles.sectionTitle}>CRUD de Produtos</h2>
           <div style={styles.formGrid}>
             <input style={styles.input} placeholder="Nome" value={newProduct.name} onChange={e => setNewProduct(prev => ({ ...prev, name: e.target.value }))} />
-            <input style={styles.input} placeholder="Categoria" value={newProduct.category} onChange={e => setNewProduct(prev => ({ ...prev, category: e.target.value }))} />
-            <input style={styles.input} placeholder="Preço (centavos)" value={newProduct.price} onChange={e => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
+            <select style={styles.select} value={newProduct.category} onChange={e => setNewProduct(prev => ({ ...prev, category: e.target.value }))}>
+              <option value="">Selecione categoria</option>
+              {PREDEFINED_CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <input style={styles.input} placeholder="Preço (R$)" value={newProduct.price} onChange={e => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
             <input style={styles.input} placeholder="Estoque" value={newProduct.stock} onChange={e => setNewProduct(prev => ({ ...prev, stock: e.target.value }))} />
+            <input style={styles.input} placeholder="Cores (CSV: preto,branco,verde)" value={newProduct.colorsCsv} onChange={e => setNewProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
+            <select style={styles.select} value={newProduct.sizeType} onChange={e => setNewProduct(prev => ({ ...prev, sizeType: e.target.value }))}>
+              <option value="alpha">Tamanho alfabético (PP,P,M...)</option>
+              <option value="numeric">Tamanho numérico (36,38,40...)</option>
+              <option value="custom">Tamanho customizado</option>
+            </select>
+            <input style={styles.input} placeholder="Tamanhos (CSV: PP,P,M,G,GG ou 36,38,40)" value={newProduct.sizesCsv} onChange={e => setNewProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
             <input style={styles.input} placeholder="Imagem principal" value={newProduct.imageUrl} onChange={e => setNewProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
             <input style={styles.input} placeholder="Outras imagens CSV" value={newProduct.imagesCsv} onChange={e => setNewProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
             <input style={styles.input} placeholder="Variantes CSV (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
@@ -308,7 +356,7 @@ export default function Admin() {
           <button
             style={styles.primaryBtn}
             onClick={() => {
-              const price = Number(newProduct.price);
+              const price = parseMoneyToCents(newProduct.price);
               const stock = Number(newProduct.stock);
               if (!newProduct.name.trim() || !newProduct.category.trim() || !Number.isFinite(price) || price <= 0) {
                 showToast({ message: "Preencha nome/categoria/preço válidos", duration: 2400 });
@@ -316,6 +364,14 @@ export default function Admin() {
               }
 
               const images = newProduct.imagesCsv
+                .split(",")
+                .map(item => item.trim())
+                .filter(Boolean);
+              const optionColors = newProduct.colorsCsv
+                .split(",")
+                .map(item => item.trim())
+                .filter(Boolean);
+              const optionSizes = newProduct.sizesCsv
                 .split(",")
                 .map(item => item.trim())
                 .filter(Boolean);
@@ -329,11 +385,11 @@ export default function Admin() {
                   return {
                     name,
                     sku: sku || null,
-                    price: variantPrice ? Number(variantPrice) : null,
+                    price: variantPrice ? parseMoneyToCents(variantPrice) : null,
                     stock: Number(variantStock || "0"),
                   };
                 })
-                .filter(item => item.name && Number.isFinite(item.stock));
+                .filter(item => item.name && Number.isFinite(item.stock) && (item.price === null || Number.isFinite(item.price)));
 
               createProductMutation.mutate({
                 name: newProduct.name.trim(),
@@ -341,6 +397,9 @@ export default function Admin() {
                 price,
                 stock: Number.isFinite(stock) && stock >= 0 ? stock : 0,
                 imageUrl: newProduct.imageUrl.trim() || undefined,
+                optionColors,
+                optionSizes,
+                sizeType: newProduct.sizeType as "alpha" | "numeric" | "custom",
                 images,
                 variants,
                 description: newProduct.description.trim() || undefined,
@@ -371,12 +430,33 @@ export default function Admin() {
                 }
 
                 setEditingProductId(selected.id);
+                const selectedColors = (() => {
+                  if (!selected.optionColors) return [];
+                  try {
+                    const parsed = JSON.parse(selected.optionColors);
+                    return Array.isArray(parsed) ? parsed.map((item: any) => String(item)) : [];
+                  } catch {
+                    return [];
+                  }
+                })();
+                const selectedSizes = (() => {
+                  if (!selected.optionSizes) return [];
+                  try {
+                    const parsed = JSON.parse(selected.optionSizes);
+                    return Array.isArray(parsed) ? parsed.map((item: any) => String(item)) : [];
+                  } catch {
+                    return [];
+                  }
+                })();
                 setEditProduct({
                   name: selected.name ?? "",
                   category: selected.category ?? "",
-                  price: String(selected.price ?? ""),
+                  price: centsToMoneyInput(selected.price),
                   stock: String(selected.stock ?? 0),
                   imageUrl: selected.imageUrl ?? "",
+                  colorsCsv: selectedColors.join(", "),
+                  sizesCsv: selectedSizes.join(", "),
+                  sizeType: selected.sizeType ?? "alpha",
                   imagesCsv: (selected.images ?? [])
                     .map(item => (typeof item === "string" ? item : item?.imageUrl ?? ""))
                     .filter(Boolean)
@@ -385,7 +465,7 @@ export default function Admin() {
                     .map(item => {
                       const name = item?.name ?? "";
                       const sku = item?.sku ?? "";
-                      const variantPrice = item?.price ?? "";
+                      const variantPrice = centsToMoneyInput(item?.price);
                       const variantStock = item?.stock ?? 0;
                       return `${name}|${sku}|${variantPrice}|${variantStock}`;
                     })
@@ -408,9 +488,21 @@ export default function Admin() {
             <>
               <div style={styles.formGrid}>
                 <input style={styles.input} placeholder="Nome" value={editProduct.name} onChange={e => setEditProduct(prev => ({ ...prev, name: e.target.value }))} />
-                <input style={styles.input} placeholder="Categoria" value={editProduct.category} onChange={e => setEditProduct(prev => ({ ...prev, category: e.target.value }))} />
-                <input style={styles.input} placeholder="Preço (centavos)" value={editProduct.price} onChange={e => setEditProduct(prev => ({ ...prev, price: e.target.value }))} />
+                <select style={styles.select} value={editProduct.category} onChange={e => setEditProduct(prev => ({ ...prev, category: e.target.value }))}>
+                  <option value="">Selecione categoria</option>
+                  {PREDEFINED_CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <input style={styles.input} placeholder="Preço (R$)" value={editProduct.price} onChange={e => setEditProduct(prev => ({ ...prev, price: e.target.value }))} />
                 <input style={styles.input} placeholder="Estoque" value={editProduct.stock} onChange={e => setEditProduct(prev => ({ ...prev, stock: e.target.value }))} />
+                <input style={styles.input} placeholder="Cores (CSV: preto,branco,verde)" value={editProduct.colorsCsv} onChange={e => setEditProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
+                <select style={styles.select} value={editProduct.sizeType} onChange={e => setEditProduct(prev => ({ ...prev, sizeType: e.target.value }))}>
+                  <option value="alpha">Tamanho alfabético (PP,P,M...)</option>
+                  <option value="numeric">Tamanho numérico (36,38,40...)</option>
+                  <option value="custom">Tamanho customizado</option>
+                </select>
+                <input style={styles.input} placeholder="Tamanhos (CSV: PP,P,M,G,GG ou 36,38,40)" value={editProduct.sizesCsv} onChange={e => setEditProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
                 <input style={styles.input} placeholder="Imagem principal" value={editProduct.imageUrl} onChange={e => setEditProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
                 <input style={styles.input} placeholder="Outras imagens CSV" value={editProduct.imagesCsv} onChange={e => setEditProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
                 <input style={styles.input} placeholder="Variantes CSV (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
@@ -422,7 +514,7 @@ export default function Admin() {
                   onClick={() => {
                     if (!editingProductId) return;
 
-                    const price = Number(editProduct.price);
+                    const price = parseMoneyToCents(editProduct.price);
                     const stock = Number(editProduct.stock);
                     if (!editProduct.name.trim() || !editProduct.category.trim() || !Number.isFinite(price) || price <= 0) {
                       showToast({ message: "Preencha nome/categoria/preço válidos", duration: 2400 });
@@ -430,6 +522,14 @@ export default function Admin() {
                     }
 
                     const images = editProduct.imagesCsv
+                      .split(",")
+                      .map(item => item.trim())
+                      .filter(Boolean);
+                    const optionColors = editProduct.colorsCsv
+                      .split(",")
+                      .map(item => item.trim())
+                      .filter(Boolean);
+                    const optionSizes = editProduct.sizesCsv
                       .split(",")
                       .map(item => item.trim())
                       .filter(Boolean);
@@ -443,11 +543,11 @@ export default function Admin() {
                         return {
                           name,
                           sku: sku || null,
-                          price: variantPrice ? Number(variantPrice) : null,
+                          price: variantPrice ? parseMoneyToCents(variantPrice) : null,
                           stock: Number(variantStock || "0"),
                         };
                       })
-                      .filter(item => item.name && Number.isFinite(item.stock));
+                      .filter(item => item.name && Number.isFinite(item.stock) && (item.price === null || Number.isFinite(item.price)));
 
                     updateProductMutation.mutate({
                       id: editingProductId,
@@ -456,6 +556,9 @@ export default function Admin() {
                       price,
                       stock: Number.isFinite(stock) && stock >= 0 ? stock : 0,
                       imageUrl: editProduct.imageUrl.trim() || undefined,
+                      optionColors,
+                      optionSizes,
+                      sizeType: editProduct.sizeType as "alpha" | "numeric" | "custom",
                       images,
                       variants,
                       description: editProduct.description.trim() || undefined,
@@ -479,7 +582,7 @@ export default function Admin() {
 
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Preço (centavos)</th><th>Estoque</th><th>Imagens</th><th>Variantes</th><th>Ação</th></tr></thead>
+              <thead><tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Preço (R$)</th><th>Estoque</th><th>Imagens</th><th>Variantes</th><th>Ação</th></tr></thead>
               <tbody>
                 {products.map(row => (
                   <tr key={row.id}>
@@ -487,7 +590,7 @@ export default function Admin() {
                     <td>
                       <input
                         style={{ ...styles.input, width: 130 }}
-                        value={quickProductEdits[row.id]?.price ?? String(row.price)}
+                        value={quickProductEdits[row.id]?.price ?? centsToMoneyInput(row.price)}
                         onChange={e => {
                           const value = e.target.value;
                           setQuickProductEdits(prev => ({
@@ -509,7 +612,7 @@ export default function Admin() {
                           setQuickProductEdits(prev => ({
                             ...prev,
                             [row.id]: {
-                              price: prev[row.id]?.price ?? String(row.price),
+                              price: prev[row.id]?.price ?? centsToMoneyInput(row.price),
                               stock: value,
                             },
                           }));
@@ -521,7 +624,7 @@ export default function Admin() {
                       <button
                         style={styles.smallBtn}
                         onClick={() => {
-                          const price = Number(quickProductEdits[row.id]?.price ?? row.price);
+                          const price = parseMoneyToCents(quickProductEdits[row.id]?.price ?? centsToMoneyInput(row.price));
                           const stock = Number(quickProductEdits[row.id]?.stock ?? row.stock);
                           if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(stock) || stock < 0) {
                             showToast({ message: "Preço/estoque inválidos", duration: 2400 });
@@ -546,13 +649,34 @@ export default function Admin() {
                       <button
                         style={styles.smallBtn}
                         onClick={() => {
+                          const rowColors = (() => {
+                            if (!row.optionColors) return [];
+                            try {
+                              const parsed = JSON.parse(row.optionColors);
+                              return Array.isArray(parsed) ? parsed.map((item: any) => String(item)) : [];
+                            } catch {
+                              return [];
+                            }
+                          })();
+                          const rowSizes = (() => {
+                            if (!row.optionSizes) return [];
+                            try {
+                              const parsed = JSON.parse(row.optionSizes);
+                              return Array.isArray(parsed) ? parsed.map((item: any) => String(item)) : [];
+                            } catch {
+                              return [];
+                            }
+                          })();
                           setEditingProductId(row.id);
                           setEditProduct({
                             name: row.name ?? "",
                             category: row.category ?? "",
-                            price: String(row.price ?? ""),
+                            price: centsToMoneyInput(row.price),
                             stock: String(row.stock ?? 0),
                             imageUrl: row.imageUrl ?? "",
+                            colorsCsv: rowColors.join(", "),
+                            sizesCsv: rowSizes.join(", "),
+                            sizeType: row.sizeType ?? "alpha",
                             imagesCsv: (row.images ?? [])
                               .map(item => (typeof item === "string" ? item : item?.imageUrl ?? ""))
                               .filter(Boolean)
@@ -561,7 +685,7 @@ export default function Admin() {
                               .map(item => {
                                 const name = item?.name ?? "";
                                 const sku = item?.sku ?? "";
-                                const variantPrice = item?.price ?? "";
+                                const variantPrice = centsToMoneyInput(item?.price);
                                 const variantStock = item?.stock ?? 0;
                                 return `${name}|${sku}|${variantPrice}|${variantStock}`;
                               })
@@ -870,6 +994,7 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 16,
+    overflowX: "hidden",
   },
   centerCard: {
     maxWidth: 520,
@@ -959,10 +1084,17 @@ const styles: Record<string, CSSProperties> = {
   },
   tableWrap: {
     overflowX: "auto",
+    WebkitOverflowScrolling: "touch",
+    border: "1px solid #e5e7eb",
+    borderRadius: 10,
   },
   table: {
     width: "100%",
-    borderCollapse: "collapse",
+    minWidth: 920,
+    borderCollapse: "separate",
+    borderSpacing: 0,
+    fontSize: 14,
+    lineHeight: 1.4,
   },
   actionsCell: {
     display: "flex",

@@ -828,6 +828,44 @@ export async function getCoupons() {
   return rows.map(item => ({ ...item, isActive: item.isActive === 1 }));
 }
 
+export async function getApplicableCouponByCode(code: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const normalizedCode = code.trim().toUpperCase();
+  if (!normalizedCode) return undefined;
+
+  const now = new Date();
+  const rows = await db
+    .select()
+    .from(coupons)
+    .where(eq(coupons.code, normalizedCode))
+    .limit(1);
+
+  if (rows.length === 0) return undefined;
+  const coupon = rows[0];
+  if (coupon.isActive !== 1) return undefined;
+  if (coupon.startsAt && coupon.startsAt > now) return undefined;
+  if (coupon.expiresAt && coupon.expiresAt < now) return undefined;
+  if (coupon.maxUses !== null && coupon.usedCount >= coupon.maxUses) return undefined;
+
+  return coupon;
+}
+
+export async function incrementCouponUsage(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const current = await db
+    .select({ usedCount: coupons.usedCount })
+    .from(coupons)
+    .where(eq(coupons.id, id))
+    .limit(1);
+  if (current.length === 0) return;
+  await db
+    .update(coupons)
+    .set({ usedCount: current[0].usedCount + 1 })
+    .where(eq(coupons.id, id));
+}
+
 export async function updateCoupon(
   id: number,
   payload: Partial<{

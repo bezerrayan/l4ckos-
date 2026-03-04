@@ -11,7 +11,7 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 
 function normalizePrice(value: number) {
-  return value > 1000 ? value / 100 : value;
+  return value / 100;
 }
 
 export default function Produtos() {

@@ -85,6 +85,9 @@ export const products = mysqlTable("products", {
   fullDescription: text("fullDescription"),
   category: varchar("category", { length: 100 }).notNull(),
   price: int("price").notNull(), // em centavos (ex: 8990 = R$ 89.90)
+  optionColors: text("optionColors"), // JSON array de cores exibidas
+  optionSizes: text("optionSizes"), // JSON array de tamanhos exibidos
+  sizeType: mysqlEnum("sizeType", ["alpha", "numeric", "custom"]).default("alpha").notNull(),
   imageUrl: varchar("imageUrl", { length: 500 }),
   stock: int("stock").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

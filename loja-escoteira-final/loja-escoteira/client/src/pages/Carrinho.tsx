@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useCreateAsaasCharge } from "../hooks/useOrders";
 import { useUser } from "../contexts/UserContext";
+import { trpc } from "../lib/trpc";
 
 type CheckoutMethod = "PIX" | "BOLETO" | "CARD";
 
@@ -123,6 +124,20 @@ export default function Carrinho() {
   const [shippingError, setShippingError] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [paymentData, setPaymentData] = useState<ChargeResult | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
+
+  const validateCoupon = trpc.orders.validateCoupon.useMutation();
+  const paymentOrderQuery = trpc.orders.detail.useQuery(paymentData?.orderId ?? 0, {
+    enabled: Boolean(paymentData?.orderId),
+    refetchInterval: data => {
+      const status = (data as any)?.status;
+      if (!status) return 10000;
+      return status === "processing" || status === "shipped" || status === "delivered" ? false : 10000;
+    },
+  });
 
   const selectedShipping = useMemo(
     () => shippingOptions.find(option => option.id === selectedShippingId) ?? null,
@@ -139,13 +154,23 @@ export default function Carrinho() {
     return `${formatter.format(minDate)} a ${formatter.format(maxDate)}`;
   }, [selectedShipping]);
 
-  const orderTotal = cart.total + (selectedShipping?.price ?? 0);
+  const orderBaseTotal = cart.total + (selectedShipping?.price ?? 0);
+  const orderTotal = Math.max(0, Number((orderBaseTotal - couponDiscount).toFixed(2)));
 
   useEffect(() => {
     if (!user) return;
     setCustomerName(user.name || "");
     setCustomerEmail(user.email || "");
   }, [user]);
+
+  useEffect(() => {
+    if (couponDiscount <= 0) return;
+    const normalizedCode = couponCode.trim().toUpperCase();
+    if (!normalizedCode || normalizedCode !== appliedCouponCode) {
+      setCouponDiscount(0);
+      setAppliedCouponCode(null);
+    }
+  }, [cart.total, selectedShipping?.price]);
 
   useEffect(() => {
     if (shippingOptions.length === 0) return;
@@ -222,7 +247,7 @@ export default function Carrinho() {
 
     setAddressLoading(true);
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${normalizedCep}/json/`);
+      const response = await fetch(`/api/cep/${normalizedCep}`);
       if (!response.ok) {
         throw new Error("Falha ao consultar CEP.");
       }
@@ -246,9 +271,33 @@ export default function Carrinho() {
       setAddressState(data.uf || "");
       handleCalculateShipping();
     } catch (error) {
-      setShippingError(error instanceof Error ? error.message : "Não foi possível consultar o CEP.");
+      const message = error instanceof Error ? error.message : "Não foi possível consultar o CEP.";
+      setShippingError(message.includes("Load failed") ? "Não foi possível consultar o CEP agora." : message);
     } finally {
       setAddressLoading(false);
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    setCouponError("");
+    const normalized = couponCode.trim().toUpperCase();
+    if (!normalized) {
+      setCouponDiscount(0);
+      setAppliedCouponCode(null);
+      return;
+    }
+
+    try {
+      const result = await validateCoupon.mutateAsync({
+        code: normalized,
+        totalPrice: Number(orderBaseTotal.toFixed(2)),
+      });
+      setCouponDiscount(Number(result.discountAmount.toFixed(2)));
+      setAppliedCouponCode(result.code);
+    } catch (error) {
+      setCouponDiscount(0);
+      setAppliedCouponCode(null);
+      setCouponError(error instanceof Error ? error.message : "Cupom invalido ou expirado.");
     }
   };
 
@@ -294,6 +343,7 @@ export default function Carrinho() {
           email: customerEmail.trim(),
           cpfCnpj: cpfCnpj.trim(),
         },
+        couponCode: appliedCouponCode || undefined,
       });
 
       setPaymentData(result);
@@ -530,7 +580,7 @@ export default function Carrinho() {
               <div style={styles.summaryRow}>
                 <span style={styles.summaryLabel}>Desconto:</span>
                 <span style={{ ...styles.summaryValue, color: "#555555" }}>
-                  -R$ 0,00
+                  -{formatPrice(couponDiscount)}
                 </span>
               </div>
 
@@ -592,6 +642,35 @@ export default function Carrinho() {
                     Previsao de entrega: <strong>{estimatedDateRange}</strong>
                   </p>
                 ) : null}
+              </div>
+
+              <div style={styles.shippingBox}>
+                <p style={styles.shippingTitle}>Cupom de desconto</p>
+                <div style={styles.shippingInputRow}>
+                  <input
+                    style={styles.checkoutInput}
+                    placeholder="Digite o cupom"
+                    value={couponCode}
+                    onChange={event => setCouponCode(event.target.value.toUpperCase())}
+                  />
+                  <div style={styles.shippingButtonGroup}>
+                    <button
+                      style={styles.shippingCalcButton}
+                      onClick={() => {
+                        void handleApplyCoupon();
+                      }}
+                      disabled={validateCoupon.isPending}
+                    >
+                      {validateCoupon.isPending ? "Validando..." : "Aplicar"}
+                    </button>
+                  </div>
+                </div>
+                {appliedCouponCode ? (
+                  <p style={styles.shippingEstimate}>
+                    Cupom aplicado: <strong>{appliedCouponCode}</strong>
+                  </p>
+                ) : null}
+                {couponError ? <p style={styles.checkoutError}>{couponError}</p> : null}
               </div>
 
               {/* Botões */}
@@ -693,6 +772,9 @@ export default function Carrinho() {
                 <div style={styles.pixBox}>
                   <p style={styles.pixTitle}>
                     Cobrança {paymentData.method} gerada para o pedido #{paymentData.orderId}
+                  </p>
+                  <p style={styles.shippingOptionText}>
+                    Status atual do pedido: <strong>{(paymentOrderQuery.data as any)?.status ?? "pending"}</strong>
                   </p>
 
                   {paymentData.method === "PIX" && paymentData.pixQrCode ? (

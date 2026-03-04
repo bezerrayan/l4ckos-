@@ -117,6 +117,9 @@ export const adminRouter = router({
         description: z.string().optional(),
         fullDescription: z.string().optional(),
         imageUrl: z.string().optional(),
+        optionColors: z.array(z.string().min(1).max(60)).optional().default([]),
+        optionSizes: z.array(z.string().min(1).max(60)).optional().default([]),
+        sizeType: z.enum(["alpha", "numeric", "custom"]).optional().default("alpha"),
         stock: z.number().int().min(0).default(0),
         images: z.array(z.string().url()).optional().default([]),
         variants: z
@@ -133,7 +136,13 @@ export const adminRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { images, variants, ...productData } = input;
+      const { images, variants, optionColors, optionSizes, sizeType, ...rest } = input;
+      const productData = {
+        ...rest,
+        optionColors: optionColors.length > 0 ? JSON.stringify(optionColors) : null,
+        optionSizes: optionSizes.length > 0 ? JSON.stringify(optionSizes) : null,
+        sizeType,
+      };
       const result = await createProduct(productData);
       const insertedId = Number((result as any)?.[0]?.insertId ?? 0);
       if (insertedId > 0) {
@@ -162,6 +171,9 @@ export const adminRouter = router({
         description: z.string().optional(),
         fullDescription: z.string().optional(),
         imageUrl: z.string().optional(),
+        optionColors: z.array(z.string().min(1).max(60)).optional(),
+        optionSizes: z.array(z.string().min(1).max(60)).optional(),
+        sizeType: z.enum(["alpha", "numeric", "custom"]).optional(),
         stock: z.number().int().min(0).optional(),
         images: z.array(z.string().url()).optional(),
         variants: z
@@ -177,7 +189,17 @@ export const adminRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, images, variants, ...data } = input;
+      const { id, images, variants, optionColors, optionSizes, sizeType, ...rest } = input;
+      const data = {
+        ...rest,
+        ...(optionColors !== undefined
+          ? { optionColors: optionColors.length > 0 ? JSON.stringify(optionColors) : null }
+          : {}),
+        ...(optionSizes !== undefined
+          ? { optionSizes: optionSizes.length > 0 ? JSON.stringify(optionSizes) : null }
+          : {}),
+        ...(sizeType !== undefined ? { sizeType } : {}),
+      };
       await updateProduct(id, data);
       if (images) await replaceProductImages(id, images);
       if (variants) await replaceProductVariants(id, variants);

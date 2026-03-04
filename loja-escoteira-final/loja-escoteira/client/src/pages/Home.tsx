@@ -1,6 +1,6 @@
 /**
- * Página Home - Página inicial com promoções e destaques
- * Exibe carrossel de promoções e alguns produtos em destaque
+ * Pagina Home - Pagina inicial com promocoes e destaques
+ * Exibe carrossel de promocoes e alguns produtos em destaque
  */
 
 import { Link } from "react-router-dom";
@@ -12,7 +12,7 @@ import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Home() {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(980);
   const productsQuery = trpc.products.list.useQuery({ limit: 6 });
   const destaque = useMemo(
     () =>
@@ -20,7 +20,7 @@ export default function Home() {
         id: item.id,
         name: item.name,
         description: item.description || "",
-        price: Number(item.price) > 1000 ? Number(item.price) / 100 : Number(item.price),
+        price: Number(item.price) / 100,
         image: item.imageUrl || "/images/camisa.png",
         category: item.category,
         stock: Number(item.stock ?? 0),
@@ -42,16 +42,16 @@ export default function Home() {
       >
         <div style={styles.heroContent}>
           <h1 style={{ ...styles.heroTitle, fontSize: isMobile ? 34 : styles.heroTitle.fontSize }}>
-            Bem-vindo à Nossa Loja
+            Bem-vindo a Nossa Loja
           </h1>
           <p style={{ ...styles.heroSubtitle, fontSize: isMobile ? 16 : styles.heroSubtitle.fontSize }}>
-            Descubra uma seleção variada de produtos de qualidade para esportes, aventura e muito mais
+            Descubra uma selecao variada de produtos de qualidade para esportes, aventura e muito mais
           </p>
-          <div style={styles.heroButtons}>
-            <Link to="/produtos" style={styles.ctaPrimary}>
-              Explorar Catálogo
+          <div style={{ ...styles.heroButtons, flexDirection: isMobile ? "column" : "row" }}>
+            <Link to="/produtos" style={{ ...styles.ctaPrimary, width: isMobile ? "100%" : undefined, textAlign: "center" }}>
+              Explorar Catalogo
             </Link>
-            <a href="#destaques" style={styles.ctaSecondary}>
+            <a href="#destaques" style={{ ...styles.ctaSecondary, width: isMobile ? "100%" : undefined, textAlign: "center" }}>
               Ver Destaques
             </a>
           </div>
@@ -62,7 +62,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Carrossel de Promoções */}
+      {/* Carrossel de Promocoes */}
       <section style={{ ...styles.promoSection, marginBottom: isMobile ? 40 : styles.promoSection.marginBottom }}>
         <PromoCarousel />
       </section>
@@ -71,7 +71,7 @@ export default function Home() {
       <section id="destaques" style={{ ...styles.section, marginBottom: isMobile ? 44 : styles.section.marginBottom }}>
         <div style={styles.sectionHeader}>
           <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Produtos em Destaque</h2>
-          <p style={styles.sectionSubtitle}>Conheça nossa seleção especial dos melhores produtos</p>
+          <p style={styles.sectionSubtitle}>Conheca nossa selecao especial dos melhores produtos</p>
         </div>
 
         <div style={{ ...styles.productsGrid, gap: isMobile ? 16 : styles.productsGrid.gap }}>
@@ -115,7 +115,7 @@ export default function Home() {
             }}
           >
             <div style={styles.benefitIcon}></div>
-            <h3 style={styles.benefitTitle}>Entrega Rápida</h3>
+            <h3 style={styles.benefitTitle}>Entrega Rapida</h3>
             <p style={styles.benefitText}></p>
           </div>
 
@@ -133,8 +133,8 @@ export default function Home() {
             }}
           >
             <div style={styles.benefitIcon}></div>
-            <h3 style={styles.benefitTitle}>Segurança Garantida</h3>
-            <p style={styles.benefitText}>Todos os produtos com garantia e proteção ao comprador</p>
+            <h3 style={styles.benefitTitle}>Seguranca Garantida</h3>
+            <p style={styles.benefitText}>Todos os produtos com garantia e protecao ao comprador</p>
           </div>
 
           <div
@@ -170,16 +170,16 @@ export default function Home() {
           >
             <div style={styles.benefitIcon}></div>
             <h3 style={styles.benefitTitle}>Pagamento Seguro</h3>
-            <p style={styles.benefitText}>Múltiplas opções de pagamento com segurança total</p>
+            <p style={styles.benefitText}>Multiplas opcoes de pagamento com seguranca total</p>
           </div>
         </div>
       </section>
 
       {/* CTA Final */}
       <section style={{ ...styles.ctaSection, padding: isMobile ? 28 : styles.ctaSection.padding }}>
-        <h2 style={{ ...styles.ctaTitle, fontSize: isMobile ? 28 : styles.ctaTitle.fontSize }}>Pronto para sua próxima compra?</h2>
-        <p style={styles.ctaDescription}>Explore nossa coleção completa de produtos premium</p>
-        <Link to="/produtos" style={styles.ctaBig}>
+        <h2 style={{ ...styles.ctaTitle, fontSize: isMobile ? 28 : styles.ctaTitle.fontSize }}>Pronto para sua proxima compra?</h2>
+        <p style={styles.ctaDescription}>Explore nossa colecao completa de produtos premium</p>
+        <Link to="/produtos" style={{ ...styles.ctaBig, width: isMobile ? "100%" : undefined, textAlign: "center" }}>
           Navegar pela Loja
         </Link>
       </section>
@@ -191,16 +191,17 @@ const styles: Record<string, CSSProperties> = {
   heroContainer: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: 60,
+    gap: 40,
     alignItems: "center",
     marginBottom: 80,
     padding: "60px 0",
+    width: "100%",
   },
   heroContent: {
     animation: "slideInRight 0.8s ease-out",
   },
   heroTitle: {
-    fontSize: 52,
+    fontSize: 48,
     fontWeight: 900,
     color: "#1a1a1a",
     marginBottom: 20,
@@ -208,7 +209,7 @@ const styles: Record<string, CSSProperties> = {
     letterSpacing: "-1px",
   },
   heroSubtitle: {
-    fontSize: 20,
+    fontSize: 19,
     color: "#666666",
     marginBottom: 32,
     lineHeight: 1.6,
@@ -281,7 +282,7 @@ const styles: Record<string, CSSProperties> = {
   },
   productsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: 32,
     marginBottom: 48,
   },

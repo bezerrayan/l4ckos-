@@ -12,15 +12,22 @@ import { useState, useEffect } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 
-const COLORS = [
-  { name: "Preto", hex: "#1a1a1a" },
-  { name: "Branco", hex: "#ffffff" },
-  { name: "Azul", hex: "#1e40af" },
-  { name: "Vermelho", hex: "#dc2626" },
-  { name: "Verde", hex: "#15803d" },
-];
-
-const SIZES = ["PP", "P", "M", "G", "GG", "XG"];
+const DEFAULT_COLORS = ["Preto", "Branco", "Azul", "Vermelho", "Verde"];
+const DEFAULT_SIZES = ["PP", "P", "M", "G", "GG", "XG"];
+const COLOR_HEX_BY_NAME: Record<string, string> = {
+  preto: "#1a1a1a",
+  branco: "#ffffff",
+  azul: "#1e40af",
+  vermelho: "#dc2626",
+  verde: "#15803d",
+  cinza: "#6b7280",
+  amarelo: "#f59e0b",
+  bege: "#d6c6a5",
+  marrom: "#7c4a2d",
+  rosa: "#ec4899",
+  roxo: "#7c3aed",
+  laranja: "#ea580c",
+};
 
 const RATINGS = [
   { stars: 5, count: 45 },
@@ -37,7 +44,18 @@ const EXTRA_IMAGES = [
 ];
 
 function normalizePrice(value: number) {
-  return value > 1000 ? value / 100 : value;
+  return value / 100;
+}
+
+function parseJsonList(raw: unknown): string[] {
+  if (!raw || typeof raw !== "string") return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(item => String(item).trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
 }
 
 export default function ProductDetail() {
@@ -68,6 +86,9 @@ export default function ProductDetail() {
         image: productQuery.data.imageUrl || "/images/camisa.png",
         category: productQuery.data.category,
         stock: Number(productQuery.data.stock ?? 0),
+        optionColors: parseJsonList((productQuery.data as any).optionColors),
+        optionSizes: parseJsonList((productQuery.data as any).optionSizes),
+        sizeType: String((productQuery.data as any).sizeType ?? "alpha"),
         images:
           Array.isArray((productQuery.data as any).images) &&
           (productQuery.data as any).images.length > 0
@@ -122,6 +143,11 @@ export default function ProductDetail() {
   const totalRatings = RATINGS.reduce((sum, r) => sum + r.count, 0);
   const averageRating =
     RATINGS.reduce((sum, r) => sum + r.stars * r.count, 0) / totalRatings;
+  const colorOptions = (product.optionColors?.length ? product.optionColors : DEFAULT_COLORS).map(name => ({
+    name,
+    hex: COLOR_HEX_BY_NAME[name.toLowerCase()] ?? "#d1d5db",
+  }));
+  const sizeOptions = product.optionSizes?.length ? product.optionSizes : DEFAULT_SIZES;
   const canAddToCart = Boolean(selectedColor && selectedSize);
   const missingSelections: string[] = [];
   if (!selectedColor) missingSelections.push("cor");
@@ -278,7 +304,7 @@ export default function ProductDetail() {
           <div style={styles.sectionBlock as CSSProperties}>
             <h3 style={styles.sectionTitle as CSSProperties}>Cores Disponíveis</h3>
             <div style={styles.colorGrid as CSSProperties}>
-              {COLORS.map((color) => (
+              {colorOptions.map((color) => (
                 <button
                   key={color.name}
                   onClick={() => setSelectedColor(color.name)}
@@ -303,14 +329,14 @@ export default function ProductDetail() {
           </div>
 
           <div style={styles.sectionBlock as CSSProperties}>
-            <h3 style={styles.sectionTitle as CSSProperties}>Tamanho</h3>
+            <h3 style={styles.sectionTitle as CSSProperties}>{product.sizeType === "numeric" ? "Tamanho (numerico)" : "Tamanho"}</h3>
             <div
               style={{
                 ...styles.sizeGrid,
-                gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : styles.sizeGrid.gridTemplateColumns,
+                gridTemplateColumns: isMobile ? (product.sizeType === "numeric" ? "repeat(4, 1fr)" : "repeat(3, 1fr)") : styles.sizeGrid.gridTemplateColumns,
               } as CSSProperties}
             >
-              {SIZES.map((size) => (
+              {sizeOptions.map((size) => (
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}

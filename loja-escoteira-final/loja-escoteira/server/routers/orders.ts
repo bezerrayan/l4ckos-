@@ -8,6 +8,8 @@ import {
   getOrderReservationItems,
   getOrderByTrackingCodeAndUser,
   getOrdersByUserId,
+  getApplicableCouponByCode,
+  incrementCouponUsage,
   reserveStockForOrder,
 } from "../db";
 import { createAsaasChargeForOrder } from "../services/asaas";
@@ -72,6 +74,37 @@ export const ordersRouter = router({
     }),
 
   // Create order + Asaas charge (PIX, boleto, card via invoice)
+  validateCoupon: protectedProcedure
+    .input(
+      z.object({
+        code: z.string().trim().min(2).max(64),
+        totalPrice: z.number().positive(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const coupon = await getApplicableCouponByCode(input.code);
+      if (!coupon) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Cupom invalido ou expirado" });
+      }
+
+      const total = input.totalPrice;
+      let discount = 0;
+      if (coupon.type === "percent") {
+        discount = Number(((total * coupon.value) / 100).toFixed(2));
+      } else {
+        discount = Number(coupon.value.toFixed(2));
+      }
+
+      const normalizedDiscount = Math.max(0, Math.min(total, discount));
+      return {
+        couponId: coupon.id,
+        code: coupon.code,
+        type: coupon.type,
+        discountAmount: normalizedDiscount,
+        finalTotal: Number((total - normalizedDiscount).toFixed(2)),
+      } as const;
+    }),
+
   createAsaasCharge: protectedProcedure
     .input(
       z.object({
@@ -97,13 +130,30 @@ export const ordersRouter = router({
             .refine(value => value.length === 11 || value.length === 14, "Invalid CPF/CNPJ"),
           email: z.string().email().optional(),
         }),
+        couponCode: z.string().trim().min(2).max(64).optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       let orderId = 0;
 
       try {
-        orderId = await createOrderWithId(ctx.user.id, input.totalPrice);
+        let finalTotal = Number(input.totalPrice.toFixed(2));
+        let appliedCouponId: number | null = null;
+
+        if (input.couponCode) {
+          const coupon = await getApplicableCouponByCode(input.couponCode);
+          if (!coupon) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Cupom invalido ou expirado" });
+          }
+          const discount =
+            coupon.type === "percent"
+              ? Number(((finalTotal * coupon.value) / 100).toFixed(2))
+              : Number(coupon.value.toFixed(2));
+          finalTotal = Number(Math.max(0, finalTotal - Math.min(finalTotal, discount)).toFixed(2));
+          appliedCouponId = coupon.id;
+        }
+
+        orderId = await createOrderWithId(ctx.user.id, finalTotal);
         await reserveStockForOrder({
           userId: ctx.user.id,
           orderId,
@@ -113,7 +163,7 @@ export const ordersRouter = router({
         const payment = await createAsaasChargeForOrder({
           orderId,
           method: input.method,
-          value: input.totalPrice,
+          value: finalTotal,
           description: input.description,
           dueDate: input.dueDate,
           customer: {
@@ -122,6 +172,10 @@ export const ordersRouter = router({
             email: input.customer.email || ctx.user.email || undefined,
           },
         });
+
+        if (appliedCouponId) {
+          await incrementCouponUsage(appliedCouponId);
+        }
 
         return {
           orderId,

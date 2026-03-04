@@ -28,7 +28,7 @@ import { useIsMobile } from "./hooks/useIsMobile";
  * Nota: Providers são adicionados em main.tsx
  */
 export default function App() {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(980);
 
   return (
     <BrowserRouter>
@@ -40,6 +40,8 @@ export default function App() {
           maxWidth: 1400,
           margin: "0 auto",
           padding: isMobile ? "20px 14px" : "40px 32px",
+          width: "100%",
+          overflowX: "clip",
         }}
       >
         <Routes>

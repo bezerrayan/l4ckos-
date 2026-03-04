@@ -7,7 +7,7 @@ import { useIsMobile } from "../hooks/useIsMobile";
 export default function Header() {
   const { favorites } = useFavorites();
   const { user, logout } = useUser();
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(980);
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -146,7 +146,7 @@ export default function Header() {
               style={{
                 ...styles.nav,
                 gap: isMobile ? 8 : styles.nav.gap,
-                flexWrap: isMobile ? "nowrap" : "nowrap",
+                flexWrap: isMobile ? "wrap" : "nowrap",
                 justifyContent: isMobile ? "flex-start" : "flex-start",
                 flexDirection: isMobile ? "column" : "row",
                 alignItems: isMobile ? "stretch" : "center",
@@ -463,6 +463,8 @@ const styles: Record<string, CSSProperties> = {
     top: 0,
     zIndex: 100,
     boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+    width: "100%",
+    overflowX: "clip",
   },
   container: {
     display: "flex",
@@ -471,6 +473,7 @@ const styles: Record<string, CSSProperties> = {
     maxWidth: 1400,
     margin: "0 auto",
     padding: "16px 32px",
+    width: "100%",
   },
   mobileTopRow: {
     display: "flex",

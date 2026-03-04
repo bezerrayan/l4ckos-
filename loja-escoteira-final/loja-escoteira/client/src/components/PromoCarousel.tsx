@@ -38,7 +38,7 @@ const PROMOS_FALLBACK: Promo[] = [
 ];
 
 export default function PromoCarousel() {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(980);
   const [current, setCurrent] = useState(0);
   const promotionsQuery = trpc.products.promotions.useQuery();
 
@@ -68,7 +68,7 @@ export default function PromoCarousel() {
         style={{
           ...styles.slide,
           background: promo.color,
-          gridTemplateColumns: isMobile ? "1fr" : styles.slide.gridTemplateColumns,
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(220px, 1fr))",
           gap: isMobile ? 16 : styles.slide.gap,
           padding: isMobile ? 20 : styles.slide.padding,
           minHeight: isMobile ? 0 : styles.slide.minHeight,
@@ -78,10 +78,10 @@ export default function PromoCarousel() {
           <p style={styles.badge}>{promo.badge}</p>
           <h2 style={{ ...styles.title, fontSize: isMobile ? 24 : styles.title.fontSize }}>{promo.title}</h2>
           <p style={{ ...styles.description, fontSize: isMobile ? 14 : styles.description.fontSize }}>{promo.description}</p>
-          <button style={styles.cta}>{promo.ctaLabel}</button>
+          <button style={{ ...styles.cta, width: isMobile ? "100%" : undefined }}>{promo.ctaLabel}</button>
         </div>
 
-        <div style={{ ...styles.discount, padding: isMobile ? 16 : styles.discount.padding }}>
+        <div style={{ ...styles.discount, padding: isMobile ? 16 : styles.discount.padding, width: isMobile ? "100%" : undefined }}>
           <p style={{ ...styles.discountValue, fontSize: isMobile ? 34 : styles.discountValue.fontSize }}>{promo.discount}</p>
           <p style={styles.discountLabel}>{promo.discountLabel || "OFF"}</p>
         </div>
@@ -120,7 +120,7 @@ const styles: Record<string, CSSProperties> = {
   },
   slide: {
     display: "grid",
-    gridTemplateColumns: "1fr 200px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: 40,
     alignItems: "center",
     padding: 48,
@@ -222,4 +222,3 @@ const styles: Record<string, CSSProperties> = {
     width: 28,
   },
 };
-
