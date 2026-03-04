@@ -20,3 +20,13 @@ export function useCreateOrder() {
 export function useCreateAsaasCharge() {
   return trpc.orders.createAsaasCharge.useMutation();
 }
+
+/**
+ * Hook para rastrear pedido por numero ou codigo de rastreio
+ */
+export function useTrackOrder(input?: { orderId?: number; trackingCode?: string }) {
+  return trpc.orders.track.useQuery(input ?? { orderId: 1 }, {
+    enabled: Boolean(input?.orderId || input?.trackingCode),
+    retry: false,
+  });
+}

@@ -6,7 +6,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { formatPrice } from "../lib/utils";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useCreateAsaasCharge } from "../hooks/useOrders";
 import { useUser } from "../contexts/UserContext";
@@ -24,6 +24,84 @@ type ChargeResult = {
   digitableLine: string | null;
 };
 
+type ShippingOption = {
+  id: "economico" | "expresso" | "retirada";
+  label: string;
+  description: string;
+  price: number;
+  minDays: number;
+  maxDays: number;
+};
+
+function sanitizeCep(value: string) {
+  return value.replace(/\D/g, "").slice(0, 8);
+}
+
+function formatCep(value: string) {
+  const digits = sanitizeCep(value);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
+function addBusinessDays(startDate: Date, daysToAdd: number) {
+  const date = new Date(startDate);
+  let addedDays = 0;
+
+  while (addedDays < daysToAdd) {
+    date.setDate(date.getDate() + 1);
+    const weekDay = date.getDay();
+    if (weekDay !== 0 && weekDay !== 6) {
+      addedDays += 1;
+    }
+  }
+
+  return date;
+}
+
+function buildShippingOptions(cep: string, subtotal: number, itemCount: number): ShippingOption[] {
+  const digits = sanitizeCep(cep);
+  const regionDigit = Number(digits.charAt(0) || "0");
+  const regionFactor = regionDigit <= 3 ? 1 : regionDigit <= 5 ? 1.2 : regionDigit <= 7 ? 1.45 : 1.8;
+  const volumeFactor = 1 + Math.max(0, itemCount - 1) * 0.12;
+  const freeShipping = subtotal >= 350;
+
+  const economicoPrice = freeShipping ? 0 : Number((14 * regionFactor * volumeFactor + itemCount * 1.5).toFixed(2));
+  const expressoPrice = Number((23 * regionFactor * volumeFactor + itemCount * 2.5).toFixed(2));
+
+  const options: ShippingOption[] = [
+    {
+      id: "economico",
+      label: freeShipping ? "Economico (Gratis)" : "Economico",
+      description: "Entrega padrão com melhor custo-beneficio",
+      price: economicoPrice,
+      minDays: regionDigit <= 5 ? 4 : 6,
+      maxDays: regionDigit <= 5 ? 7 : 11,
+    },
+    {
+      id: "expresso",
+      label: "Expresso",
+      description: "Entrega mais rapida para urgencias",
+      price: expressoPrice,
+      minDays: regionDigit <= 5 ? 2 : 3,
+      maxDays: regionDigit <= 5 ? 4 : 6,
+    },
+  ];
+
+  const localPrefixes = ["70", "71", "72", "73", "74", "75"];
+  if (localPrefixes.some(prefix => digits.startsWith(prefix))) {
+    options.push({
+      id: "retirada",
+      label: "Retirada/Entrega local",
+      description: "Agendamento local (DF e entorno)",
+      price: 0,
+      minDays: 1,
+      maxDays: 2,
+    });
+  }
+
+  return options;
+}
+
 export default function Carrinho() {
   const isMobile = useIsMobile();
   const { cart, removeFromCart, updateQuantity } = useCart();
@@ -33,14 +111,48 @@ export default function Carrinho() {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [cpfCnpj, setCpfCnpj] = useState("");
+  const [cep, setCep] = useState("");
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [selectedShippingId, setSelectedShippingId] = useState<ShippingOption["id"] | null>(null);
+  const [shippingError, setShippingError] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [paymentData, setPaymentData] = useState<ChargeResult | null>(null);
+
+  const selectedShipping = useMemo(
+    () => shippingOptions.find(option => option.id === selectedShippingId) ?? null,
+    [shippingOptions, selectedShippingId],
+  );
+
+  const estimatedDateRange = useMemo(() => {
+    if (!selectedShipping) return "";
+
+    const minDate = addBusinessDays(new Date(), selectedShipping.minDays);
+    const maxDate = addBusinessDays(new Date(), selectedShipping.maxDays);
+    const formatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" });
+
+    return `${formatter.format(minDate)} a ${formatter.format(maxDate)}`;
+  }, [selectedShipping]);
+
+  const orderTotal = cart.total + (selectedShipping?.price ?? 0);
 
   useEffect(() => {
     if (!user) return;
     setCustomerName(user.name || "");
     setCustomerEmail(user.email || "");
   }, [user]);
+
+  useEffect(() => {
+    if (shippingOptions.length === 0) return;
+    const normalizedCep = sanitizeCep(cep);
+    if (normalizedCep.length !== 8) return;
+
+    const updatedOptions = buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
+    setShippingOptions(updatedOptions);
+
+    if (!updatedOptions.some(option => option.id === selectedShippingId)) {
+      setSelectedShippingId(updatedOptions[0]?.id ?? null);
+    }
+  }, [cart.total, cart.itemCount, cep, shippingOptions.length, selectedShippingId]);
 
   const getItemKey = (productId: number, selectedOptions?: Record<string, string>) => {
     if (!selectedOptions) return `${productId}`;
@@ -78,6 +190,22 @@ export default function Carrinho() {
     await navigator.clipboard.writeText(value);
   };
 
+  const handleCalculateShipping = () => {
+    setShippingError("");
+    const normalizedCep = sanitizeCep(cep);
+
+    if (normalizedCep.length !== 8) {
+      setShippingOptions([]);
+      setSelectedShippingId(null);
+      setShippingError("Informe um CEP valido com 8 digitos.");
+      return;
+    }
+
+    const options = buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
+    setShippingOptions(options);
+    setSelectedShippingId(options[0]?.id ?? null);
+  };
+
   const handleCheckout = async () => {
     setPaymentError("");
 
@@ -91,6 +219,11 @@ export default function Carrinho() {
       return;
     }
 
+    if (!selectedShipping) {
+      setPaymentError("Calcule e selecione o frete antes de finalizar a compra.");
+      return;
+    }
+
     try {
       const description = cart.items
         .slice(0, 2)
@@ -99,8 +232,8 @@ export default function Carrinho() {
 
       const result = await createAsaasCharge.mutateAsync({
         method: checkoutMethod,
-        totalPrice: Number(cart.total.toFixed(2)),
-        description: description || "Pedido Loja Escoteira",
+        totalPrice: Number(orderTotal.toFixed(2)),
+        description: `${description || "Pedido Loja Escoteira"} | Frete: ${selectedShipping.label}`,
         customer: {
           name: customerName.trim(),
           email: customerEmail.trim(),
@@ -335,7 +468,7 @@ export default function Carrinho() {
               <div style={styles.summaryRow}>
                 <span style={styles.summaryLabel}>Frete:</span>
                 <span style={{ ...styles.summaryValue, color: "#555555" }}>
-                  Grátis
+                  {selectedShipping ? formatPrice(selectedShipping.price) : "Calcular"}
                 </span>
               </div>
 
@@ -351,7 +484,54 @@ export default function Carrinho() {
               {/* Total */}
               <div style={styles.totalRow}>
                 <span style={styles.totalLabel}>Total:</span>
-                <span style={styles.totalAmount}>{formatPrice(cart.total)}</span>
+                <span style={styles.totalAmount}>{formatPrice(orderTotal)}</span>
+              </div>
+
+              <div style={styles.shippingBox}>
+                <p style={styles.shippingTitle}>Calcular frete</p>
+                <div style={styles.shippingInputRow}>
+                  <input
+                    style={styles.checkoutInput}
+                    placeholder="CEP (somente numeros)"
+                    value={formatCep(cep)}
+                    onChange={event => setCep(event.target.value)}
+                  />
+                  <button style={styles.shippingCalcButton} onClick={handleCalculateShipping}>
+                    Calcular
+                  </button>
+                </div>
+
+                {shippingError ? <p style={styles.checkoutError}>{shippingError}</p> : null}
+
+                {shippingOptions.length > 0 ? (
+                  <div style={styles.shippingOptionsList}>
+                    {shippingOptions.map(option => (
+                      <button
+                        key={option.id}
+                        style={{
+                          ...styles.shippingOption,
+                          ...(selectedShippingId === option.id ? styles.shippingOptionActive : {}),
+                        }}
+                        onClick={() => setSelectedShippingId(option.id)}
+                      >
+                        <div style={styles.shippingOptionTop}>
+                          <strong>{option.label}</strong>
+                          <strong>{formatPrice(option.price)}</strong>
+                        </div>
+                        <p style={styles.shippingOptionText}>{option.description}</p>
+                        <p style={styles.shippingOptionText}>
+                          Prazo: {option.minDays} a {option.maxDays} dias uteis
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
+                {selectedShipping ? (
+                  <p style={styles.shippingEstimate}>
+                    Previsao de entrega: <strong>{estimatedDateRange}</strong>
+                  </p>
+                ) : null}
               </div>
 
               {/* Botões */}
@@ -498,7 +678,7 @@ export default function Carrinho() {
             <div style={styles.infoBox}>
               <p style={styles.infoTitle}>💚 Benefícios:</p>
               <ul style={styles.infoBenefits}>
-                <li>✓ Entrega em até 5 dias úteis</li>
+                <li>✓ Frete calculado por CEP com prazo estimado</li>
                 <li>✓ Garantia do fabricante</li>
                 <li>✓ Suporte ao cliente 24/7</li>
               </ul>
@@ -866,6 +1046,71 @@ const styles: Record<string, CSSProperties> = {
     color: "#1a1a1a",
     background: "#ffffff",
     outline: "none",
+  },
+  shippingBox: {
+    border: "1px solid #e2e8f0",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    background: "#f8fafc",
+  },
+  shippingTitle: {
+    margin: "0 0 10px 0",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#1a1a1a",
+  },
+  shippingInputRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: 8,
+    marginBottom: 10,
+  },
+  shippingCalcButton: {
+    border: "none",
+    borderRadius: 8,
+    background: "#1f2937",
+    color: "white",
+    fontWeight: 700,
+    fontSize: 13,
+    padding: "0 14px",
+    cursor: "pointer",
+  },
+  shippingOptionsList: {
+    display: "grid",
+    gap: 8,
+  },
+  shippingOption: {
+    border: "1px solid #d1d5db",
+    borderRadius: 8,
+    padding: 10,
+    background: "#ffffff",
+    textAlign: "left",
+    cursor: "pointer",
+  },
+  shippingOptionActive: {
+    border: "1px solid #111827",
+    background: "#f3f4f6",
+  },
+  shippingOptionTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 10,
+    fontSize: 13,
+    color: "#111827",
+    marginBottom: 4,
+  },
+  shippingOptionText: {
+    margin: 0,
+    fontSize: 12,
+    color: "#6b7280",
+    lineHeight: 1.4,
+  },
+  shippingEstimate: {
+    margin: "10px 0 0 0",
+    fontSize: 12,
+    color: "#0f766e",
+    fontWeight: 600,
   },
   checkoutBtn: {
     width: "100%",

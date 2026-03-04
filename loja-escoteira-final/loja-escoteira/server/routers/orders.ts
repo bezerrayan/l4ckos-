@@ -1,7 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
-import { createOrder, createOrderWithId, getOrdersByUserId } from "../db";
+import {
+  createOrder,
+  createOrderWithId,
+  getOrderByIdAndUser,
+  getOrderByTrackingCodeAndUser,
+  getOrdersByUserId,
+} from "../db";
 import { createAsaasChargeForOrder } from "../services/asaas";
 
 export const ordersRouter = router({
@@ -10,6 +16,33 @@ export const ordersRouter = router({
     const orders = await getOrdersByUserId(ctx.user.id);
     return orders;
   }),
+
+  // Track order by order number or tracking code
+  track: protectedProcedure
+    .input(
+      z
+        .object({
+          orderId: z.number().int().positive().optional(),
+          trackingCode: z.string().trim().min(3).max(120).optional(),
+        })
+        .refine(data => data.orderId || data.trackingCode, {
+          message: "Informe o numero do pedido ou codigo de rastreio",
+        }),
+    )
+    .query(async ({ input, ctx }) => {
+      const order = input.orderId
+        ? await getOrderByIdAndUser(input.orderId, ctx.user.id)
+        : await getOrderByTrackingCodeAndUser(input.trackingCode ?? "", ctx.user.id);
+
+      if (!order) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Pedido nao encontrado para este usuario",
+        });
+      }
+
+      return order;
+    }),
 
   // Create order only
   create: protectedProcedure

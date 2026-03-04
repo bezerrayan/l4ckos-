@@ -6,4 +6,7 @@
 export { default as Home } from "./Home";
 export { default as Produtos } from "./Produtos";
 export { default as Carrinho } from "./Carrinho";
+export { default as MeusPedidos } from "./MeusPedidos";
+export { default as AcompanharPedido } from "./AcompanharPedido";
+export { default as TrocasDevolucoes } from "./TrocasDevolucoes";
 export { default as NotFound } from "./NotFound";

@@ -199,6 +199,35 @@ export async function getOrdersByUserId(userId: number) {
   return await db.select().from(orders).where(eq(orders.userId, userId));
 }
 
+export async function getOrderByIdAndUser(orderId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.id, orderId), eq(orders.userId, userId)))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function getOrderByTrackingCodeAndUser(trackingCode: string, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const normalizedTrackingCode = trackingCode.trim();
+  if (!normalizedTrackingCode) return undefined;
+
+  const result = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.trackingCode, normalizedTrackingCode), eq(orders.userId, userId)))
+    .limit(1);
+
+  return result[0];
+}
+
 export async function getAllOrders() {
   const db = await getDb();
   if (!db) return [];

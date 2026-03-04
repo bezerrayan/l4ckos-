@@ -17,6 +17,9 @@ import FAQs from "./pages/FAQs";
 import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import NotFound from "./pages/NotFound";
+import MeusPedidos from "./pages/MeusPedidos";
+import AcompanharPedido from "./pages/AcompanharPedido";
+import TrocasDevolucoes from "./pages/TrocasDevolucoes";
 import { useIsMobile } from "./hooks/useIsMobile";
 
 /**
@@ -47,10 +50,13 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/meus-pedidos" element={<MeusPedidos />} />
+          <Route path="/acompanhar-pedido" element={<AcompanharPedido />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/contato" element={<Contato />} />
           <Route path="/faqs" element={<FAQs />} />
+          <Route path="/trocas-e-devolucoes" element={<TrocasDevolucoes />} />
           <Route path="/termos" element={<Termos />} />
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="*" element={<NotFound />} />

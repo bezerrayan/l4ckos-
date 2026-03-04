@@ -61,6 +61,12 @@ export default function Footer() {
               <Link to="/carrinho" style={styles.link}>Carrinho</Link>
             </li>
             <li>
+              <Link to="/meus-pedidos" style={styles.link}>Meus Pedidos</Link>
+            </li>
+            <li>
+              <Link to="/acompanhar-pedido" style={styles.link}>Acompanhar Pedido</Link>
+            </li>
+            <li>
               <Link to="/sobre" style={styles.link}>Sobre Nós</Link>
             </li>
             <li>
@@ -81,6 +87,12 @@ export default function Footer() {
             </li>
             <li>
               <Link to="/termos" style={styles.link}>Termos de Serviço</Link>
+            </li>
+            <li>
+              <Link to="/trocas-e-devolucoes" style={styles.link}>Trocas e Devolucoes</Link>
+            </li>
+            <li>
+              <Link to="/acompanhar-pedido" style={styles.link}>Rastreio e Entrega</Link>
             </li>
             <li>
               <Link to="/contato" style={styles.link}>Contato</Link>
