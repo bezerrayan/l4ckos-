@@ -19,6 +19,7 @@ import {
   userAddresses,
   userPaymentMethods,
   stockReservations,
+  promoBanners,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -75,6 +76,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.role = user.role;
       updateSet.role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
+      values.role = 'admin';
+      updateSet.role = 'admin';
+    } else if (user.email && ENV.adminEmails.includes(user.email.trim().toLowerCase())) {
       values.role = 'admin';
       updateSet.role = 'admin';
     }
@@ -856,6 +860,85 @@ export async function deleteCoupon(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return await db.delete(coupons).where(eq(coupons.id, id));
+}
+
+export async function getPromoBanners(options?: { activeOnly?: boolean }) {
+  const db = await getDb();
+  if (!db) return [];
+  const activeOnly = options?.activeOnly ?? false;
+  const rows = activeOnly
+    ? await db
+        .select()
+        .from(promoBanners)
+        .where(eq(promoBanners.isActive, 1))
+        .orderBy(promoBanners.sortOrder, desc(promoBanners.id))
+    : await db.select().from(promoBanners).orderBy(promoBanners.sortOrder, desc(promoBanners.id));
+
+  return rows.map(item => ({ ...item, isActive: item.isActive === 1 }));
+}
+
+export async function createPromoBanner(payload: {
+  badge: string;
+  title: string;
+  description: string;
+  ctaLabel: string;
+  discountText: string;
+  discountLabel: string;
+  bgStyle: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return await db.insert(promoBanners).values({
+    badge: payload.badge,
+    title: payload.title,
+    description: payload.description,
+    ctaLabel: payload.ctaLabel,
+    discountText: payload.discountText,
+    discountLabel: payload.discountLabel,
+    bgStyle: payload.bgStyle,
+    sortOrder: payload.sortOrder ?? 0,
+    isActive: payload.isActive === false ? 0 : 1,
+  });
+}
+
+export async function updatePromoBanner(
+  id: number,
+  payload: Partial<{
+    badge: string;
+    title: string;
+    description: string;
+    ctaLabel: string;
+    discountText: string;
+    discountLabel: string;
+    bgStyle: string;
+    sortOrder: number;
+    isActive: boolean;
+  }>,
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return await db
+    .update(promoBanners)
+    .set({
+      ...(payload.badge !== undefined ? { badge: payload.badge } : {}),
+      ...(payload.title !== undefined ? { title: payload.title } : {}),
+      ...(payload.description !== undefined ? { description: payload.description } : {}),
+      ...(payload.ctaLabel !== undefined ? { ctaLabel: payload.ctaLabel } : {}),
+      ...(payload.discountText !== undefined ? { discountText: payload.discountText } : {}),
+      ...(payload.discountLabel !== undefined ? { discountLabel: payload.discountLabel } : {}),
+      ...(payload.bgStyle !== undefined ? { bgStyle: payload.bgStyle } : {}),
+      ...(payload.sortOrder !== undefined ? { sortOrder: payload.sortOrder } : {}),
+      ...(payload.isActive !== undefined ? { isActive: payload.isActive ? 1 : 0 } : {}),
+    })
+    .where(eq(promoBanners.id, id));
+}
+
+export async function deletePromoBanner(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return await db.delete(promoBanners).where(eq(promoBanners.id, id));
 }
 
 export async function createAuditLog(payload: {
