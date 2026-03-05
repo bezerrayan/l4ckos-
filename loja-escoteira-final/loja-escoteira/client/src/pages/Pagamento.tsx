@@ -212,14 +212,20 @@ export default function Pagamento() {
         throw new Error("Falha ao calcular frete");
       }
 
-      const data = (await response.json()) as { options?: ShippingOption[] };
+      const data = (await response.json()) as {
+        options?: ShippingOption[];
+        warning?: string;
+        source?: "melhor-envio" | "fallback-local" | "mixed";
+      };
       const options = data.options?.length ? data.options : buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
       setShippingOptions(options);
       setSelectedShippingId(options[0]?.id ?? null);
+      setShippingError(data.warning || "");
     } catch {
       const fallbackOptions = buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
       setShippingOptions(fallbackOptions);
       setSelectedShippingId(fallbackOptions[0]?.id ?? null);
+      setShippingError("Nao foi possivel consultar o frete externo. Usando entrega local.");
     }
   };
 

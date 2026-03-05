@@ -15,6 +15,13 @@ type QuoteInput = {
   subtotal: number;
 };
 
+export type QuoteShippingResult = {
+  options: ShippingOption[];
+  source: "melhor-envio" | "fallback-local" | "mixed";
+  warning?: string;
+  providerError?: string;
+};
+
 const DEFAULT_MELHOR_ENVIO_API_URL = "https://www.melhorenvio.com.br/api/v2";
 
 function sanitizeCep(value: string) {
@@ -86,7 +93,6 @@ export async function quoteShipping(input: QuoteInput): Promise<ShippingOption[]
 
   const cfg = getMelhorEnvioConfig();
   if (!cfg.token) {
-    // Sem token, fica apenas com entrega local (se aplicavel)
     return options.length > 0 ? options : [buildLocalOption()];
   }
 
@@ -124,5 +130,82 @@ export async function quoteShipping(input: QuoteInput): Promise<ShippingOption[]
     return [...options, ...parsed];
   } catch {
     return options.length > 0 ? options : [buildLocalOption()];
+  }
+}
+
+export async function quoteShippingDetailed(input: QuoteInput): Promise<QuoteShippingResult> {
+  const cep = sanitizeCep(input.cep);
+  if (cep.length !== 8) {
+    throw new Error("CEP invalido");
+  }
+
+  const localOptions: ShippingOption[] = [];
+  if (isPlanoPilotoArea(cep)) {
+    localOptions.push(buildLocalOption());
+  }
+
+  const cfg = getMelhorEnvioConfig();
+  if (!cfg.token) {
+    const fallback = localOptions.length > 0 ? localOptions : [buildLocalOption()];
+    return {
+      options: fallback,
+      source: "fallback-local",
+      warning: "Token do Melhor Envio ausente. Usando entrega local.",
+    };
+  }
+
+  try {
+    const response = await axios.post(
+      `${cfg.apiUrl}/me/shipment/calculate`,
+      {
+        from: { postal_code: cfg.fromPostalCode },
+        to: { postal_code: cep },
+        package: {
+          height: "6",
+          width: "18",
+          length: "26",
+          weight: (0.3 * Math.max(1, input.itemCount)).toFixed(2),
+        },
+        options: {
+          insurance_value: Number(input.subtotal.toFixed(2)),
+          receipt: false,
+          own_hand: false,
+          collect: false,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${cfg.token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "User-Agent": "LojaEscoteira/1.0",
+        },
+        timeout: 12000,
+      },
+    );
+
+    const parsed = parseMelhorEnvioQuotes(response.data);
+    if (parsed.length === 0) {
+      const fallback = localOptions.length > 0 ? localOptions : [buildLocalOption()];
+      return {
+        options: fallback,
+        source: "fallback-local",
+        warning: "Melhor Envio nao retornou cotacoes para este CEP. Usando entrega local.",
+      };
+    }
+
+    return {
+      options: [...localOptions, ...parsed],
+      source: localOptions.length > 0 ? "mixed" : "melhor-envio",
+    };
+  } catch (error) {
+    const providerError = error instanceof Error ? error.message : "Falha ao consultar Melhor Envio";
+    const fallback = localOptions.length > 0 ? localOptions : [buildLocalOption()];
+    return {
+      options: fallback,
+      source: "fallback-local",
+      warning: "Cotacao externa indisponivel. Usando entrega local.",
+      providerError,
+    };
   }
 }
