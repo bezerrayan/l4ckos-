@@ -13,6 +13,9 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import uploadRouter from "../routers/upload";
+import paymentRoutes from "../routes/paymentRoutes";
+import webhookRoutes from "../routes/webhookRoutes";
+import shippingRoutes from "../routes/shippingRoutes";
 import { getBackupPayload } from "../db";
 import { handleAsaasWebhookEvent } from "../services/asaas";
 
@@ -263,6 +266,9 @@ async function startServer() {
   });
   // REST API (upload)
   app.use("/api/upload", uploadRouter);
+  app.use("/api/payments", paymentRoutes);
+  app.use("/api/webhooks", webhookRoutes);
+  app.use("/api/shipping", shippingRoutes);
   // tRPC API
   app.use(
     "/api/trpc",

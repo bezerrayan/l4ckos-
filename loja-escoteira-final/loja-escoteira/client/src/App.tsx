@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Produtos from "./pages/Produtos";
 import ProductDetail from "./pages/ProductDetail";
 import Carrinho from "./pages/Carrinho";
+import Pagamento from "./pages/Pagamento";
 import Favoritos from "./pages/Favoritos";
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/produto/:id" element={<ProductDetail />} />
           <Route path="/favoritos" element={<Favoritos />} />
           <Route path="/carrinho" element={<Carrinho />} />
+          <Route path="/checkout" element={<Pagamento />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/perfil" element={<Perfil />} />

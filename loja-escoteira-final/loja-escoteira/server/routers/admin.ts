@@ -34,6 +34,7 @@ import path from "node:path";
 const orderStatusSchema = z.enum([
   "pending",
   "processing",
+  "paid",
   "shipped",
   "delivered",
   "cancelled",

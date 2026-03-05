@@ -112,6 +112,49 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserPhoneById(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const profile = await db
+    .select({ phone: userProfiles.phone })
+    .from(userProfiles)
+    .where(eq(userProfiles.userId, userId))
+    .limit(1);
+
+  return profile[0]?.phone ?? undefined;
+}
+
+export async function updateUserAsaasCustomerId(userId: number, asaasCustomerId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ asaasCustomerId }).where(eq(users.id, userId));
+}
+
+export async function setOrderAsaasCheckoutId(orderId: number, asaasCheckoutId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(orders).set({ asaasCheckoutId }).where(eq(orders.id, orderId));
+}
+
+export async function getOrderByAsaasCheckoutId(asaasCheckoutId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.asaasCheckoutId, asaasCheckoutId))
+    .limit(1);
+  return rows[0];
+}
+
 // Produtos
 export async function getProducts() {
   const db = await getDb();
@@ -440,7 +483,7 @@ export async function getAllOrders() {
 
 export async function updateOrderStatus(
   orderId: number,
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled",
+  status: "pending" | "processing" | "paid" | "shipped" | "delivered" | "cancelled",
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -688,7 +731,7 @@ export async function getUsersWithStats() {
 }
 
 export async function getOrdersByFilters(filters?: {
-  status?: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  status?: "pending" | "processing" | "paid" | "shipped" | "delivered" | "cancelled";
   from?: Date;
   to?: Date;
 }) {
@@ -721,7 +764,7 @@ export async function getOrdersByFilters(filters?: {
 export async function setOrderAdminData(
   orderId: number,
   data: {
-    status?: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+    status?: "pending" | "processing" | "paid" | "shipped" | "delivered" | "cancelled";
     trackingCode?: string | null;
   },
 ) {

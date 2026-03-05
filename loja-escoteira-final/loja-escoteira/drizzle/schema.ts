@@ -15,6 +15,9 @@ export const users = mysqlTable("users", {
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  cpf: varchar("cpf", { length: 18 }),
+  phone: varchar("phone", { length: 32 }),
+  asaasCustomerId: varchar("asaasCustomerId", { length: 64 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   isVip: int("isVip").default(0).notNull(),
@@ -116,9 +119,10 @@ export type InsertProductVariant = typeof productVariants.$inferInsert;
 export const orders = mysqlTable("orders", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
-  status: mysqlEnum("status", ["pending", "processing", "shipped", "delivered", "cancelled"]).default("pending").notNull(),
+  status: mysqlEnum("status", ["pending", "processing", "paid", "shipped", "delivered", "cancelled"]).default("pending").notNull(),
   trackingCode: varchar("trackingCode", { length: 120 }),
   totalPrice: int("totalPrice").notNull(), // em centavos
+  asaasCheckoutId: varchar("asaasCheckoutId", { length: 64 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

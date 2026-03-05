@@ -1,0 +1,1413 @@
+/**
+ * Pagina do checkout - envio e pagamento
+ * 
+ */
+
+import { Link } from "react-router-dom";
+import { useCart } from "../contexts/CartContext";
+import { formatPrice } from "../lib/utils";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
+import { useCreateAsaasCharge } from "../hooks/useOrders";
+import { useUser } from "../contexts/UserContext";
+import { trpc } from "../lib/trpc";
+
+type CheckoutMethod = "PIX" | "BOLETO" | "CARD";
+
+type ChargeResult = {
+  method: CheckoutMethod;
+  orderId: number;
+  paymentId: string;
+  invoiceUrl: string | null;
+  pixQrCode: string | null;
+  pixCopyPaste: string | null;
+  bankSlipUrl: string | null;
+  digitableLine: string | null;
+};
+
+type ShippingOption = {
+  id: string;
+  label: string;
+  description: string;
+  price: number;
+  minDays: number;
+  maxDays: number;
+};
+
+function sanitizeCep(value: string) {
+  return value.replace(/\D/g, "").slice(0, 8);
+}
+
+function formatCep(value: string) {
+  const digits = sanitizeCep(value);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
+function addBusinessDays(startDate: Date, daysToAdd: number) {
+  const date = new Date(startDate);
+  let addedDays = 0;
+
+  while (addedDays < daysToAdd) {
+    date.setDate(date.getDate() + 1);
+    const weekDay = date.getDay();
+    if (weekDay !== 0 && weekDay !== 6) {
+      addedDays += 1;
+    }
+  }
+
+  return date;
+}
+
+function buildShippingOptions(_cep: string, _subtotal: number, _itemCount: number): ShippingOption[] {
+  return [
+    {
+      id: "local-plano-piloto",
+      label: "Entrega local - Plano Piloto",
+      description: "Agendamento local no Plano Piloto (Brasilia - DF)",
+      price: 0,
+      minDays: 1,
+      maxDays: 2,
+    },
+  ];
+}
+
+export default function Pagamento() {
+  const isMobile = useIsMobile();
+  const { cart, removeFromCart, updateQuantity } = useCart();
+  const { user, isAuthenticated } = useUser();
+  const createAsaasCharge = useCreateAsaasCharge();
+  const [checkoutMethod, setCheckoutMethod] = useState<CheckoutMethod>("PIX");
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [cpfCnpj, setCpfCnpj] = useState("");
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressNeighborhood, setAddressNeighborhood] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressState, setAddressState] = useState("");
+  const [addressNumber, setAddressNumber] = useState("");
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [cep, setCep] = useState("");
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [selectedShippingId, setSelectedShippingId] = useState<ShippingOption["id"] | null>(null);
+  const [shippingError, setShippingError] = useState("");
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentData, setPaymentData] = useState<ChargeResult | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
+
+  const validateCoupon = trpc.orders.validateCoupon.useMutation();
+  const paymentOrderQuery = trpc.orders.detail.useQuery(paymentData?.orderId ?? 0, {
+    enabled: Boolean(paymentData?.orderId),
+    refetchInterval: data => {
+      const status = (data as any)?.status;
+      if (!status) return 10000;
+      return status === "processing" || status === "shipped" || status === "delivered" ? false : 10000;
+    },
+  });
+
+  const selectedShipping = useMemo(
+    () => shippingOptions.find(option => option.id === selectedShippingId) ?? null,
+    [shippingOptions, selectedShippingId],
+  );
+
+  const estimatedDateRange = useMemo(() => {
+    if (!selectedShipping) return "";
+
+    const minDate = addBusinessDays(new Date(), selectedShipping.minDays);
+    const maxDate = addBusinessDays(new Date(), selectedShipping.maxDays);
+    const formatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" });
+
+    return `${formatter.format(minDate)} a ${formatter.format(maxDate)}`;
+  }, [selectedShipping]);
+
+  const orderBaseTotal = cart.total + (selectedShipping?.price ?? 0);
+  const orderTotal = Math.max(0, Number((orderBaseTotal - couponDiscount).toFixed(2)));
+
+  useEffect(() => {
+    if (!user) return;
+    setCustomerName(user.name || "");
+    setCustomerEmail(user.email || "");
+  }, [user]);
+
+  useEffect(() => {
+    if (couponDiscount <= 0) return;
+    const normalizedCode = couponCode.trim().toUpperCase();
+    if (!normalizedCode || normalizedCode !== appliedCouponCode) {
+      setCouponDiscount(0);
+      setAppliedCouponCode(null);
+    }
+  }, [cart.total, selectedShipping?.price]);
+
+  useEffect(() => {
+    const normalizedCep = sanitizeCep(cep);
+    if (normalizedCep.length !== 8 || shippingOptions.length === 0) return;
+    void handleCalculateShipping();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart.total, cart.itemCount]);
+
+  const getItemKey = (productId: number, selectedOptions?: Record<string, string>) => {
+    if (!selectedOptions) return `${productId}`;
+    const optionString = Object.entries(selectedOptions)
+      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+      .map(([key, value]) => `${key}:${value}`)
+      .join("|");
+    return `${productId}-${optionString}`;
+  };
+
+  const formatSelectedOptions = (selectedOptions?: Record<string, string>) => {
+    if (!selectedOptions) return "";
+
+    const labelMap: Record<string, string> = {
+      cor: "Cor",
+      tamanho: "Tamanho",
+      size: "Tamanho",
+      color: "Cor",
+    };
+
+    return Object.entries(selectedOptions)
+      .map(([key, value]) => `${labelMap[key] || key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`)
+      .join(" - ");
+  };
+
+  const getPixQrCodeSource = (pixQrCode: string) => {
+    if (pixQrCode.startsWith("data:image")) {
+      return pixQrCode;
+    }
+    return `data:image/png;base64,${pixQrCode}`;
+  };
+
+  const handleCopyText = async (value?: string | null) => {
+    if (!value) return;
+    await navigator.clipboard.writeText(value);
+  };
+
+  const handleCalculateShipping = async () => {
+    setShippingError("");
+    const normalizedCep = sanitizeCep(cep);
+
+    if (normalizedCep.length !== 8) {
+      setShippingOptions([]);
+      setSelectedShippingId(null);
+      setShippingError("Informe um CEP valido com 8 digitos.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/shipping/quote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cep: normalizedCep,
+          itemCount: cart.itemCount,
+          subtotal: Number((cart.total / 100).toFixed(2)),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao calcular frete");
+      }
+
+      const data = (await response.json()) as { options?: ShippingOption[] };
+      const options = data.options?.length ? data.options : buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
+      setShippingOptions(options);
+      setSelectedShippingId(options[0]?.id ?? null);
+    } catch {
+      const fallbackOptions = buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
+      setShippingOptions(fallbackOptions);
+      setSelectedShippingId(fallbackOptions[0]?.id ?? null);
+    }
+  };
+
+  const handleLookupCep = async () => {
+    setShippingError("");
+    const normalizedCep = sanitizeCep(cep);
+    if (normalizedCep.length !== 8) {
+      setShippingError("Informe um CEP valido com 8 digitos.");
+      return;
+    }
+
+    setAddressLoading(true);
+    try {
+      const response = await fetch(`/api/cep/${normalizedCep}`);
+      if (!response.ok) {
+        throw new Error("Falha ao consultar CEP.");
+      }
+
+      const data = (await response.json()) as {
+        erro?: boolean;
+        logradouro?: string;
+        bairro?: string;
+        localidade?: string;
+        uf?: string;
+      };
+
+      if (data.erro) {
+        setShippingError("CEP nao encontrado.");
+        return;
+      }
+
+      setAddressStreet(data.logradouro || "");
+      setAddressNeighborhood(data.bairro || "");
+      setAddressCity(data.localidade || "");
+      setAddressState(data.uf || "");
+      await handleCalculateShipping();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Nao foi possivel consultar o CEP.";
+      setShippingError(message.includes("Load failed") ? "Nao foi possivel consultar o CEP agora." : message);
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    setCouponError("");
+    const normalized = couponCode.trim().toUpperCase();
+    if (!normalized) {
+      setCouponDiscount(0);
+      setAppliedCouponCode(null);
+      return;
+    }
+
+    try {
+      const result = await validateCoupon.mutateAsync({
+        code: normalized,
+        totalPrice: Number(orderBaseTotal.toFixed(2)),
+      });
+      setCouponDiscount(Number(result.discountAmount.toFixed(2)));
+      setAppliedCouponCode(result.code);
+    } catch (error) {
+      setCouponDiscount(0);
+      setAppliedCouponCode(null);
+      setCouponError(error instanceof Error ? error.message : "Cupom invalido ou expirado.");
+    }
+  };
+
+  const handleCheckout = async () => {
+    setPaymentError("");
+
+    if (!isAuthenticated) {
+      setPaymentError("Faca login para finalizar a compra.");
+      return;
+    }
+
+    if (!customerName.trim() || !customerEmail.trim() || !cpfCnpj.trim()) {
+      setPaymentError("Preencha nome, e-mail e CPF/CNPJ para gerar a cobranca.");
+      return;
+    }
+
+    if (!sanitizeCep(cep) || !addressStreet.trim() || !addressCity.trim() || !addressState.trim()) {
+      setPaymentError("Preencha o CEP e o endereco para continuar.");
+      return;
+    }
+
+    if (!selectedShipping) {
+      setPaymentError("Calcule e selecione o frete antes de finalizar a compra.");
+      return;
+    }
+
+    try {
+      const description = cart.items
+        .slice(0, 2)
+        .map(item => item.product.name)
+        .join(" + ");
+
+      const result = await createAsaasCharge.mutateAsync({
+        method: checkoutMethod,
+        totalPrice: Number(orderTotal.toFixed(2)),
+        description: `${description || "Pedido Loja Escoteira"} | Frete: ${selectedShipping.label}`,
+        items: cart.items.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+        customer: {
+          name: customerName.trim(),
+          email: customerEmail.trim(),
+          cpfCnpj: cpfCnpj.trim(),
+        },
+        couponCode: appliedCouponCode || undefined,
+      });
+
+      setPaymentData(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Nao foi possivel gerar a cobranca.";
+      setPaymentError(message);
+    }
+  };
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ ...styles.header, marginBottom: isMobile ? 28 : styles.header.marginBottom, paddingBottom: isMobile ? 20 : styles.header.paddingBottom }}>
+        <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>
+          <span style={{display: "inline-flex", alignItems: "center", gap: 10}}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#1a1a1a"}}>
+              <path d="M6 6h15l-1.5 9h-13z"></path>
+              <circle cx="9" cy="20" r="1"></circle>
+              <circle cx="19" cy="20" r="1"></circle>
+            </svg>
+            Pagamento
+          </span>
+        </h1>
+        <p style={styles.subtitle}>
+          {cart.items.length === 0
+            ? "Seu carrinho esta vazio."
+            : `${cart.items.length} item${cart.items.length !== 1 ? "ns" : ""} para finalizar`}
+        </p>
+      </div>
+
+      {cart.items.length > 0 ? (
+        <div
+          style={{
+            ...styles.container,
+            gridTemplateColumns: isMobile ? "1fr" : styles.container.gridTemplateColumns,
+            gap: isMobile ? 20 : styles.container.gap,
+          }}
+        >
+          {/* Tabela de Itens - Mobile responsivo */}
+          <div style={styles.itemsSection}>
+            <h2 style={styles.sectionTitle}>Seu Pedido</h2>
+
+            <div style={styles.itemsList}>
+              {cart.items.map((item) =>
+                isMobile ? (
+                  <div key={getItemKey(item.product.id, item.selectedOptions)} style={styles.mobileCard}>
+                    <div style={styles.mobileTopRow}>
+                      <div style={styles.mobileImageWrap}>
+                        <img
+                          src={item.product.image}
+                          alt={item.product.name}
+                          style={styles.mobileImage}
+                          onError={(event) => {
+                            event.currentTarget.src = "/images/camisa.png";
+                          }}
+                        />
+                      </div>
+
+                      <div style={styles.mobileInfoCol}>
+                        <h3 style={styles.mobileItemName}>{item.product.name}</h3>
+                        <p style={styles.mobileItemSub}>Materiais Escoteiros</p>
+                        {item.selectedOptions && (
+                          <p style={styles.mobileItemSub}>{formatSelectedOptions(item.selectedOptions)}</p>
+                        )}
+                      </div>
+
+                      <div style={styles.mobilePriceCol}>
+                        <p style={styles.mobilePriceLabel}>Subtotal</p>
+                        <p style={styles.mobilePriceValue}>{formatPrice(item.product.price * item.quantity)}</p>
+                      </div>
+                    </div>
+
+                    <div style={styles.mobileBottomRow}>
+                      <div style={styles.mobileQtyWrap}>
+                        <button
+                          style={styles.mobileQtyBtn}
+                          onClick={() =>
+                            updateQuantity(
+                              item.product.id,
+                              Math.max(1, item.quantity - 1),
+                              item.selectedOptions
+                            )
+                          }
+                        >
+                          âˆ’
+                        </button>
+                        <span style={styles.mobileQtyValue}>{item.quantity}</span>
+                        <button
+                          style={styles.mobileQtyBtn}
+                          onClick={() =>
+                            updateQuantity(item.product.id, item.quantity + 1, item.selectedOptions)
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <button
+                        style={styles.mobileRemoveBtn}
+                        onClick={() => removeFromCart(item.product.id, item.selectedOptions)}
+                        title="Remover item"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#9b9b9b"}}>
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div key={getItemKey(item.product.id, item.selectedOptions)} style={styles.cartItemScroller}>
+                    <div
+                      style={{
+                        ...styles.cartItem,
+                        gridTemplateColumns: styles.cartItem.gridTemplateColumns,
+                        gap: styles.cartItem.gap,
+                      }}
+                    >
+                      <div style={styles.itemImageContainer}>
+                        <img
+                          src={item.product.image}
+                          alt={item.product.name}
+                          style={styles.itemImage}
+                          onError={(event) => {
+                            event.currentTarget.src = "/images/camisa.png";
+                          }}
+                        />
+                      </div>
+
+                      <div style={styles.itemDetails}>
+                        <h3 style={styles.itemName}>{item.product.name}</h3>
+                        <p style={styles.itemCategory}>Materiais Escoteiros</p>
+                        {item.selectedOptions && (
+                          <p style={styles.itemOptions}>{formatSelectedOptions(item.selectedOptions)}</p>
+                        )}
+                        <p style={styles.itemPrice}>
+                          {formatPrice(item.product.price)}/unidade
+                        </p>
+                      </div>
+
+                      <div style={styles.itemQuantity}>
+                        <label style={styles.quantityLabel}>Qtd.</label>
+                        <div style={styles.quantityControl}>
+                          <button
+                            style={styles.quantityBtn}
+                            onClick={() =>
+                              updateQuantity(
+                                item.product.id,
+                                Math.max(1, item.quantity - 1),
+                                item.selectedOptions
+                              )
+                            }
+                          >
+                            âˆ’
+                          </button>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) =>
+                              updateQuantity(
+                                item.product.id,
+                                parseInt(e.target.value) || 1,
+                                item.selectedOptions
+                              )
+                            }
+                            style={styles.quantityInput}
+                          />
+                          <button
+                            style={styles.quantityBtn}
+                            onClick={() =>
+                              updateQuantity(item.product.id, item.quantity + 1, item.selectedOptions)
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={styles.itemTotal}>
+                        <p style={styles.itemTotalLabel}>Subtotal</p>
+                        <p style={styles.totalPrice}>
+                          {formatPrice(item.product.price * item.quantity)}
+                        </p>
+                      </div>
+
+                      <button
+                        style={styles.removeBtn}
+                        onClick={() => removeFromCart(item.product.id, item.selectedOptions)}
+                        title="Remover item"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{color: "#9b9b9b"}}>
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* Resumo do Pedido */}
+          <div
+            style={{
+              ...styles.summarySection,
+              position: isMobile ? "static" : styles.summarySection.position,
+              top: isMobile ? undefined : styles.summarySection.top,
+            }}
+          >
+            <h2 style={styles.sectionTitle}>Envio e Pagamento</h2>
+
+            <div style={styles.summaryCard}>
+              {/* Detalhes */}
+              <div style={styles.summaryRow}>
+                <span style={styles.summaryLabel}>Subtotal:</span>
+                <span style={styles.summaryValue}>
+                  {formatPrice(cart.total)}
+                </span>
+              </div>
+
+              <div style={styles.summaryRow}>
+                <span style={styles.summaryLabel}>Frete:</span>
+                <span style={{ ...styles.summaryValue, color: "#555555" }}>
+                  {selectedShipping ? formatPrice(selectedShipping.price) : "Calcular"}
+                </span>
+              </div>
+
+              <div style={styles.summaryRow}>
+                <span style={styles.summaryLabel}>Desconto:</span>
+                <span style={{ ...styles.summaryValue, color: "#555555" }}>
+                  -{formatPrice(couponDiscount)}
+                </span>
+              </div>
+
+              <div style={styles.divider}></div>
+
+              {/* Total */}
+              <div style={styles.totalRow}>
+                <span style={styles.totalLabel}>Total:</span>
+                <span style={styles.totalAmount}>{formatPrice(orderTotal)}</span>
+              </div>
+
+              <div style={styles.shippingBox}>
+                <p style={styles.shippingTitle}>Calcular frete</p>
+                <div style={styles.shippingInputRow}>
+                  <input
+                    style={styles.checkoutInput}
+                    placeholder="CEP (somente numeros)"
+                    value={formatCep(cep)}
+                    onChange={event => setCep(event.target.value)}
+                  />
+                  <button style={styles.shippingCalcButton} onClick={handleLookupCep} disabled={addressLoading}>
+                    {addressLoading ? "Calculando..." : "Buscar e calcular"}
+                  </button>
+                </div>
+
+                {shippingError ? <p style={styles.checkoutError}>{shippingError}</p> : null}
+
+                {shippingOptions.length > 0 ? (
+                  <div style={styles.shippingOptionsList}>
+                    {shippingOptions.map(option => (
+                      <button
+                        key={option.id}
+                        style={{
+                          ...styles.shippingOption,
+                          ...(selectedShippingId === option.id ? styles.shippingOptionActive : {}),
+                        }}
+                        onClick={() => setSelectedShippingId(option.id)}
+                      >
+                        <div style={styles.shippingOptionTop}>
+                          <strong>{option.label}</strong>
+                          <strong>{formatPrice(option.price)}</strong>
+                        </div>
+                        <p style={styles.shippingOptionText}>{option.description}</p>
+                        <p style={styles.shippingOptionText}>
+                          Prazo: {option.minDays} a {option.maxDays} dias uteis
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
+                {selectedShipping ? (
+                  <p style={styles.shippingEstimate}>
+                    Previsao de entrega: <strong>{estimatedDateRange}</strong>
+                  </p>
+                ) : null}
+              </div>
+
+              <div style={styles.shippingBox}>
+                <p style={styles.shippingTitle}>Cupom de desconto</p>
+                <div style={styles.shippingInputRow}>
+                  <input
+                    style={styles.checkoutInput}
+                    placeholder="Digite o cupom"
+                    value={couponCode}
+                    onChange={event => setCouponCode(event.target.value.toUpperCase())}
+                  />
+                  <div style={styles.shippingButtonGroup}>
+                    <button
+                      style={styles.shippingCalcButton}
+                      onClick={() => {
+                        void handleApplyCoupon();
+                      }}
+                      disabled={validateCoupon.isPending}
+                    >
+                      {validateCoupon.isPending ? "Validando..." : "Aplicar"}
+                    </button>
+                  </div>
+                </div>
+                {appliedCouponCode ? (
+                  <p style={styles.shippingEstimate}>
+                    Cupom aplicado: <strong>{appliedCouponCode}</strong>
+                  </p>
+                ) : null}
+                {couponError ? <p style={styles.checkoutError}>{couponError}</p> : null}
+              </div>
+
+              {/* Botoes */}
+              <div style={styles.methodSelector}>
+                <button
+                  style={{
+                    ...styles.methodButton,
+                    ...(checkoutMethod === "PIX" ? styles.methodButtonActive : {}),
+                  }}
+                  onClick={() => setCheckoutMethod("PIX")}
+                >
+                  PIX
+                </button>
+                <button
+                  style={{
+                    ...styles.methodButton,
+                    ...(checkoutMethod === "BOLETO" ? styles.methodButtonActive : {}),
+                  }}
+                  onClick={() => setCheckoutMethod("BOLETO")}
+                >
+                  Boleto
+                </button>
+                <button
+                  style={{
+                    ...styles.methodButton,
+                    ...(checkoutMethod === "CARD" ? styles.methodButtonActive : {}),
+                  }}
+                  onClick={() => setCheckoutMethod("CARD")}
+                >
+                  Cartao
+                </button>
+              </div>
+
+              <div style={styles.checkoutFields}>
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Nome completo"
+                  value={customerName}
+                  onChange={event => setCustomerName(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Email"
+                  type="email"
+                  value={customerEmail}
+                  onChange={event => setCustomerEmail(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="CPF ou CNPJ"
+                  value={cpfCnpj}
+                  onChange={event => setCpfCnpj(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Rua"
+                  value={addressStreet}
+                  onChange={event => setAddressStreet(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Numero"
+                  value={addressNumber}
+                  onChange={event => setAddressNumber(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Bairro"
+                  value={addressNeighborhood}
+                  onChange={event => setAddressNeighborhood(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Cidade"
+                  value={addressCity}
+                  onChange={event => setAddressCity(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="UF"
+                  value={addressState}
+                  onChange={event => setAddressState(event.target.value.toUpperCase().slice(0, 2))}
+                />
+              </div>
+
+              <button
+                style={styles.checkoutBtn}
+                onClick={() => {
+                  void handleCheckout();
+                }}
+                disabled={createAsaasCharge.isPending}
+              >
+                {createAsaasCharge.isPending ? "Gerando cobranca..." : "Finalizar Compra"}
+              </button>
+
+              {paymentError ? <p style={styles.checkoutError}>{paymentError}</p> : null}
+
+              {paymentData ? (
+                <div style={styles.pixBox}>
+                  <p style={styles.pixTitle}>
+                    Cobranca {paymentData.method} gerada para o pedido #{paymentData.orderId}
+                  </p>
+                  <p style={styles.shippingOptionText}>
+                    Status atual do pedido: <strong>{(paymentOrderQuery.data as any)?.status ?? "pending"}</strong>
+                  </p>
+
+                  {paymentData.method === "PIX" && paymentData.pixQrCode ? (
+                    <img
+                      src={getPixQrCodeSource(paymentData.pixQrCode)}
+                      alt="QR Code PIX"
+                      style={styles.pixQrImage}
+                    />
+                  ) : null}
+
+                  {paymentData.method === "PIX" && paymentData.pixCopyPaste ? (
+                    <>
+                      <textarea
+                        style={styles.pixCopyTextarea}
+                        readOnly
+                        value={paymentData.pixCopyPaste}
+                      />
+                      <button
+                        style={styles.pixCopyButton}
+                        onClick={() => {
+                          void handleCopyText(paymentData.pixCopyPaste);
+                        }}
+                      >
+                        Copiar codigo PIX
+                      </button>
+                    </>
+                  ) : null}
+
+                  {paymentData.method === "BOLETO" && paymentData.digitableLine ? (
+                    <>
+                      <textarea
+                        style={styles.pixCopyTextarea}
+                        readOnly
+                        value={paymentData.digitableLine}
+                      />
+                      <button
+                        style={styles.pixCopyButton}
+                        onClick={() => {
+                          void handleCopyText(paymentData.digitableLine);
+                        }}
+                      >
+                        Copiar linha digitavel
+                      </button>
+                    </>
+                  ) : null}
+
+                  {paymentData.method === "CARD" ? (
+                    <p style={styles.pixTitle}>
+                      Para pagar no cartao, abra o link da fatura e escolha cartao na tela do Asaas.
+                    </p>
+                  ) : null}
+
+                  {paymentData.invoiceUrl ? (
+                    <a href={paymentData.invoiceUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
+                      Abrir fatura no Asaas
+                    </a>
+                  ) : null}
+
+                  {paymentData.method === "BOLETO" && paymentData.bankSlipUrl ? (
+                    <a href={paymentData.bankSlipUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
+                      Abrir boleto
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <Link to="/carrinho" style={styles.continueShopping}>
+                Voltar ao Carrinho
+              </Link>
+            </div>
+
+            {/* Info extra */}
+            <div style={styles.infoBox}>
+              <p style={styles.infoTitle}>Beneficios:</p>
+              <ul style={styles.infoBenefits}>
+                <li>- Frete calculado por CEP com prazo estimado</li>
+                <li>- Garantia do fabricante</li>
+                <li>- Suporte ao cliente 24/7</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div style={{ ...styles.emptyState, padding: isMobile ? "44px 16px" : styles.emptyState.padding }}>
+          <div style={styles.emptyIcon}>
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{color: "#555555"}}>
+              <path d="M6 6h15l-1.5 9h-13z"></path>
+              <circle cx="9" cy="20" r="1"></circle>
+              <circle cx="19" cy="20" r="1"></circle>
+            </svg>
+          </div>
+          <h2 style={styles.emptyTitle}>Seu carrinho esta vazio</h2>
+          <p style={styles.emptyText}>
+            Adicione alguns produtos escoteiros para comecar suas compras
+          </p>
+          <Link to="/produtos" style={styles.emptyButton}>
+            Explorar Produtos
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const styles: Record<string, CSSProperties> = {
+  header: {
+    marginBottom: 48,
+    paddingBottom: 32,
+    borderBottom: "2px solid #e2e8f0",
+  },
+  title: {
+    fontSize: 40,
+    fontWeight: 900,
+    color: "#1a1a1a",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#6b7280",
+    margin: 0,
+  },
+  container: {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: 0,
+    maxWidth: 780,
+    margin: "0 auto",
+    marginBottom: 0,
+  },
+  itemsSection: {
+    display: "none",
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 700,
+    color: "#1a1a1a",
+    marginBottom: 24,
+  },
+  itemsList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  },
+  cartItemScroller: {
+    display: "block",
+    width: "100%",
+    maxWidth: "100%",
+    overflowX: "auto",
+    overflowY: "hidden",
+    overscrollBehaviorX: "contain",
+    WebkitOverflowScrolling: "touch",
+  },
+  mobileCard: {
+    background: "#ffffff",
+    border: "1px solid #e2e8f0",
+    borderRadius: 12,
+    padding: 10,
+  },
+  mobileTopRow: {
+    display: "flex",
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  mobileImageWrap: {
+    width: 78,
+    height: 78,
+    borderRadius: 8,
+    overflow: "hidden",
+    flexShrink: 0,
+    background: "#f8fafc",
+  },
+  mobileImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  mobileInfoCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  mobileItemName: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#1a1a1a",
+    margin: 0,
+    lineHeight: 1.2,
+    textTransform: "uppercase",
+  },
+  mobileItemSub: {
+    fontSize: 12,
+    color: "#666666",
+    margin: "2px 0 0 0",
+    lineHeight: 1.25,
+  },
+  mobilePriceCol: {
+    minWidth: 96,
+    textAlign: "right",
+  },
+  mobilePriceLabel: {
+    fontSize: 11,
+    color: "#6b7280",
+    margin: 0,
+  },
+  mobilePriceValue: {
+    fontSize: 26,
+    fontWeight: 800,
+    color: "#1a1a1a",
+    margin: "2px 0 0 0",
+    lineHeight: 1,
+  },
+  mobileBottomRow: {
+    marginTop: 8,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  mobileQtyWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+  },
+  mobileQtyBtn: {
+    width: 24,
+    height: 24,
+    border: "none",
+    background: "transparent",
+    color: "#1a1a1a",
+    fontSize: 20,
+    lineHeight: 1,
+    cursor: "pointer",
+    padding: 0,
+  },
+  mobileQtyValue: {
+    minWidth: 16,
+    textAlign: "center",
+    color: "#1a1a1a",
+    fontSize: 15,
+    fontWeight: 600,
+  },
+  mobileRemoveBtn: {
+    border: "none",
+    background: "transparent",
+    width: 24,
+    height: 24,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    padding: 0,
+  },
+  cartItem: {
+    display: "grid",
+    gridTemplateColumns: "100px 1fr 1fr 100px 80px 40px",
+    gap: 16,
+    alignItems: "center",
+    padding: 16,
+    background: "white",
+    borderRadius: 12,
+    border: "1px solid #e2e8f0",
+    transition: "all 0.3s ease",
+  },
+  itemImageContainer: {
+    borderRadius: 8,
+    overflow: "hidden",
+    background: "#f8fafc",
+  },
+  itemImage: {
+    width: "100%",
+    height: 100,
+    objectFit: "cover",
+  },
+  itemDetails: {
+    paddingLeft: 8,
+  },
+  itemName: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: "#1a1a1a",
+    margin: "0 0 4px 0",
+  },
+  itemCategory: {
+    fontSize: 12,
+    color: "#6b7280",
+    margin: "0 0 4px 0",
+  },
+  itemOptions: {
+    fontSize: 12,
+    color: "#374151",
+    margin: "0 0 4px 0",
+    fontWeight: 600,
+  },
+  itemPrice: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: "#555555",
+    margin: 0,
+  },
+  itemQuantity: {
+    textAlign: "center",
+  },
+  quantityLabel: {
+    fontSize: 12,
+    color: "#6b7280",
+    display: "block",
+    marginBottom: 8,
+    fontWeight: 600,
+  },
+  quantityControl: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 0,
+    border: "1px solid #e2e8f0",
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+  quantityBtn: {
+    background: "#f8fafc",
+    border: "none",
+    width: 32,
+    height: 32,
+    cursor: "pointer",
+    fontWeight: 700,
+    fontSize: 16,
+    transition: "background 0.2s ease",
+  },
+  quantityInput: {
+    border: "none",
+    width: 40,
+    height: 32,
+    boxSizing: "border-box",
+    padding: 0,
+    appearance: "textfield",
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: 700,
+  },
+  itemTotal: {
+    textAlign: "center",
+  },
+  itemTotalLabel: {
+    fontSize: 12,
+    color: "#6b7280",
+    margin: "0 0 4px 0",
+    fontWeight: 600,
+  },
+  totalPrice: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: "#1a1a1a",
+    margin: 0,
+  },
+  removeBtn: {
+    background: "transparent",
+    border: "none",
+    fontSize: 20,
+    cursor: "pointer",
+    padding: 0,
+    width: 32,
+    height: 32,
+    transition: "transform 0.2s ease",
+  },
+  summarySection: {
+    position: "sticky",
+    top: 100,
+    height: "fit-content",
+  },
+  summaryCard: {
+    background: "white",
+    borderRadius: 12,
+    border: "1px solid #e2e8f0",
+    padding: 24,
+    boxShadow: "0 4px 6px rgba(0,0,0,0.07)",
+  },
+  summaryRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    fontSize: 14,
+  },
+  summaryLabel: {
+    color: "#6b7280",
+    fontWeight: 500,
+  },
+  summaryValue: {
+    fontWeight: 600,
+    color: "#1a1a1a",
+  },
+  divider: {
+    height: 1,
+    background: "#e2e8f0",
+    margin: "16px 0",
+  },
+  totalRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  totalLabel: {
+    fontSize: 20,
+    fontWeight: 700,
+    color: "#1a1a1a",
+  },
+  totalAmount: {
+    fontSize: 24,
+    fontWeight: 900,
+    color: "#555555",
+  },
+  methodSelector: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: 8,
+    marginBottom: 12,
+  },
+  methodButton: {
+    border: "1px solid #d1d5db",
+    borderRadius: 8,
+    padding: "10px 8px",
+    background: "#ffffff",
+    color: "#1a1a1a",
+    fontSize: 13,
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  methodButtonActive: {
+    background: "#1a1a1a",
+    color: "#ffffff",
+    border: "1px solid #1a1a1a",
+  },
+  checkoutFields: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    marginBottom: 12,
+  },
+  checkoutInput: {
+    width: "100%",
+    border: "1px solid #d1d5db",
+    borderRadius: 8,
+    padding: "10px 12px",
+    fontSize: 14,
+    color: "#1a1a1a",
+    background: "#ffffff",
+    outline: "none",
+  },
+  shippingBox: {
+    border: "1px solid #e2e8f0",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    background: "#f8fafc",
+  },
+  shippingTitle: {
+    margin: "0 0 10px 0",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#1a1a1a",
+  },
+  shippingInputRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: 8,
+    marginBottom: 10,
+  },
+  shippingButtonGroup: {
+    display: "grid",
+    gap: 6,
+  },
+  shippingCalcButton: {
+    border: "none",
+    borderRadius: 8,
+    background: "#1f2937",
+    color: "white",
+    fontWeight: 700,
+    fontSize: 13,
+    padding: "0 14px",
+    cursor: "pointer",
+  },
+  shippingOptionsList: {
+    display: "grid",
+    gap: 8,
+  },
+  shippingOption: {
+    border: "1px solid #d1d5db",
+    borderRadius: 8,
+    padding: 10,
+    background: "#ffffff",
+    textAlign: "left",
+    cursor: "pointer",
+  },
+  shippingOptionActive: {
+    border: "1px solid #111827",
+    background: "#f3f4f6",
+  },
+  shippingOptionTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 10,
+    fontSize: 13,
+    color: "#111827",
+    marginBottom: 4,
+  },
+  shippingOptionText: {
+    margin: 0,
+    fontSize: 12,
+    color: "#6b7280",
+    lineHeight: 1.4,
+  },
+  shippingEstimate: {
+    margin: "10px 0 0 0",
+    fontSize: 12,
+    color: "#0f766e",
+    fontWeight: 600,
+  },
+  checkoutBtn: {
+    width: "100%",
+    padding: "18px",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+    color: "white",
+    border: "none",
+    borderRadius: 10,
+    fontWeight: 800,
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    marginBottom: 12,
+    fontSize: 18,
+  },
+  checkoutError: {
+    color: "#b91c1c",
+    fontSize: 13,
+    margin: "0 0 12px 0",
+    fontWeight: 600,
+  },
+  pixBox: {
+    border: "1px solid #d1fae5",
+    background: "#ecfdf5",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  pixTitle: {
+    margin: "0 0 10px 0",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#065f46",
+  },
+  pixQrImage: {
+    width: "100%",
+    maxWidth: 220,
+    display: "block",
+    margin: "0 auto 10px auto",
+    borderRadius: 8,
+    border: "1px solid #a7f3d0",
+  },
+  pixCopyTextarea: {
+    width: "100%",
+    minHeight: 96,
+    resize: "vertical",
+    border: "1px solid #a7f3d0",
+    borderRadius: 8,
+    padding: 8,
+    boxSizing: "border-box",
+    fontSize: 12,
+    color: "#1a1a1a",
+    marginBottom: 8,
+  },
+  pixCopyButton: {
+    width: "100%",
+    border: "none",
+    borderRadius: 8,
+    padding: "10px 12px",
+    fontWeight: 700,
+    color: "#ffffff",
+    background: "#047857",
+    cursor: "pointer",
+    marginBottom: 8,
+  },
+  pixInvoiceLink: {
+    display: "inline-block",
+    fontSize: 13,
+    color: "#065f46",
+    fontWeight: 700,
+    textDecoration: "underline",
+  },
+  continueShopping: {
+    display: "block",
+    textAlign: "center",
+    width: "100%",
+    padding: "14px 12px",
+    color: "#111827",
+    border: "none",
+    borderRadius: 10,
+    fontWeight: 700,
+    margin: "0 auto 12px auto",
+    fontSize: 16,
+    transition: "all 0.3s ease",
+    background: "#e5e7eb",
+    cursor: "pointer",
+  },
+  infoBox: {
+    marginTop: 24,
+    padding: 16,
+    background: "#f8fafc",
+    borderRadius: 8,
+    border: "1px solid #dbeafe",
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: "#1a1a1a",
+    margin: "0 0 8px 0",
+  },
+  infoBenefits: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    fontSize: 13,
+    color: "#6b7280",
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: "80px 40px",
+    background: "#f8fafc",
+    borderRadius: 16,
+  },
+  emptyIcon: {
+    fontSize: 80,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: "#1a1a1a",
+    marginBottom: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#6b7280",
+    marginBottom: 32,
+  },
+  emptyButton: {
+    display: "inline-block",
+    padding: "14px 32px",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+    color: "white",
+    borderRadius: 8,
+    fontWeight: 700,
+    transition: "all 0.3s ease",
+    fontSize: 16,
+  },
+};
+
+
+
