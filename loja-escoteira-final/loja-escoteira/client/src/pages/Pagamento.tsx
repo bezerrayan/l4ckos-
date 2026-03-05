@@ -97,6 +97,7 @@ export default function Pagamento() {
   const [couponError, setCouponError] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
+  const canShowTechnicalShippingError = import.meta.env.DEV || user?.role === "admin";
 
   const validateCoupon = trpc.orders.validateCoupon.useMutation();
   const paymentOrderQuery = trpc.orders.detail.useQuery(paymentData?.orderId ?? 0, {
@@ -215,12 +216,18 @@ export default function Pagamento() {
       const data = (await response.json()) as {
         options?: ShippingOption[];
         warning?: string;
+        providerError?: string;
         source?: "melhor-envio" | "fallback-local" | "mixed";
       };
       const options = data.options?.length ? data.options : buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
       setShippingOptions(options);
       setSelectedShippingId(options[0]?.id ?? null);
-      setShippingError(data.warning || "");
+      const detailedWarning = data.warning
+        ? data.providerError && canShowTechnicalShippingError
+          ? `${data.warning} (${data.providerError})`
+          : data.warning
+        : "";
+      setShippingError(detailedWarning);
     } catch {
       const fallbackOptions = buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
       setShippingOptions(fallbackOptions);

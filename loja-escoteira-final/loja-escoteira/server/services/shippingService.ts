@@ -22,6 +22,29 @@ export type QuoteShippingResult = {
   providerError?: string;
 };
 
+function extractProviderError(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    const statusText = error.response?.statusText;
+    const responseData = error.response?.data;
+
+    const responseSummary =
+      typeof responseData === "string"
+        ? responseData
+        : responseData
+          ? JSON.stringify(responseData)
+          : error.message;
+
+    return [status ? `HTTP ${status}` : null, statusText || null, responseSummary].filter(Boolean).join(" - ");
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Falha desconhecida ao consultar Melhor Envio";
+}
+
 const DEFAULT_MELHOR_ENVIO_API_URL = "https://www.melhorenvio.com.br/api/v2";
 
 function sanitizeCep(value: string) {
@@ -199,7 +222,7 @@ export async function quoteShippingDetailed(input: QuoteInput): Promise<QuoteShi
       source: localOptions.length > 0 ? "mixed" : "melhor-envio",
     };
   } catch (error) {
-    const providerError = error instanceof Error ? error.message : "Falha ao consultar Melhor Envio";
+    const providerError = extractProviderError(error);
     const fallback = localOptions.length > 0 ? localOptions : [buildLocalOption()];
     return {
       options: fallback,
