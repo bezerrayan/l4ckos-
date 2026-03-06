@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiUrl } from "../const";
 
 type Countdown = {
@@ -8,8 +8,7 @@ type Countdown = {
   seconds: string;
 };
 
-const TARGET_DATE = new Date("2025-09-01T00:00:00-03:00").getTime();
-const INTRO_KEY = "l4ckos_intro_seen";
+const TARGET_DATE = Date.now() + 120 * 24 * 60 * 60 * 1000;
 const LOGO_L4K_SRC = "/images/logo_branco.png?v=3";
 const LOGO_L4CKOS_SRC = "/images/logo-principal.png?v=3";
 
@@ -45,15 +44,8 @@ export default function ComingSoon() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const hasSeenIntro = sessionStorage.getItem(INTRO_KEY) === "1";
-    if (hasSeenIntro) {
-      setIntroDone(true);
-      return;
-    }
-
     const firstTimer = window.setTimeout(() => setSplashOut(true), 2700);
     const secondTimer = window.setTimeout(() => {
-      sessionStorage.setItem(INTRO_KEY, "1");
       setIntroDone(true);
     }, 3400);
 
@@ -67,8 +59,6 @@ export default function ComingSoon() {
     const id = window.setInterval(() => setCountdown(getCountdown()), 1000);
     return () => window.clearInterval(id);
   }, []);
-
-  const year = useMemo(() => new Date().getFullYear(), []);
 
   async function handleSubmit() {
     const normalizedEmail = email.trim().toLowerCase();
@@ -197,9 +187,9 @@ export default function ComingSoon() {
               <div className="l4-right-orb" />
               <div className="l4-right-inner">
                 <img className="l4-right-l4k" src={LOGO_L4K_SRC} alt="L4K" />
-                <div className="l4-right-coming">Chegando em</div>
+                <div className="l4-right-coming">Abertura do site</div>
                 <div className="l4-right-date">
-                  Setembro <span>2025</span>
+                  Em <span>120 dias</span>
                 </div>
               </div>
             </div>
@@ -230,29 +220,29 @@ export default function ComingSoon() {
 
         <section className="l4-benefits a7">
           <article className="l4-ben">
-            <div className="l4-bi">🏕️</div>
+            <div className="l4-bi">01</div>
             <div className="l4-ben-title">Gear certificado</div>
             <div className="l4-ben-desc">Equipamento para trilha, camping e aventura extrema.</div>
           </article>
           <article className="l4-ben">
-            <div className="l4-bi">🧭</div>
+            <div className="l4-bi">02</div>
             <div className="l4-ben-title">Curadoria de campo</div>
             <div className="l4-ben-desc">Selecionado por escoteiros e guias experientes.</div>
           </article>
           <article className="l4-ben">
-            <div className="l4-bi">⚡</div>
+            <div className="l4-bi">03</div>
             <div className="l4-ben-title">Entrega nacional</div>
             <div className="l4-ben-desc">Logistica rapida pra nao perder a janela da expedicao.</div>
           </article>
           <article className="l4-ben">
-            <div className="l4-bi">🛡️</div>
+            <div className="l4-bi">04</div>
             <div className="l4-ben-title">Garantia de campo</div>
             <div className="l4-ben-desc">Troca sem burocracia se nao performar na real.</div>
           </article>
         </section>
 
         <footer className="l4-footer a8">
-          <span>© {year} L4ckos - Todos os direitos reservados.</span>
+          <span>(c) 2026 L4ckos - Todos os direitos reservados.</span>
           <div className="l4-footer-links">
             <a href="https://instagram.com/l4ckos" target="_blank" rel="noreferrer">
               Instagram
