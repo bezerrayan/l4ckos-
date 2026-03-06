@@ -56,24 +56,24 @@ export default function ComingSoon() {
       <BackgroundEffects />
 
       <div
-        className={`relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-5 py-12 transition-opacity duration-700 sm:px-8 md:px-12 ${
+        className={`relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-4 py-10 transition-opacity duration-700 sm:px-6 sm:py-12 md:px-10 ${
           showIntro ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="w-full max-w-5xl space-y-11 sm:space-y-12 md:space-y-14">
-          <section className="coming-fade-up">
+        <div className="w-full max-w-6xl">
+          <section className="coming-fade-up mx-auto w-full max-w-5xl">
             <HeroSection />
           </section>
 
-          <section className="coming-slide-up">
+          <section className="coming-slide-up mx-auto mt-10 w-full max-w-5xl sm:mt-12">
             <CountdownTimer />
           </section>
 
-          <section className="coming-slide-up" style={{ animationDelay: "120ms" }}>
+          <section className="coming-slide-up mx-auto mt-8 w-full max-w-3xl sm:mt-10" style={{ animationDelay: "120ms" }}>
             <WaitlistForm />
           </section>
 
-          <section className="coming-slide-up" style={{ animationDelay: "220ms" }}>
+          <section className="coming-slide-up mx-auto mt-9 w-full max-w-5xl sm:mt-11" style={{ animationDelay: "220ms" }}>
             <PreviewSection />
           </section>
         </div>
