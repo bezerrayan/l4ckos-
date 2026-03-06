@@ -146,3 +146,92 @@ small {
 ::-webkit-scrollbar-thumb:hover {
   background: #1a1a1a;
 }
+
+/* Coming Soon */
+@keyframes comingFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes comingRadar {
+  0% {
+    transform: translate(-50%, -50%) scale(0.94);
+    opacity: 0.65;
+  }
+  75% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 0.18;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.14);
+    opacity: 0;
+  }
+}
+
+@keyframes comingParticlesDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -22px, 0);
+  }
+}
+
+@keyframes comingBlink {
+  0%, 45% {
+    opacity: 1;
+  }
+  46%, 100% {
+    opacity: 0.62;
+  }
+}
+
+.coming-fade-up {
+  animation: comingFadeUp 700ms ease both;
+}
+
+.coming-radar {
+  animation: comingRadar 5.4s ease-out infinite;
+}
+
+.coming-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.coming-scanlines {
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px
+  );
+  background-size: 100% 3px;
+}
+
+.coming-particles {
+  background-image:
+    radial-gradient(circle at 18% 28%, rgba(255, 0, 0, 0.36) 1px, transparent 2px),
+    radial-gradient(circle at 72% 22%, rgba(255, 255, 255, 0.28) 1px, transparent 2px),
+    radial-gradient(circle at 82% 74%, rgba(255, 0, 0, 0.3) 1px, transparent 2px),
+    radial-gradient(circle at 28% 82%, rgba(255, 255, 255, 0.2) 1px, transparent 2px);
+  background-size: 250px 250px;
+  animation: comingParticlesDrift 24s linear infinite alternate;
+}
+
+.coming-glow-red {
+  text-shadow:
+    0 0 8px rgba(255, 0, 0, 0.45),
+    0 0 20px rgba(255, 0, 0, 0.32);
+}
+
+.coming-seconds-pulse {
+  animation: comingBlink 1s steps(2) infinite;
+}
