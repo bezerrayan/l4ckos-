@@ -102,6 +102,20 @@ function parseMelhorEnvioQuotes(data: any): ShippingOption[] {
     .filter((item: ShippingOption) => Number.isFinite(item.price));
 }
 
+function extractMelhorEnvioItemErrors(data: any): string {
+  if (!Array.isArray(data)) return "";
+
+  const messages = data
+    .filter((item: any) => item?.error)
+    .map((item: any) => {
+      const service = String(item?.name || item?.company?.name || "Servico");
+      const reason = String(item?.error || item?.message || "Erro nao informado");
+      return `${service}: ${reason}`;
+    });
+
+  return messages.slice(0, 4).join(" | ");
+}
+
 export async function quoteShipping(input: QuoteInput): Promise<ShippingOption[]> {
   const cep = sanitizeCep(input.cep);
   if (cep.length !== 8) {
@@ -210,10 +224,12 @@ export async function quoteShippingDetailed(input: QuoteInput): Promise<QuoteShi
     const parsed = parseMelhorEnvioQuotes(response.data);
     if (parsed.length === 0) {
       const fallback = localOptions.length > 0 ? localOptions : [buildLocalOption()];
+      const providerError = extractMelhorEnvioItemErrors(response.data);
       return {
         options: fallback,
         source: "fallback-local",
         warning: "Melhor Envio nao retornou cotacoes para este CEP. Usando entrega local.",
+        providerError: providerError || "API respondeu sem opcoes validas de frete.",
       };
     }
 
