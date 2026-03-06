@@ -236,14 +236,14 @@ small {
 }
 
 .coming-radar {
-  animation: comingRadar 5.4s ease-out infinite;
+  animation: comingRadar 7.5s ease-out infinite;
 }
 
 .coming-grid {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-  background-size: 44px 44px;
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 .coming-scanlines {
@@ -275,8 +275,8 @@ small {
 
 .coming-glow-red {
   text-shadow:
-    0 0 8px rgba(255, 0, 0, 0.45),
-    0 0 20px rgba(255, 0, 0, 0.32);
+    0 0 6px rgba(255, 0, 0, 0.32),
+    0 0 14px rgba(255, 0, 0, 0.2);
 }
 
 .coming-seconds-pulse {

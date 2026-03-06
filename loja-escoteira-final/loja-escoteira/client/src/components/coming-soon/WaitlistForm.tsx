@@ -44,9 +44,9 @@ export default function WaitlistForm() {
   }
 
   return (
-    <section className="coming-fade-up mx-auto mt-1 w-full max-w-4xl px-1 sm:px-0">
-      <div className="rounded-2xl border border-white/16 bg-zinc-950/78 p-4 shadow-[0_0_34px_rgba(255,0,0,0.08)] backdrop-blur-md md:p-6">
-        <h2 className="text-center text-lg font-black uppercase tracking-[0.18em] text-white md:text-2xl">
+    <section className="coming-fade-up mx-auto mt-2 w-full max-w-4xl px-1 sm:px-0">
+      <div className="rounded-2xl border border-white/14 bg-zinc-950/80 p-4 shadow-[0_0_28px_rgba(255,255,255,0.03)] backdrop-blur-md md:p-6">
+        <h2 className="text-center text-lg font-black uppercase tracking-[0.16em] text-white md:text-2xl">
           Acesso antecipado
         </h2>
 
@@ -56,13 +56,13 @@ export default function WaitlistForm() {
             value={email}
             onChange={event => setEmail(event.target.value)}
             placeholder="Digite seu email"
-            className="h-13 w-full rounded-xl border border-white/35 bg-black/35 px-5 text-lg text-white outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(255,0,0,0.18)] md:h-14"
+            className="h-13 w-full rounded-xl border border-white/28 bg-black/38 px-5 text-lg text-white outline-none transition placeholder:text-zinc-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(255,0,0,0.12)] md:h-14"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="h-13 w-full rounded-xl border border-white/95 bg-black text-lg font-semibold uppercase tracking-wide text-white transition hover:border-red-500 hover:shadow-[0_0_28px_rgba(255,0,0,0.45)] disabled:opacity-70 md:h-14"
+            className="h-13 w-full rounded-xl border border-white/70 bg-zinc-950 text-lg font-semibold uppercase tracking-wide text-white transition hover:border-red-500 hover:shadow-[0_0_20px_rgba(255,0,0,0.25)] disabled:opacity-70 md:h-14"
           >
             {loading ? "Enviando..." : "Quero acesso antecipado"}
           </button>
@@ -70,14 +70,14 @@ export default function WaitlistForm() {
 
         {feedback ? <p className="mt-3 text-center text-sm text-zinc-200">{feedback}</p> : null}
 
-        <p className="mt-3 text-center text-base font-medium text-zinc-300">1.274 pessoas ja estao esperando</p>
+        <p className="mt-3 text-center text-sm font-medium text-zinc-400">1.274 pessoas ja estao esperando</p>
 
         <div className="mx-auto mt-4 max-w-3xl">
           <a
             href="https://instagram.com/l4ckos"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/40 bg-zinc-900/35 text-sm font-semibold uppercase tracking-wider text-zinc-200 transition hover:border-red-500 hover:text-red-300"
+            className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/25 bg-zinc-900/20 text-sm font-semibold uppercase tracking-wider text-zinc-300 transition hover:border-white/45 hover:text-white"
           >
             Seguir novidades
           </a>

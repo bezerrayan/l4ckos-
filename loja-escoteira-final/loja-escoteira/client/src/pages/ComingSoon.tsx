@@ -26,8 +26,8 @@ export default function ComingSoon() {
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-4 py-8 sm:px-6 md:px-8 md:py-12">
         <div className="w-full max-w-6xl">
-          <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-white/12 bg-zinc-950/55 p-5 shadow-[0_0_80px_rgba(0,0,0,0.7)] backdrop-blur-xl sm:p-7 md:p-10">
-            <div className="space-y-7 md:space-y-8">
+          <section className="mx-auto w-full max-w-5xl rounded-[30px] border border-white/10 bg-zinc-950/52 p-5 shadow-[0_0_90px_rgba(0,0,0,0.72)] backdrop-blur-xl sm:p-7 md:p-10">
+            <div className="space-y-7 md:space-y-9">
               <HeroSection />
               <TerminalIntro />
               <CountdownTimer />

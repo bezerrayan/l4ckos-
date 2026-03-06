@@ -36,8 +36,8 @@ export default function TerminalIntro() {
   }, [lineIndex, charIndex]);
 
   return (
-    <section className="coming-fade-up mx-auto mt-2 w-full max-w-4xl">
-      <div className="rounded-2xl border border-white/16 bg-black/72 px-5 py-4 font-mono text-base text-zinc-100 shadow-[0_0_30px_rgba(255,0,0,0.08)] md:px-6 md:py-5">
+    <section className="coming-fade-up mx-auto mt-1 w-full max-w-4xl">
+      <div className="rounded-2xl border border-white/14 bg-black/72 px-5 py-4 font-mono text-[15px] text-zinc-200 shadow-[0_0_24px_rgba(255,255,255,0.03)] md:px-6 md:py-5 md:text-base">
         {renderedLines.map((line, index) => (
           <p key={index} className="leading-8">
             <span className="text-red-500">{line.startsWith(">") ? ">" : ""}</span>
