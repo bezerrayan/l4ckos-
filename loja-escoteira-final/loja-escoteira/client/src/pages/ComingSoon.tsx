@@ -56,27 +56,61 @@ export default function ComingSoon() {
       <BackgroundEffects />
 
       <div
-        className={`relative z-10 mx-auto flex min-h-[100dvh] w-full items-center justify-center px-4 py-8 transition-opacity duration-700 sm:px-6 sm:py-10 md:px-8 ${
+        className={`relative z-10 mx-auto flex min-h-[100dvh] w-full items-center px-4 py-8 transition-opacity duration-700 sm:px-6 sm:py-10 md:px-8 ${
           showIntro ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="w-full max-w-3xl">
-          <section className="mx-auto w-full px-2 py-4 sm:px-4 sm:py-6">
-            <section className="coming-fade-up mx-auto w-full">
-              <HeroSection />
+        <div className="mx-auto w-full max-w-[1240px]">
+          <section className="coming-fade-up mx-auto mb-7 w-full rounded-3xl border border-zinc-200/85 bg-white/58 px-4 py-6 shadow-[0_16px_46px_rgba(0,0,0,0.09)] backdrop-blur-sm sm:px-7 sm:py-8">
+            <HeroSection />
+          </section>
+
+          <section className="grid gap-5 lg:grid-cols-12">
+            <section className="coming-slide-up lg:col-span-8" style={{ animationDelay: "60ms" }}>
+              <div className="rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
+                <CountdownTimer />
+
+                <section className="mt-6">
+                  <WaitlistForm />
+                </section>
+              </div>
             </section>
 
-            <section className="coming-slide-up mx-auto mt-7 w-full" style={{ animationDelay: "60ms" }}>
-              <CountdownTimer />
-            </section>
+            <section className="coming-slide-up lg:col-span-4" style={{ animationDelay: "120ms" }}>
+              <div className="h-full rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
+                <h2 className="font-sans text-xl font-semibold text-zinc-800 sm:text-2xl">O que voce vai receber</h2>
+                <p className="mt-2 font-sans text-sm leading-relaxed text-zinc-600 sm:text-base">
+                  Acesso antecipado aos produtos, aviso de lancamento e condicoes especiais da estreia.
+                </p>
 
-            <section className="coming-slide-up mx-auto mt-6 w-full" style={{ animationDelay: "120ms" }}>
-              <WaitlistForm />
+                <div className="mt-5 space-y-3">
+                  <div className="rounded-xl border border-zinc-200 bg-white/70 px-4 py-3">
+                    <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Previsao</p>
+                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800">Lançamento em 2026</p>
+                  </div>
+                  <div className="rounded-xl border border-zinc-200 bg-white/70 px-4 py-3">
+                    <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Primeiros avisos</p>
+                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800">Email + novidades exclusivas</p>
+                  </div>
+                  <div className="rounded-xl border border-zinc-200 bg-white/70 px-4 py-3">
+                    <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Beneficio</p>
+                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800">Cupom especial de estreia</p>
+                  </div>
+                </div>
+              </div>
             </section>
           </section>
 
-          <section className="coming-slide-up mx-auto mt-8 w-full sm:mt-10" style={{ animationDelay: "220ms" }}>
+          <section className="coming-slide-up mx-auto mt-6 w-full" style={{ animationDelay: "220ms" }}>
             <PreviewSection />
+          </section>
+
+          <section className="coming-slide-up mt-6 w-full" style={{ animationDelay: "280ms" }}>
+            <div className="rounded-2xl border border-zinc-200/85 bg-white/54 px-4 py-4 text-center shadow-[0_12px_28px_rgba(0,0,0,0.07)] backdrop-blur-sm sm:px-8">
+              <p className="font-sans text-sm text-zinc-600 sm:text-base">
+                Quer prioridade real? Entre na lista para receber o link assim que a loja abrir.
+              </p>
+            </div>
           </section>
         </div>
       </div>
