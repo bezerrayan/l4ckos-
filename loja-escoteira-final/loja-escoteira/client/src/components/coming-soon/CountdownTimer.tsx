@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type CountdownState = {
   days: number;
@@ -21,13 +21,25 @@ function getCountdown(targetTimestamp: number): CountdownState {
   };
 }
 
-function CountdownItem({ value, label, pulse = false }: { value: string; label: string; pulse?: boolean }) {
+function CountdownItem({
+  value,
+  label,
+  pulse = false,
+  withDivider = false,
+}: {
+  value: string;
+  label: string;
+  pulse?: boolean;
+  withDivider?: boolean;
+}) {
   return (
-    <article className="rounded-2xl border border-white/12 bg-[linear-gradient(145deg,rgba(34,34,34,0.56),rgba(10,10,10,0.4))] px-2 py-4 text-center shadow-[0_14px_34px_rgba(0,0,0,0.26)] backdrop-blur-sm sm:px-3 sm:py-5">
-      <p className={`text-[clamp(2.2rem,6vw,3.7rem)] font-bold leading-none tracking-tight text-white ${pulse ? "coming-seconds-pulse" : ""}`}>
+    <article
+      className={`relative flex flex-col items-center justify-center px-2 py-3 text-center sm:py-4 ${withDivider ? "after:absolute after:right-0 after:top-3 after:h-[calc(100%-24px)] after:w-px after:bg-zinc-300/70" : ""}`}
+    >
+      <p className={`font-sans text-[clamp(2.1rem,6.2vw,3.2rem)] font-bold leading-none tracking-tight text-zinc-800 ${pulse ? "coming-seconds-pulse" : ""}`}>
         {value}
       </p>
-      <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.24em] text-zinc-400 sm:text-[11px]">{label}</p>
+      <p className="mt-2 font-sans text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-600 sm:text-[11px]">{label}</p>
     </article>
   );
 }
@@ -45,11 +57,13 @@ export default function CountdownTimer() {
 
   return (
     <section>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 md:gap-5">
-        <CountdownItem value={pad(countdown.days)} label="Dias" />
-        <CountdownItem value={pad(countdown.hours)} label="Horas" />
-        <CountdownItem value={pad(countdown.minutes)} label="Min" />
-        <CountdownItem value={pad(countdown.seconds)} label="Seg" pulse />
+      <div className="overflow-hidden rounded-2xl border border-zinc-300/90 bg-white/60 shadow-[0_8px_25px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-4">
+          <CountdownItem value={pad(countdown.days)} label="Dias" withDivider />
+          <CountdownItem value={pad(countdown.hours)} label="Horas" withDivider />
+          <CountdownItem value={pad(countdown.minutes)} label="Min" withDivider />
+          <CountdownItem value={pad(countdown.seconds)} label="Seg" pulse />
+        </div>
       </div>
     </section>
   );

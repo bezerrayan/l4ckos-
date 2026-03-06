@@ -32,23 +32,23 @@ export default function SplashIntro({ onComplete }: SplashIntroProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-[120] flex items-center justify-center bg-black transition-opacity duration-700 ${
+      className={`fixed inset-0 z-[120] flex items-center justify-center bg-[#0f0f12] transition-opacity duration-700 ${
         phase === "out" ? "opacity-0" : "opacity-100"
       }`}
       aria-hidden
     >
       <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#030304_0%,#060607_45%,#020203_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#121216_0%,#0e0e12_45%,#09090b_100%)]" />
 
         <div
-          className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(215,28,28,0.22)_0%,rgba(90,8,8,0.12)_25%,rgba(0,0,0,0)_60%)] transition-opacity duration-700 ${
+          className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0.12)_28%,rgba(239,68,68,0.08)_46%,rgba(0,0,0,0)_66%)] transition-opacity duration-700 ${
             showL4K || showL4ckos ? "opacity-100" : "opacity-30"
           }`}
         />
 
-        <div className="absolute inset-0 coming-grid opacity-[0.03]" />
+        <div className="absolute inset-0 coming-grid opacity-[0.02]" />
 
-        <div className="coming-radar absolute h-[40vmin] w-[40vmin] rounded-full border border-red-500/18" />
+        <div className="coming-radar absolute h-[40vmin] w-[40vmin] rounded-full border border-zinc-200/20" />
 
         <div className="relative z-10 text-center">
           <p
@@ -56,7 +56,7 @@ export default function SplashIntro({ onComplete }: SplashIntroProps) {
               showL4K ? "scale-100 opacity-100 blur-0" : "scale-[0.88] opacity-0 blur-[6px]"
             }`}
             style={{
-              textShadow: showL4K ? "0 0 24px rgba(255, 0, 0, 0.18)" : "none",
+              textShadow: showL4K ? "0 0 28px rgba(255, 255, 255, 0.26), 0 0 20px rgba(239, 68, 68, 0.18)" : "none",
               transform: phase === "l4kHold" ? "scale(1.02)" : undefined,
             }}
           >
@@ -68,7 +68,7 @@ export default function SplashIntro({ onComplete }: SplashIntroProps) {
               showL4ckos ? "scale-100 opacity-100 blur-0" : "scale-[0.9] opacity-0 blur-[6px]"
             }`}
             style={{
-              textShadow: showL4ckos ? "0 0 28px rgba(255, 0, 0, 0.2)" : "none",
+              textShadow: showL4ckos ? "0 0 30px rgba(255, 255, 255, 0.3), 0 0 24px rgba(239, 68, 68, 0.16)" : "none",
               transform: phase === "l4ckosHold" ? "translate(-50%, -50%) scale(1.02)" : undefined,
             }}
           >
@@ -76,7 +76,7 @@ export default function SplashIntro({ onComplete }: SplashIntroProps) {
           </p>
 
           <span
-            className={`mx-auto mt-4 block h-1 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500 transition-all duration-700 ${
+            className={`mx-auto mt-4 block h-1 rounded-full bg-gradient-to-r from-zinc-200/0 via-zinc-100 to-zinc-200/0 transition-all duration-700 ${
               showL4K ? "w-16 opacity-90" : showL4ckos ? "w-24 opacity-90" : "w-10 opacity-20"
             }`}
           />
