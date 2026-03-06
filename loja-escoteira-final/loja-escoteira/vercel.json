@@ -1,12 +1,6 @@
-﻿{
-  "framework": "vite",
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm build",
-  "outputDirectory": "dist/public",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "buildCommand": "pnpm exec vite build",
+  "outputDirectory": "dist/public"
 }
