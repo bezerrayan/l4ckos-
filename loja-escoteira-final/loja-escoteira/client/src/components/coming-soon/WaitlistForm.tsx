@@ -46,7 +46,7 @@ export default function WaitlistForm() {
   return (
     <section>
       <div className="space-y-4 text-zinc-800">
-        <p className="text-center font-sans text-lg font-semibold uppercase tracking-[0.16em] text-zinc-800 sm:text-xl">Acesso antecipado</p>
+        <p className="text-center font-sans text-[1.05rem] font-semibold uppercase tracking-[0.16em] text-zinc-800 sm:text-[1.25rem]">Acesso antecipado</p>
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <input
@@ -54,13 +54,13 @@ export default function WaitlistForm() {
             value={email}
             onChange={event => setEmail(event.target.value)}
             placeholder="Digite seu email"
-            className="h-12 w-full rounded-xl border border-zinc-300 bg-white/70 px-4 text-center font-sans text-[1.15rem] text-zinc-800 outline-none transition placeholder:text-zinc-500 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-400/20 sm:h-14 sm:text-3xl"
+            className="h-12 w-full rounded-xl border border-zinc-300 bg-white/72 px-4 text-center font-sans text-[1.05rem] text-zinc-800 outline-none transition placeholder:text-zinc-500 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-400/20 sm:h-14 sm:text-[2rem]"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="coming-cta-pulse h-12 w-full rounded-xl bg-[linear-gradient(135deg,#1a1a1a_0%,#2f2f33_100%)] px-4 font-sans text-sm font-semibold uppercase tracking-[0.11em] text-white shadow-[0_14px_24px_rgba(0,0,0,0.22)] transition duration-200 hover:-translate-y-0.5 hover:brightness-110 disabled:translate-y-0 disabled:opacity-70 sm:h-14 sm:text-base"
+            className="coming-cta-pulse h-12 w-full rounded-xl bg-[linear-gradient(135deg,#1a1a1a_0%,#2f2f33_100%)] px-4 font-sans text-sm font-semibold uppercase tracking-[0.11em] text-white shadow-[0_12px_20px_rgba(0,0,0,0.2)] transition duration-200 hover:-translate-y-0.5 hover:brightness-110 disabled:translate-y-0 disabled:opacity-70 sm:h-14 sm:text-[1.05rem]"
           >
             {loading ? "Enviando..." : "Quero acesso antecipado"}
           </button>

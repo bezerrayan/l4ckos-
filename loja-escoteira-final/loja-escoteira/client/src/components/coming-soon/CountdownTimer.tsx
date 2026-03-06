@@ -36,10 +36,10 @@ function CountdownItem({
     <article
       className={`relative flex flex-col items-center justify-center px-2 py-3 text-center sm:py-4 ${withDivider ? "after:absolute after:right-0 after:top-3 after:h-[calc(100%-24px)] after:w-px after:bg-zinc-300/70" : ""}`}
     >
-      <p className={`font-sans text-[clamp(2.1rem,6.2vw,3.2rem)] font-bold leading-none tracking-tight text-zinc-800 ${pulse ? "coming-seconds-pulse" : ""}`}>
+      <p className={`font-sans text-[clamp(1.9rem,5.5vw,2.95rem)] font-bold leading-none tracking-tight text-zinc-800 ${pulse ? "coming-seconds-pulse" : ""}`}>
         {value}
       </p>
-      <p className="mt-2 font-sans text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-600 sm:text-[11px]">{label}</p>
+      <p className="mt-2 font-sans text-[10px] font-medium uppercase tracking-[0.2em] text-zinc-600 sm:text-[11px]">{label}</p>
     </article>
   );
 }
@@ -57,7 +57,7 @@ export default function CountdownTimer() {
 
   return (
     <section>
-      <div className="overflow-hidden rounded-2xl border border-zinc-300/90 bg-white/60 shadow-[0_8px_25px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+      <div className="overflow-hidden rounded-xl border border-zinc-300/90 bg-white/60 shadow-[0_8px_20px_rgba(0,0,0,0.07)] backdrop-blur-sm">
         <div className="grid grid-cols-2 sm:grid-cols-4">
           <CountdownItem value={pad(countdown.days)} label="Dias" withDivider />
           <CountdownItem value={pad(countdown.hours)} label="Horas" withDivider />

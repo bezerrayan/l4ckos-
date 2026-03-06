@@ -60,22 +60,22 @@ export default function ComingSoon() {
           showIntro ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="w-full max-w-4xl">
-          <section className="mx-auto w-full rounded-[34px] border border-zinc-200/80 bg-white/44 px-4 py-8 shadow-[0_25px_80px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:px-8 sm:py-11">
+        <div className="w-full max-w-3xl">
+          <section className="mx-auto w-full px-2 py-4 sm:px-4 sm:py-6">
             <section className="coming-fade-up mx-auto w-full">
               <HeroSection />
             </section>
 
-            <section className="coming-slide-up mx-auto mt-8 w-full" style={{ animationDelay: "60ms" }}>
+            <section className="coming-slide-up mx-auto mt-7 w-full" style={{ animationDelay: "60ms" }}>
               <CountdownTimer />
             </section>
 
-            <section className="coming-slide-up mx-auto mt-8 w-full" style={{ animationDelay: "120ms" }}>
+            <section className="coming-slide-up mx-auto mt-6 w-full" style={{ animationDelay: "120ms" }}>
               <WaitlistForm />
             </section>
           </section>
 
-          <section className="coming-slide-up mx-auto mt-7 w-full sm:mt-9" style={{ animationDelay: "220ms" }}>
+          <section className="coming-slide-up mx-auto mt-8 w-full sm:mt-10" style={{ animationDelay: "220ms" }}>
             <PreviewSection />
           </section>
         </div>

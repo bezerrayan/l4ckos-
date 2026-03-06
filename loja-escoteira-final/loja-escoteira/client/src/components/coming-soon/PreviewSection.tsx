@@ -1,18 +1,25 @@
-const teaserItems = ["Equipamentos exclusivos", "Acessorios escoteiros", "Lancamentos limitados"];
+import { Box, Cog, PenLine } from "lucide-react";
+
+const teaserItems = [
+  { label: "Equipamentos exclusivos", Icon: Cog },
+  { label: "Acessorios escoteiros", Icon: PenLine },
+  { label: "Lancamentos limitados", Icon: Box },
+];
 
 export default function PreviewSection() {
   return (
     <section className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-zinc-300/90 bg-white/55 shadow-[0_10px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+      <div className="overflow-hidden rounded-2xl border border-zinc-300/85 bg-white/62 shadow-[0_12px_30px_rgba(0,0,0,0.08)] backdrop-blur-sm">
         <div className="grid sm:grid-cols-3">
-          {teaserItems.map((item, index) => {
+          {teaserItems.map(({ label, Icon }, index) => {
             const withDivider = index < teaserItems.length - 1;
             return (
               <article
-                key={item}
-                className={`flex items-center justify-center px-4 py-5 text-center font-sans text-sm font-medium text-zinc-700 sm:text-base ${withDivider ? "border-b border-zinc-300/70 sm:border-b-0 sm:border-r" : ""}`}
+                key={label}
+                className={`flex items-center justify-center gap-2 px-4 py-6 text-center font-sans text-sm font-medium text-zinc-700 sm:text-[1.05rem] ${withDivider ? "border-b border-zinc-300/70 sm:border-b-0 sm:border-r" : ""}`}
               >
-                <span>{item}</span>
+                <Icon size={18} className="text-zinc-500" />
+                <span>{label}</span>
               </article>
             );
           })}

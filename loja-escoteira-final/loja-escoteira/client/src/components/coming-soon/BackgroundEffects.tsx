@@ -1,15 +1,18 @@
 export default function BackgroundEffects() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_0%,#fafafa_0%,#ececee_40%,#dddde2_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.34)_0%,rgba(255,255,255,0.14)_35%,rgba(30,30,32,0.16)_100%)]" />
-      <div className="absolute inset-0 coming-grid opacity-[0.025]" />
-      <div className="absolute inset-0 coming-scanlines opacity-[0.02]" />
-      <div className="absolute inset-0 coming-particles opacity-[0.2]" />
+      <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,#fafafa_0%,#e8e8eb_42%,#d8d8de_100%)]" />
 
-      <div className="absolute left-1/2 top-1/2 h-[760px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.56)_0%,rgba(255,255,255,0.2)_42%,rgba(255,255,255,0)_72%)]" />
-      <div className="coming-parallax-slow absolute left-1/2 top-1/2 h-[920px] w-[920px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-zinc-800/5" />
-      <div className="coming-parallax-fast absolute left-1/2 top-1/2 h-[580px] w-[580px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-zinc-800/5" />
+      <div className="absolute inset-0">
+        <div className="absolute left-[-8%] top-[14%] h-[34%] w-[44%] rounded-[24px] bg-zinc-500/8 blur-[34px]" />
+        <div className="absolute right-[-10%] top-[16%] h-[36%] w-[46%] rounded-[24px] bg-zinc-600/10 blur-[36px]" />
+        <div className="absolute left-[-6%] bottom-[14%] h-[30%] w-[46%] rounded-[24px] bg-zinc-600/10 blur-[32px]" />
+        <div className="absolute right-[-10%] bottom-[12%] h-[32%] w-[45%] rounded-[24px] bg-zinc-600/10 blur-[34px]" />
+      </div>
+
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.2)_36%,rgba(255,255,255,0.58)_100%)]" />
+      <div className="absolute inset-0 coming-grid opacity-[0.018]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(239,68,68,0.08)_0%,rgba(239,68,68,0.02)_26%,rgba(255,255,255,0)_56%)]" />
     </div>
   );
 }
