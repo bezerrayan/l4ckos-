@@ -4,55 +4,80 @@ type SplashIntroProps = {
   onComplete: () => void;
 };
 
+type IntroPhase = "boot" | "l4k" | "l4kHold" | "l4ckos" | "l4ckosHold" | "out";
+
 export default function SplashIntro({ onComplete }: SplashIntroProps) {
-  const [phase, setPhase] = useState<"l4k" | "l4ckos" | "out">("l4k");
+  const [phase, setPhase] = useState<IntroPhase>("boot");
 
   useEffect(() => {
-    const t1 = window.setTimeout(() => setPhase("l4ckos"), 1450);
-    const t2 = window.setTimeout(() => setPhase("out"), 2800);
-    const t3 = window.setTimeout(() => onComplete(), 3200);
+    const t1 = window.setTimeout(() => setPhase("l4k"), 400);
+    const t2 = window.setTimeout(() => setPhase("l4kHold"), 1200);
+    const t3 = window.setTimeout(() => setPhase("l4ckos"), 2000);
+    const t4 = window.setTimeout(() => setPhase("l4ckosHold"), 2600);
+    const t5 = window.setTimeout(() => setPhase("out"), 3200);
+    const t6 = window.setTimeout(() => onComplete(), 3600);
 
     return () => {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
       window.clearTimeout(t3);
+      window.clearTimeout(t4);
+      window.clearTimeout(t5);
+      window.clearTimeout(t6);
     };
   }, [onComplete]);
 
+  const showL4K = phase === "l4k" || phase === "l4kHold";
+  const showL4ckos = phase === "l4ckos" || phase === "l4ckosHold";
+
   return (
     <div
-      className={`fixed inset-0 z-[120] flex items-center justify-center bg-black transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[120] flex items-center justify-center bg-black transition-opacity duration-700 ${
         phase === "out" ? "opacity-0" : "opacity-100"
       }`}
       aria-hidden
     >
       <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#040405_0%,#060607_40%,#020203_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(205,26,26,0.2)_0%,rgba(90,8,8,0.12)_24%,rgba(0,0,0,0)_60%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#030304_0%,#060607_45%,#020203_100%)]" />
+
+        <div
+          className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(215,28,28,0.22)_0%,rgba(90,8,8,0.12)_25%,rgba(0,0,0,0)_60%)] transition-opacity duration-700 ${
+            showL4K || showL4ckos ? "opacity-100" : "opacity-30"
+          }`}
+        />
+
         <div className="absolute inset-0 coming-grid opacity-[0.03]" />
 
-        <div className="coming-radar absolute h-[36vmin] w-[36vmin] rounded-full border border-red-500/20" />
+        <div className="coming-radar absolute h-[40vmin] w-[40vmin] rounded-full border border-red-500/18" />
 
         <div className="relative z-10 text-center">
           <p
             className={`text-[clamp(3rem,10vw,7rem)] font-extrabold leading-none tracking-tight text-white transition-all duration-700 ${
-              phase === "l4k" ? "scale-100 opacity-100" : "scale-[0.97] opacity-0"
+              showL4K ? "scale-100 opacity-100 blur-0" : "scale-[0.88] opacity-0 blur-[6px]"
             }`}
+            style={{
+              textShadow: showL4K ? "0 0 24px rgba(255, 0, 0, 0.18)" : "none",
+              transform: phase === "l4kHold" ? "scale(1.02)" : undefined,
+            }}
           >
             L4K
           </p>
 
           <p
             className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[clamp(2.8rem,9vw,6.3rem)] font-extrabold leading-none tracking-tight text-white transition-all duration-700 ${
-              phase === "l4ckos" ? "scale-100 opacity-100" : "scale-[0.97] opacity-0"
+              showL4ckos ? "scale-100 opacity-100 blur-0" : "scale-[0.9] opacity-0 blur-[6px]"
             }`}
+            style={{
+              textShadow: showL4ckos ? "0 0 28px rgba(255, 0, 0, 0.2)" : "none",
+              transform: phase === "l4ckosHold" ? "translate(-50%, -50%) scale(1.02)" : undefined,
+            }}
           >
             L4CKOS
           </p>
 
           <span
             className={`mx-auto mt-4 block h-1 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500 transition-all duration-700 ${
-              phase === "l4k" ? "w-16 opacity-90" : "w-24 opacity-90"
+              showL4K ? "w-16 opacity-90" : showL4ckos ? "w-24 opacity-90" : "w-10 opacity-20"
             }`}
           />
         </div>
