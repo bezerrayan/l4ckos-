@@ -23,9 +23,11 @@ function getCountdown(targetTimestamp: number): CountdownState {
 
 function CountdownItem({ value, label, pulse = false }: { value: string; label: string; pulse?: boolean }) {
   return (
-    <article className="text-center font-mono">
-      <p className={`text-3xl text-white sm:text-4xl ${pulse ? "coming-seconds-pulse" : ""}`}>[ {value} ]</p>
-      <p className="mt-2 text-2xl text-white sm:text-3xl">{label}</p>
+    <article className="text-center">
+      <p className={`text-5xl font-bold tracking-tight text-white sm:text-6xl ${pulse ? "coming-seconds-pulse" : ""}`}>
+        {value}
+      </p>
+      <p className="mt-2 text-xs uppercase tracking-[0.28em] text-zinc-400 sm:text-sm">{label}</p>
     </article>
   );
 }
@@ -42,8 +44,8 @@ export default function CountdownTimer() {
   }, [targetTimestamp]);
 
   return (
-    <section className="mx-auto w-full max-w-2xl">
-      <div className="grid grid-cols-4 gap-2 sm:gap-4">
+    <section className="mx-auto w-full max-w-3xl">
+      <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-8">
         <CountdownItem value={pad(countdown.days)} label="Dias" />
         <CountdownItem value={pad(countdown.hours)} label="Horas" />
         <CountdownItem value={pad(countdown.minutes)} label="Min" />

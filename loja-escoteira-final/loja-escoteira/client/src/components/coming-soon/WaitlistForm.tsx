@@ -44,9 +44,9 @@ export default function WaitlistForm() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl font-mono">
-      <div className="space-y-4">
-        <p className="text-center text-3xl font-semibold uppercase tracking-[0.15em] text-white sm:text-4xl">
+    <section className="mx-auto w-full max-w-3xl">
+      <div className="space-y-4 rounded-2xl bg-zinc-950/35 p-5 sm:p-6">
+        <p className="text-center text-lg font-semibold uppercase tracking-[0.16em] text-white sm:text-xl">
           Acesso antecipado
         </p>
 
@@ -56,23 +56,23 @@ export default function WaitlistForm() {
             value={email}
             onChange={event => setEmail(event.target.value)}
             placeholder="Digite seu email"
-            className="h-14 w-full border border-white/80 bg-transparent px-4 text-2xl text-white outline-none placeholder:text-zinc-500"
+            className="h-13 w-full rounded-xl border border-white/20 bg-black/30 px-4 text-base text-white outline-none transition placeholder:text-zinc-500 focus:border-red-500/65 focus:ring-2 focus:ring-red-500/20 sm:h-14 sm:text-lg"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="h-14 w-full bg-transparent text-2xl font-semibold uppercase tracking-[0.08em] text-white transition hover:text-red-400 disabled:opacity-70"
+            className="h-13 w-full rounded-xl bg-white px-4 text-sm font-semibold uppercase tracking-[0.09em] text-black transition hover:bg-red-500 hover:text-white disabled:opacity-70 sm:h-14 sm:text-base"
           >
-            {loading ? "[ ENVIANDO ]" : "[ QUERO ACESSO ANTECIPADO ]"}
+            {loading ? "Enviando..." : "Quero acesso antecipado"}
           </button>
         </form>
 
         {feedback ? (
-          <p className="text-center text-xl text-zinc-300">{feedback}</p>
+          <p className="text-center text-sm text-zinc-300 sm:text-base">{feedback}</p>
         ) : null}
 
-        <p className="text-center text-2xl text-white">
+        <p className="text-center text-sm text-zinc-400 sm:text-base">
           1.274 pessoas ja entraram na lista
         </p>
 
@@ -81,7 +81,7 @@ export default function WaitlistForm() {
             href="https://instagram.com/l4ckos"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-12 w-full items-center justify-center text-2xl text-white transition hover:text-red-400"
+            className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/20 bg-transparent text-sm font-medium text-zinc-300 transition hover:border-white/40 hover:text-white"
           >
             Seguir novidades
           </a>
