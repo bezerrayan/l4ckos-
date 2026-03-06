@@ -5,6 +5,8 @@ backups/
 node_modules/
 dist/
 .env
+access_token.txt
+*_token.txt
 
 # editor/temp
 *.log

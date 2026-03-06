@@ -17,7 +17,7 @@ import paymentRoutes from "../routes/paymentRoutes";
 import webhookRoutes from "../routes/webhookRoutes";
 import shippingRoutes from "../routes/shippingRoutes";
 import { getBackupPayload } from "../db";
-import { handleAsaasWebhookEvent } from "../services/asaas";
+import { asaasWebhookHandler } from "../controllers/paymentController";
 
 function scheduleDailyBackup() {
   const dir = process.env.BACKUP_DIR || "backups";
@@ -193,12 +193,22 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   app.use((req, res, next) => {
-    if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
+    if (!isMutating) {
       next();
       return;
     }
 
-    if (!req.path.startsWith("/api/trpc")) {
+    // Apply origin checks only for API routes that may use cookie auth.
+    const isApiRoute = req.path.startsWith("/api/");
+    if (!isApiRoute) {
+      next();
+      return;
+    }
+
+    // Webhooks are server-to-server and should not be blocked by browser-origin checks.
+    const isWebhookRoute = req.path === "/api/webhooks/asaas" || req.path === "/webhook/asaas";
+    if (isWebhookRoute) {
       next();
       return;
     }
@@ -235,35 +245,9 @@ async function startServer() {
     }
   });
 
-  app.post("/webhook/asaas", async (req, res) => {
-    try {
-      const configuredWebhookToken = process.env.ASAAS_WEBHOOK_TOKEN?.trim();
-      const requestWebhookToken = req.header("asaas-access-token")?.trim();
-
-      if (process.env.NODE_ENV === "production" && !configuredWebhookToken) {
-        console.warn("[Asaas] ASAAS_WEBHOOK_TOKEN not configured; accepting webhook in permissive mode");
-      }
-
-      if (configuredWebhookToken && requestWebhookToken !== configuredWebhookToken) {
-        console.warn("[Asaas] Invalid webhook token");
-        res.sendStatus(401);
-        return;
-      }
-
-      const result = await handleAsaasWebhookEvent(req.body);
-
-      if (result.handled) {
-        console.log(
-          `[Asaas] Payment confirmed: event=${result.event} orderId=${result.orderId} paymentId=${result.paymentId}`,
-        );
-      }
-
-      res.sendStatus(200);
-    } catch (error) {
-      console.error("[Asaas] Webhook processing failed", error);
-      res.sendStatus(500);
-    }
-  });
+  // Backward-compatible alias for legacy webhook URL.
+  // Canonical webhook endpoint is /api/webhooks/asaas.
+  app.post("/webhook/asaas", asaasWebhookHandler);
   // REST API (upload)
   app.use("/api/upload", uploadRouter);
   app.use("/api/payments", paymentRoutes);

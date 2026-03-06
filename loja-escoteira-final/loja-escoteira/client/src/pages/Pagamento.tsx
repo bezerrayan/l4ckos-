@@ -11,6 +11,7 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { useCreateAsaasCharge } from "../hooks/useOrders";
 import { useUser } from "../contexts/UserContext";
 import { trpc } from "../lib/trpc";
+import { apiUrl } from "../const";
 
 type CheckoutMethod = "PIX" | "BOLETO" | "CARD";
 
@@ -197,8 +198,9 @@ export default function Pagamento() {
     }
 
     try {
-      const response = await fetch("/api/shipping/quote", {
+      const response = await fetch(apiUrl("/api/shipping/quote"), {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -254,7 +256,9 @@ export default function Pagamento() {
 
     setAddressLoading(true);
     try {
-      const response = await fetch(`/api/cep/${normalizedCep}`);
+      const response = await fetch(apiUrl(`/api/cep/${normalizedCep}`), {
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Falha ao consultar CEP.");
       }

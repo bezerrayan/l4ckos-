@@ -49,6 +49,24 @@ function getGoogleRedirectUri(req: Request): string {
   }
 }
 
+function getFrontendBaseUrl(req: Request): string {
+  const configured = ENV.frontendUrl?.trim();
+  if (configured) {
+    try {
+      return new URL(configured).toString();
+    } catch {
+      // ignore invalid configured URL and fallback
+    }
+  }
+
+  return getBaseUrl(req);
+}
+
+function buildFrontendRedirectUrl(req: Request, path: string): string {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return new URL(normalizedPath, getFrontendBaseUrl(req)).toString();
+}
+
 function decodeState(state: string): { returnTo?: string; nonce?: string } {
   try {
     const raw = Buffer.from(state, "base64url").toString("utf8");
@@ -126,7 +144,7 @@ export function registerOAuthRoutes(app: Express) {
     let callbackStage = "init";
 
     if (!code || !state) {
-      res.redirect(302, "/login?oauthError=missing_code_or_state");
+      res.redirect(302, buildFrontendRedirectUrl(req, "/login?oauthError=missing_code_or_state"));
       return;
     }
 
@@ -240,7 +258,7 @@ export function registerOAuthRoutes(app: Express) {
           ? decodedState.returnTo
           : "/";
 
-      res.redirect(302, returnTo);
+      res.redirect(302, buildFrontendRedirectUrl(req, returnTo));
     } catch (error) {
       const code =
         typeof error === "object" && error !== null && "code" in error
