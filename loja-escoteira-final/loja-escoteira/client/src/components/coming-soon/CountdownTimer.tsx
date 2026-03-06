@@ -33,15 +33,28 @@ export default function CountdownTimer() {
   }, [targetTimestamp]);
 
   return (
-    <section className="coming-fade-up mx-auto mt-10 w-full max-w-4xl rounded-2xl border border-white/20 bg-black/45 px-4 py-5 backdrop-blur-md md:px-8 md:py-7">
-      <div className="flex items-center justify-center gap-2 text-3xl font-black tracking-wider text-white md:gap-4 md:text-6xl">
-        <span className="coming-glow-red">{pad(countdown.days)}</span>
-        <span className="text-red-500">:</span>
-        <span className="coming-glow-red">{pad(countdown.hours)}</span>
-        <span className="text-red-500">:</span>
-        <span className="coming-glow-red">{pad(countdown.minutes)}</span>
-        <span className="text-red-500">:</span>
-        <span className="coming-glow-red coming-seconds-pulse">{pad(countdown.seconds)}</span>
+    <section className="coming-fade-up mx-auto mt-9 w-full max-w-4xl rounded-2xl border border-white/20 bg-black/45 px-4 py-5 backdrop-blur-md md:mt-10 md:px-8 md:py-7">
+      <div className="grid grid-cols-4 gap-2 md:gap-4">
+        <div className="rounded-xl border border-white/20 bg-black/60 px-2 py-3 text-center">
+          <span className="coming-glow-red block text-3xl font-black tracking-wider text-white md:text-6xl">
+            {pad(countdown.days)}
+          </span>
+        </div>
+        <div className="rounded-xl border border-white/20 bg-black/60 px-2 py-3 text-center">
+          <span className="coming-glow-red block text-3xl font-black tracking-wider text-white md:text-6xl">
+            {pad(countdown.hours)}
+          </span>
+        </div>
+        <div className="rounded-xl border border-white/20 bg-black/60 px-2 py-3 text-center">
+          <span className="coming-glow-red block text-3xl font-black tracking-wider text-white md:text-6xl">
+            {pad(countdown.minutes)}
+          </span>
+        </div>
+        <div className="rounded-xl border border-white/20 bg-black/60 px-2 py-3 text-center">
+          <span className="coming-glow-red coming-seconds-pulse block text-3xl font-black tracking-wider text-white md:text-6xl">
+            {pad(countdown.seconds)}
+          </span>
+        </div>
       </div>
       <div className="mt-3 grid grid-cols-4 gap-2 text-center text-[10px] font-semibold uppercase tracking-[0.32em] text-zinc-400 md:text-xs">
         <span>Dias</span>

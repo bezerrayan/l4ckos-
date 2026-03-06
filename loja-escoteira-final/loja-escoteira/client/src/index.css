@@ -192,6 +192,45 @@ small {
   }
 }
 
+@keyframes comingParallaxSlow {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(16px, 10px, 0);
+  }
+}
+
+@keyframes comingParallaxFast {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-18px, -12px, 0);
+  }
+}
+
+@keyframes comingGlitchA {
+  0%, 88%, 100% {
+    text-shadow:
+      0 0 0 rgba(255, 0, 0, 0),
+      0 0 0 rgba(255, 255, 255, 0);
+    transform: translate(0, 0);
+  }
+  89% {
+    text-shadow:
+      2px 0 0 rgba(255, 0, 0, 0.55),
+      -2px 0 0 rgba(255, 255, 255, 0.25);
+    transform: translate(0.8px, 0);
+  }
+  90% {
+    text-shadow:
+      -2px 0 0 rgba(255, 0, 0, 0.55),
+      2px 0 0 rgba(255, 255, 255, 0.25);
+    transform: translate(-0.8px, 0);
+  }
+}
+
 .coming-fade-up {
   animation: comingFadeUp 700ms ease both;
 }
@@ -226,6 +265,14 @@ small {
   animation: comingParticlesDrift 24s linear infinite alternate;
 }
 
+.coming-parallax-slow {
+  animation: comingParallaxSlow 22s ease-in-out infinite alternate;
+}
+
+.coming-parallax-fast {
+  animation: comingParallaxFast 16s ease-in-out infinite alternate;
+}
+
 .coming-glow-red {
   text-shadow:
     0 0 8px rgba(255, 0, 0, 0.45),
@@ -234,4 +281,15 @@ small {
 
 .coming-seconds-pulse {
   animation: comingBlink 1s steps(2) infinite;
+}
+
+.coming-terminal-cursor {
+  display: inline-block;
+  margin-left: 3px;
+  color: #ef4444;
+  animation: comingBlink 1s steps(2) infinite;
+}
+
+.coming-glitch {
+  animation: comingGlitchA 5.5s steps(1, end) infinite;
 }

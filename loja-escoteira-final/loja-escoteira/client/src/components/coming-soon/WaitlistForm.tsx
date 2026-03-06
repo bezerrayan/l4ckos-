@@ -44,10 +44,10 @@ export default function WaitlistForm() {
   }
 
   return (
-    <section className="coming-fade-up mx-auto mt-10 w-full max-w-2xl">
-      <div className="rounded-2xl border border-white/20 bg-zinc-950/65 p-4 backdrop-blur-md md:p-6">
+    <section className="coming-fade-up mx-auto mt-10 w-full max-w-2xl px-1 sm:px-0">
+      <div className="rounded-2xl border border-white/20 bg-zinc-950/65 p-4 shadow-[0_0_40px_rgba(255,255,255,0.05)] backdrop-blur-md md:p-6">
         <h2 className="text-center text-lg font-black uppercase tracking-wide text-white md:text-2xl">
-          Entre na lista de acesso antecipado
+          Acesso antecipado
         </h2>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-3">
@@ -70,7 +70,7 @@ export default function WaitlistForm() {
 
         {feedback ? <p className="mt-3 text-center text-sm text-zinc-200">{feedback}</p> : null}
 
-        <p className="mt-4 text-center text-sm font-medium text-zinc-300">1.274 pessoas ja entraram na lista VIP</p>
+        <p className="mt-4 text-center text-sm font-medium text-zinc-300">1.274 pessoas ja estao esperando</p>
 
         <div className="mt-4">
           <a
