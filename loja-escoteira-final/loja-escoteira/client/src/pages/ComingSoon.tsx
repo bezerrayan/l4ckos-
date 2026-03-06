@@ -1,135 +1,246 @@
-import { useCallback, useEffect, useState } from "react";
-import { BellRing, CheckCircle2, ShieldCheck, Truck } from "lucide-react";
-import BackgroundEffects from "../components/coming-soon/BackgroundEffects";
-import CountdownTimer from "../components/coming-soon/CountdownTimer";
-import HeroSection from "../components/coming-soon/HeroSection";
-import PreviewSection from "../components/coming-soon/PreviewSection";
-import SplashIntro from "../components/coming-soon/SplashIntro";
-import WaitlistForm from "../components/coming-soon/WaitlistForm";
+import { useEffect, useMemo, useState } from "react";
+import { apiUrl } from "../const";
 
+type Countdown = {
+  days: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
+};
+
+const TARGET_DATE = new Date("2026-09-01T00:00:00-03:00").getTime();
 const INTRO_KEY = "l4ckos_intro_seen";
 
+function pad(value: number) {
+  return String(Math.max(0, value)).padStart(2, "0");
+}
+
+function getCountdown(now = Date.now()): Countdown {
+  const diff = Math.max(0, TARGET_DATE - now);
+  const days = Math.floor(diff / 86_400_000);
+  const hours = Math.floor((diff % 86_400_000) / 3_600_000);
+  const minutes = Math.floor((diff % 3_600_000) / 60_000);
+  const seconds = Math.floor((diff % 60_000) / 1_000);
+  return {
+    days: pad(days),
+    hours: pad(hours),
+    minutes: pad(minutes),
+    seconds: pad(seconds),
+  };
+}
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export default function ComingSoon() {
-  const [isReady, setIsReady] = useState(false);
-  const [showIntro, setShowIntro] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
+  const [splashOut, setSplashOut] = useState(false);
+  const [countdown, setCountdown] = useState<Countdown>(() => getCountdown());
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    document.title = "L4ckos - Em Breve";
-
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "description");
-      document.head.appendChild(meta);
+    const hasSeenIntro = sessionStorage.getItem(INTRO_KEY) === "1";
+    if (hasSeenIntro) {
+      setIntroDone(true);
+      return;
     }
 
-    meta.setAttribute("content", "A nova loja escoteira esta chegando.");
+    const firstTimer = window.setTimeout(() => setSplashOut(true), 2000);
+    const secondTimer = window.setTimeout(() => {
+      sessionStorage.setItem(INTRO_KEY, "1");
+      setIntroDone(true);
+    }, 2900);
+
+    return () => {
+      window.clearTimeout(firstTimer);
+      window.clearTimeout(secondTimer);
+    };
   }, []);
 
   useEffect(() => {
+    const id = window.setInterval(() => setCountdown(getCountdown()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const year = useMemo(() => new Date().getFullYear(), []);
+
+  async function handleSubmit() {
+    const normalizedEmail = email.trim().toLowerCase();
+    setError("");
+    if (!isValidEmail(normalizedEmail)) {
+      setError("Insira um e-mail valido.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const seen = window.sessionStorage.getItem(INTRO_KEY) === "1";
-      setShowIntro(!seen);
+      const response = await fetch(apiUrl("/api/waitlist"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      if (!response.ok) {
+        throw new Error("request_failed");
+      }
+
+      setSuccess(true);
     } catch {
-      setShowIntro(false);
+      setError("Algo deu errado. Tente novamente.");
     } finally {
-      setIsReady(true);
+      setLoading(false);
     }
-  }, []);
-
-  const handleIntroComplete = useCallback(() => {
-    try {
-      window.sessionStorage.setItem(INTRO_KEY, "1");
-    } catch {
-      // ignore sessionStorage errors
-    }
-    setShowIntro(false);
-  }, []);
-
-  if (!isReady) {
-    return <main className="min-h-screen bg-[#efefef]" />;
   }
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[#efefef] text-zinc-900">
-      {showIntro ? <SplashIntro onComplete={handleIntroComplete} /> : null}
+    <div className="l4-coming-root">
+      {!introDone && (
+        <div className={`l4-splash ${splashOut ? "is-out" : ""}`}>
+          <div className="l4-splash-logo">L4K</div>
+          <div className="l4-splash-bar" />
+        </div>
+      )}
 
-      <BackgroundEffects />
+      <div className="l4-coming-page" style={{ opacity: introDone ? 1 : 0 }}>
+        <header className="l4-coming-header a1">
+          <div className="l4-coming-logo-word">L4ckos</div>
+          <div className="l4-coming-live">
+            <span className="l4-coming-live-dot" />
+            <span>Em breve</span>
+          </div>
+        </header>
 
-      <div
-        className={`relative z-10 mx-auto flex min-h-[100dvh] w-full items-stretch justify-center px-3 py-6 transition-opacity duration-700 sm:px-5 sm:py-8 md:px-8 ${
-          showIntro ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <div className="mx-auto flex w-full max-w-[min(1920px,98vw)] flex-col justify-center">
-          <section className="grid gap-6 xl:min-h-[70vh] lg:grid-cols-12">
-            <section className="lg:col-span-7">
-              <section className="coming-fade-up mx-auto w-full rounded-3xl border border-zinc-200/85 bg-white/58 px-4 py-6 shadow-[0_16px_46px_rgba(0,0,0,0.09)] backdrop-blur-sm sm:px-8 sm:py-9">
-                <HeroSection />
-              </section>
+        <main className="l4-coming-main">
+          <section className="l4-left-panel">
+            <div className="l4-tag a2">
+              <span className="l4-tag-line" />
+              <span>Loja escoteira e outdoor</span>
+            </div>
 
-              <section className="coming-slide-up mx-auto mt-5 w-full rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6" style={{ animationDelay: "60ms" }}>
-                <CountdownTimer />
-                <section className="mt-6">
-                  <WaitlistForm />
-                </section>
-              </section>
-            </section>
+            <h1 className="l4-hero-title a3">A nova loja escoteira esta chegando</h1>
+            <p className="l4-hero-copy a3">
+              A loja que faltava pro escoteiro brasileiro. <strong>Gear de campo, aventura e outdoor</strong> com
+              curadoria real.
+            </p>
 
-            <section className="coming-slide-up lg:col-span-5" style={{ animationDelay: "120ms" }}>
-              <div className="h-full min-h-[420px] rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-7">
-                <h2 className="font-sans text-xl font-semibold text-zinc-800 sm:text-3xl">Por que entrar agora</h2>
-                <p className="mt-2 font-sans text-sm leading-relaxed text-zinc-600 sm:text-lg">
-                  Voce recebe prioridade no lancamento e condicoes especiais antes do publico geral.
-                </p>
-
-                <div className="mt-5 space-y-2.5">
-                  <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/72 px-3 py-3">
-                    <BellRing size={18} className="text-zinc-500" />
-                    <p className="font-sans text-sm font-medium text-zinc-700 sm:text-base">Aviso imediato por email</p>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/72 px-3 py-3">
-                    <ShieldCheck size={18} className="text-zinc-500" />
-                    <p className="font-sans text-sm font-medium text-zinc-700 sm:text-base">Acesso antecipado exclusivo</p>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/72 px-3 py-3">
-                    <Truck size={18} className="text-zinc-500" />
-                    <p className="font-sans text-sm font-medium text-zinc-700 sm:text-base">Novas linhas outdoor e escoteiras</p>
-                  </div>
+            {!success && (
+              <div className="a4">
+                <p className="l4-form-label">Lista de acesso antecipado</p>
+                <div className={`l4-form-row ${error ? "has-error" : ""}`}>
+                  <input
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        void handleSubmit();
+                      }
+                    }}
+                  />
+                  <button type="button" onClick={() => void handleSubmit()} disabled={loading}>
+                    {loading ? "..." : "Garantir vaga"}
+                  </button>
                 </div>
-
-                <div className="mt-5 space-y-3">
-                  <div className="rounded-xl border border-zinc-200 bg-white/72 px-4 py-3">
-                    <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Previsao</p>
-                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Lancamento em 2026</p>
-                  </div>
-                  <div className="rounded-xl border border-zinc-200 bg-white/72 px-4 py-3">
-                    <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Beneficio de estreia</p>
-                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Cupom e condicao especial</p>
-                  </div>
-                </div>
-
-                <p className="mt-4 inline-flex items-center gap-2 font-sans text-sm text-zinc-600">
-                  <CheckCircle2 size={16} className="text-zinc-500" />
-                  Sem spam. Apenas comunicados importantes.
-                </p>
+                {error && <p className="l4-form-error">{error}</p>}
               </div>
-            </section>
-          </section>
+            )}
 
-          <section className="coming-slide-up mx-auto mt-6 w-full" style={{ animationDelay: "220ms" }}>
-            <PreviewSection />
-          </section>
+            {success && (
+              <div className="l4-form-success a4">
+                <span>✓</span>
+                <span>Voce esta na lista. Avisaremos quando abrir.</span>
+              </div>
+            )}
 
-          <section className="coming-slide-up mt-5 w-full" style={{ animationDelay: "280ms" }}>
-            <div className="rounded-2xl border border-zinc-200/85 bg-white/54 px-4 py-4 text-center shadow-[0_12px_28px_rgba(0,0,0,0.07)] backdrop-blur-sm sm:px-8">
-              <p className="font-sans text-sm text-zinc-600 sm:text-lg">
-                Quer prioridade real? Entre na lista para receber o link assim que a loja abrir.
-              </p>
+            <div className="l4-stats a4">
+              <div className="l4-stat">
+                <div className="l4-stat-n">+200k</div>
+                <div className="l4-stat-l">produtos outdoor</div>
+              </div>
+              <div className="l4-stat">
+                <div className="l4-stat-n">48h</div>
+                <div className="l4-stat-l">entrega express</div>
+              </div>
+              <div className="l4-stat">
+                <div className="l4-stat-n">Set/26</div>
+                <div className="l4-stat-l">lancamento</div>
+              </div>
             </div>
           </section>
-        </div>
+
+          <section className="l4-right-panel">
+            <div className="l4-right-hero a5">
+              <div className="l4-right-orb" />
+              <div className="l4-right-inner">
+                <div className="l4-right-l4k">L4K</div>
+                <div className="l4-right-coming">Chegando em</div>
+                <div className="l4-right-date">
+                  Setembro <span>2026</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="l4-cd a6">
+              <p className="l4-cd-title">Contagem regressiva</p>
+              <div className="l4-cd-grid">
+                <div className="l4-cd-cell">
+                  <div className="l4-cd-n">{countdown.days}</div>
+                  <div className="l4-cd-l">dias</div>
+                </div>
+                <div className="l4-cd-cell">
+                  <div className="l4-cd-n">{countdown.hours}</div>
+                  <div className="l4-cd-l">horas</div>
+                </div>
+                <div className="l4-cd-cell">
+                  <div className="l4-cd-n">{countdown.minutes}</div>
+                  <div className="l4-cd-l">min</div>
+                </div>
+                <div className="l4-cd-cell">
+                  <div className="l4-cd-n">{countdown.seconds}</div>
+                  <div className="l4-cd-l">seg</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <section className="l4-benefits a7">
+          <article className="l4-ben">
+            <div className="l4-ben-title">Gear certificado</div>
+            <div className="l4-ben-desc">Equipamento para trilha, camping e aventura.</div>
+          </article>
+          <article className="l4-ben">
+            <div className="l4-ben-title">Curadoria de campo</div>
+            <div className="l4-ben-desc">Selecionado por escoteiros e guias experientes.</div>
+          </article>
+          <article className="l4-ben">
+            <div className="l4-ben-title">Entrega nacional</div>
+            <div className="l4-ben-desc">Logistica rapida para o seu role.</div>
+          </article>
+          <article className="l4-ben">
+            <div className="l4-ben-title">Garantia real</div>
+            <div className="l4-ben-desc">Troca sem burocracia se nao performar no campo.</div>
+          </article>
+        </section>
+
+        <footer className="l4-footer a8">
+          <span>© {year} L4ckos - Todos os direitos reservados.</span>
+          <div className="l4-footer-links">
+            <a href="https://instagram.com" target="_blank" rel="noreferrer">
+              Instagram
+            </a>
+            <a href="https://wa.me" target="_blank" rel="noreferrer">
+              WhatsApp
+            </a>
+            <a href="mailto:contato@l4ckos.com.br">contato@l4ckos.com.br</a>
+          </div>
+        </footer>
       </div>
-    </main>
+    </div>
   );
 }
