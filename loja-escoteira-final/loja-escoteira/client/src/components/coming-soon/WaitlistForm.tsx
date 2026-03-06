@@ -45,7 +45,7 @@ export default function WaitlistForm() {
 
   return (
     <section className="mx-auto w-full max-w-4xl">
-      <div className="space-y-5 rounded-2xl border border-white/10 bg-zinc-950/45 p-5 sm:p-7">
+      <div className="space-y-5 rounded-2xl border border-white/10 bg-zinc-950/30 p-5 backdrop-blur-[1px] sm:p-7">
         <p className="text-center text-lg font-semibold uppercase tracking-[0.16em] text-white sm:text-xl">
           Acesso antecipado
         </p>
@@ -62,7 +62,7 @@ export default function WaitlistForm() {
           <button
             type="submit"
             disabled={loading}
-            className="h-13 w-full rounded-xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-4 text-sm font-semibold uppercase tracking-[0.09em] text-white shadow-[0_12px_26px_rgba(255,0,0,0.25)] transition duration-200 hover:-translate-y-0.5 hover:from-red-600 hover:via-red-500 hover:to-red-400 hover:shadow-[0_18px_36px_rgba(255,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 sm:h-14 sm:text-base"
+            className="coming-cta-pulse h-13 w-full rounded-xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-4 text-sm font-semibold uppercase tracking-[0.09em] text-white shadow-[0_10px_24px_rgba(255,0,0,0.22)] transition duration-200 hover:-translate-y-0.5 hover:from-red-600 hover:via-red-500 hover:to-red-400 hover:shadow-[0_16px_34px_rgba(255,0,0,0.32)] disabled:translate-y-0 disabled:opacity-70 sm:h-14 sm:text-base"
           >
             {loading ? "Enviando..." : "Quero acesso antecipado"}
           </button>

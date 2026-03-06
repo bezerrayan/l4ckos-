@@ -293,3 +293,32 @@ small {
 .coming-glitch {
   animation: comingGlitchA 7s steps(1, end) infinite;
 }
+
+@keyframes comingSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes comingCtaPulse {
+  0%,
+  100% {
+    box-shadow: 0 10px 24px rgba(255, 0, 0, 0.22);
+  }
+  50% {
+    box-shadow: 0 14px 30px rgba(255, 0, 0, 0.32);
+  }
+}
+
+.coming-slide-up {
+  animation: comingSlideUp 700ms ease both;
+}
+
+.coming-cta-pulse {
+  animation: comingCtaPulse 2.7s ease-in-out infinite;
+}

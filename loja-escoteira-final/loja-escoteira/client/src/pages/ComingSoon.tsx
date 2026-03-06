@@ -23,14 +23,23 @@ export default function ComingSoon() {
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
       <BackgroundEffects />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-4 py-10 sm:px-6 sm:py-14">
-        <div className="w-full max-w-5xl">
-          <div className="coming-fade-up space-y-12 rounded-[30px] border border-white/10 bg-zinc-950/70 p-6 shadow-[0_28px_80px_rgba(0,0,0,0.58)] backdrop-blur-[2px] sm:p-8 md:space-y-14 md:p-12">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-5 py-12 sm:px-8 md:px-12">
+        <div className="w-full max-w-5xl space-y-11 sm:space-y-12 md:space-y-14">
+          <section className="coming-fade-up">
             <HeroSection />
+          </section>
+
+          <section className="coming-slide-up">
             <CountdownTimer />
+          </section>
+
+          <section className="coming-slide-up" style={{ animationDelay: "120ms" }}>
             <WaitlistForm />
+          </section>
+
+          <section className="coming-slide-up" style={{ animationDelay: "220ms" }}>
             <PreviewSection />
-          </div>
+          </section>
         </div>
       </div>
     </main>

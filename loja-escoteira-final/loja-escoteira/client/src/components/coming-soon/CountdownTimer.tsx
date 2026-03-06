@@ -23,7 +23,7 @@ function getCountdown(targetTimestamp: number): CountdownState {
 
 function CountdownItem({ value, label, pulse = false }: { value: string; label: string; pulse?: boolean }) {
   return (
-    <article className="text-center">
+    <article className="rounded-xl border border-white/10 bg-black/25 py-3 text-center backdrop-blur-sm sm:py-4">
       <p className={`text-5xl font-extrabold tracking-tight text-white sm:text-6xl ${pulse ? "coming-seconds-pulse" : ""}`}>
         {value}
       </p>
@@ -45,7 +45,7 @@ export default function CountdownTimer() {
 
   return (
     <section className="mx-auto w-full max-w-4xl">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5 md:gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 md:gap-5">
         <CountdownItem value={pad(countdown.days)} label="Dias" />
         <CountdownItem value={pad(countdown.hours)} label="Horas" />
         <CountdownItem value={pad(countdown.minutes)} label="Min" />
