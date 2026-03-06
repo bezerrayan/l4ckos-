@@ -23,9 +23,9 @@ export default function ComingSoon() {
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
       <BackgroundEffects />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-4 py-10 sm:px-6 md:px-8 md:py-16">
-        <div className="w-full max-w-4xl">
-          <div className="coming-fade-up space-y-10 rounded-3xl border border-white/10 bg-zinc-950/48 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.62)] backdrop-blur-xl sm:p-8 md:space-y-11 md:p-12">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-3 py-6 sm:px-6 sm:py-10">
+        <div className="w-full max-w-3xl">
+          <div className="coming-fade-up space-y-9 border border-white/70 bg-black/85 p-6 sm:p-10">
             <HeroSection />
             <CountdownTimer />
             <WaitlistForm />

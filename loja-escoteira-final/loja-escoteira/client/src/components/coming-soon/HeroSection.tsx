@@ -1,21 +1,15 @@
 export default function HeroSection() {
   return (
-    <section className="mx-auto w-full max-w-3xl text-center">
-      <div className="space-y-2">
-        <p className="font-['Inter'] text-5xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl">
-          L4ckos
-        </p>
-        <p className="font-['Inter'] text-[11px] font-medium uppercase tracking-[0.38em] text-zinc-400 sm:text-xs">
-          Loja Escoteira
-        </p>
-      </div>
+    <section className="mx-auto w-full max-w-2xl text-center font-mono">
+      <p className="text-3xl font-semibold text-white sm:text-4xl">L4ckos</p>
+      <p className="mt-1 text-xl uppercase tracking-wide text-white sm:text-2xl">LOJA ESCOTEIRA</p>
 
-      <p className="font-['Inter'] mt-8 text-balance text-3xl font-semibold leading-[1.06] text-white sm:text-4xl md:text-6xl">
-        A nova loja escoteira esta chegando.
+      <p className="mt-10 text-2xl font-medium leading-snug text-white sm:text-3xl">
+        A nova loja escoteira esta chegando
       </p>
 
-      <p className="font-['Inter'] mx-auto mt-5 max-w-xl text-balance text-sm font-normal leading-relaxed text-zinc-300 sm:text-base md:text-lg">
-        Equipamentos, aventura e tecnologia em uma experiencia nova.
+      <p className="mx-auto mt-8 max-w-xl text-xl leading-relaxed text-white sm:text-2xl">
+        Equipamentos, aventura e tecnologia em uma nova experiencia. Entre na lista e seja avisado primeiro.
       </p>
     </section>
   );
