@@ -21,16 +21,20 @@ export default function ComingSoon() {
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black px-4 py-8 text-white sm:px-6 md:py-12">
+    <main className="relative min-h-screen overflow-hidden bg-black text-white">
       <BackgroundEffects />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-center">
-        <div className="flex min-h-[92vh] w-full max-w-5xl flex-col items-center justify-center gap-0.5">
-          <HeroSection />
-          <TerminalIntro />
-          <CountdownTimer />
-          <WaitlistForm />
-          <PreviewSection />
+      <div className="relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-4 py-8 sm:px-6 md:px-8 md:py-12">
+        <div className="w-full max-w-6xl">
+          <section className="mx-auto w-full max-w-5xl rounded-[28px] border border-white/12 bg-zinc-950/55 p-5 shadow-[0_0_80px_rgba(0,0,0,0.7)] backdrop-blur-xl sm:p-7 md:p-10">
+            <div className="space-y-7 md:space-y-8">
+              <HeroSection />
+              <TerminalIntro />
+              <CountdownTimer />
+              <WaitlistForm />
+              <PreviewSection />
+            </div>
+          </section>
         </div>
       </div>
     </main>

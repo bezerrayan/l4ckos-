@@ -36,10 +36,10 @@ export default function TerminalIntro() {
   }, [lineIndex, charIndex]);
 
   return (
-    <section className="coming-fade-up mx-auto mt-7 w-full max-w-3xl">
-      <div className="rounded-xl border border-white/16 bg-black/75 px-4 py-4 font-mono text-sm text-zinc-200 shadow-[0_0_24px_rgba(255,0,0,0.08)] md:text-base">
+    <section className="coming-fade-up mx-auto mt-2 w-full max-w-4xl">
+      <div className="rounded-2xl border border-white/16 bg-black/72 px-5 py-4 font-mono text-base text-zinc-100 shadow-[0_0_30px_rgba(255,0,0,0.08)] md:px-6 md:py-5">
         {renderedLines.map((line, index) => (
-          <p key={index} className="leading-7">
+          <p key={index} className="leading-8">
             <span className="text-red-500">{line.startsWith(">") ? ">" : ""}</span>
             {line.startsWith(">") ? line.slice(1) : line}
             {index === lineIndex && lineIndex < LINES.length ? <span className="coming-terminal-cursor">_</span> : null}
