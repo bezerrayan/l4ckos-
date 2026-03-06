@@ -273,3 +273,13 @@ export const stockReservations = mysqlTable("stockReservations", {
 
 export type StockReservation = typeof stockReservations.$inferSelect;
 export type InsertStockReservation = typeof stockReservations.$inferInsert;
+
+// Waitlist (pre-lancamento)
+export const waitlistEmails = mysqlTable("waitlist_emails", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type WaitlistEmail = typeof waitlistEmails.$inferSelect;
+export type InsertWaitlistEmail = typeof waitlistEmails.$inferInsert;

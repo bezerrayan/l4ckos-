@@ -20,6 +20,7 @@ import {
   userPaymentMethods,
   stockReservations,
   promoBanners,
+  waitlistEmails,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -136,6 +137,25 @@ export async function updateUserAsaasCustomerId(userId: number, asaasCustomerId:
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(users).set({ asaasCustomerId }).where(eq(users.id, userId));
+}
+
+export async function getWaitlistEmailByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const normalizedEmail = email.trim().toLowerCase();
+  const rows = await db
+    .select()
+    .from(waitlistEmails)
+    .where(eq(waitlistEmails.email, normalizedEmail))
+    .limit(1);
+  return rows[0];
+}
+
+export async function createWaitlistEmail(email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const normalizedEmail = email.trim().toLowerCase();
+  await db.insert(waitlistEmails).values({ email: normalizedEmail });
 }
 
 export async function setOrderAsaasCheckoutId(orderId: number, asaasCheckoutId: string) {

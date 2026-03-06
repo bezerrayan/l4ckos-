@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
@@ -22,6 +22,7 @@ import MeusPedidos from "./pages/MeusPedidos";
 import AcompanharPedido from "./pages/AcompanharPedido";
 import TrocasDevolucoes from "./pages/TrocasDevolucoes";
 import PedidoDetalhe from "./pages/PedidoDetalhe";
+import ComingSoon from "./pages/ComingSoon";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { useUser } from "./contexts/UserContext";
 
@@ -39,15 +40,20 @@ function AdminRoute() {
   return <Admin />;
 }
 
-/**
- * App - Componente raiz com rotas
- * Nota: Providers são adicionados em main.tsx
- */
-export default function App() {
+function AppRoutes() {
   const isMobile = useIsMobile(980);
+  const location = useLocation();
+  const { user, isAuthenticated, isLoading } = useUser();
+  const comingSoonEnabled = String(import.meta.env.VITE_COMING_SOON || "false").toLowerCase() === "true";
+  const isAdmin = isAuthenticated && user?.role === "admin";
+  const isLoginRoute = location.pathname === "/login";
+
+  if (!isLoading && comingSoonEnabled && !isAdmin && !isLoginRoute) {
+    return <ComingSoon />;
+  }
 
   return (
-    <BrowserRouter>
+    <>
       <Header />
 
       <div
@@ -85,6 +91,18 @@ export default function App() {
       </div>
 
       <Footer />
+    </>
+  );
+}
+
+/**
+ * App - Componente raiz com rotas
+ * Nota: Providers são adicionados em main.tsx
+ */
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   );
 }

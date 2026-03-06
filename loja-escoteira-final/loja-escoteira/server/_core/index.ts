@@ -16,6 +16,7 @@ import uploadRouter from "../routers/upload";
 import paymentRoutes from "../routes/paymentRoutes";
 import webhookRoutes from "../routes/webhookRoutes";
 import shippingRoutes from "../routes/shippingRoutes";
+import waitlistRoutes from "../routes/waitlist.routes";
 import { getBackupPayload } from "../db";
 import { asaasWebhookHandler } from "../controllers/paymentController";
 
@@ -276,6 +277,7 @@ async function startServer() {
   app.use("/api/payments", paymentRoutes);
   app.use("/api/webhooks", webhookRoutes);
   app.use("/api/shipping", shippingRoutes);
+  app.use("/api", waitlistRoutes);
   // tRPC API
   app.use(
     "/api/trpc",
