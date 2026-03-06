@@ -1,4 +1,5 @@
-﻿import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { BellRing, CheckCircle2, ShieldCheck, Truck } from "lucide-react";
 import BackgroundEffects from "../components/coming-soon/BackgroundEffects";
 import CountdownTimer from "../components/coming-soon/CountdownTimer";
 import HeroSection from "../components/coming-soon/HeroSection";
@@ -60,9 +61,9 @@ export default function ComingSoon() {
           showIntro ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="mx-auto flex w-full max-w-[min(1800px,96vw)] flex-col justify-center">
-          <section className="grid gap-6 xl:min-h-[68vh] lg:grid-cols-12">
-            <section className="lg:col-span-8">
+        <div className="mx-auto flex w-full max-w-[min(1920px,98vw)] flex-col justify-center">
+          <section className="grid gap-6 xl:min-h-[70vh] lg:grid-cols-12">
+            <section className="lg:col-span-7">
               <section className="coming-fade-up mx-auto w-full rounded-3xl border border-zinc-200/85 bg-white/58 px-4 py-6 shadow-[0_16px_46px_rgba(0,0,0,0.09)] backdrop-blur-sm sm:px-8 sm:py-9">
                 <HeroSection />
               </section>
@@ -75,27 +76,43 @@ export default function ComingSoon() {
               </section>
             </section>
 
-            <section className="coming-slide-up lg:col-span-4" style={{ animationDelay: "120ms" }}>
+            <section className="coming-slide-up lg:col-span-5" style={{ animationDelay: "120ms" }}>
               <div className="h-full min-h-[420px] rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-7">
-                <h2 className="font-sans text-xl font-semibold text-zinc-800 sm:text-3xl">O que voce vai receber</h2>
+                <h2 className="font-sans text-xl font-semibold text-zinc-800 sm:text-3xl">Por que entrar agora</h2>
                 <p className="mt-2 font-sans text-sm leading-relaxed text-zinc-600 sm:text-lg">
-                  Acesso antecipado aos produtos, aviso de lancamento e condicoes especiais da estreia.
+                  Voce recebe prioridade no lancamento e condicoes especiais antes do publico geral.
                 </p>
 
-                <div className="mt-6 space-y-3">
+                <div className="mt-5 space-y-2.5">
+                  <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/72 px-3 py-3">
+                    <BellRing size={18} className="text-zinc-500" />
+                    <p className="font-sans text-sm font-medium text-zinc-700 sm:text-base">Aviso imediato por email</p>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/72 px-3 py-3">
+                    <ShieldCheck size={18} className="text-zinc-500" />
+                    <p className="font-sans text-sm font-medium text-zinc-700 sm:text-base">Acesso antecipado exclusivo</p>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/72 px-3 py-3">
+                    <Truck size={18} className="text-zinc-500" />
+                    <p className="font-sans text-sm font-medium text-zinc-700 sm:text-base">Novas linhas outdoor e escoteiras</p>
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
                   <div className="rounded-xl border border-zinc-200 bg-white/72 px-4 py-3">
                     <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Previsao</p>
                     <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Lancamento em 2026</p>
                   </div>
                   <div className="rounded-xl border border-zinc-200 bg-white/72 px-4 py-3">
-                    <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Primeiros avisos</p>
-                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Email + novidades exclusivas</p>
-                  </div>
-                  <div className="rounded-xl border border-zinc-200 bg-white/72 px-4 py-3">
-                    <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Beneficio</p>
-                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Cupom especial de estreia</p>
+                    <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Beneficio de estreia</p>
+                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Cupom e condicao especial</p>
                   </div>
                 </div>
+
+                <p className="mt-4 inline-flex items-center gap-2 font-sans text-sm text-zinc-600">
+                  <CheckCircle2 size={16} className="text-zinc-500" />
+                  Sem spam. Apenas comunicados importantes.
+                </p>
               </div>
             </section>
           </section>
