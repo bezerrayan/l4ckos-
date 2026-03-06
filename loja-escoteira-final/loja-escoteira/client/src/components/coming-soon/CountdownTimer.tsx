@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 
 type CountdownState = {
   days: number;
@@ -24,10 +24,10 @@ function getCountdown(targetTimestamp: number): CountdownState {
 function CountdownItem({ value, label, pulse = false }: { value: string; label: string; pulse?: boolean }) {
   return (
     <article className="text-center">
-      <p className={`text-5xl font-bold tracking-tight text-white sm:text-6xl ${pulse ? "coming-seconds-pulse" : ""}`}>
+      <p className={`text-5xl font-extrabold tracking-tight text-white sm:text-6xl ${pulse ? "coming-seconds-pulse" : ""}`}>
         {value}
       </p>
-      <p className="mt-2 text-xs uppercase tracking-[0.28em] text-zinc-400 sm:text-sm">{label}</p>
+      <p className="mt-1.5 text-[10px] uppercase tracking-[0.24em] text-zinc-500 sm:text-[11px]">{label}</p>
     </article>
   );
 }
@@ -44,8 +44,8 @@ export default function CountdownTimer() {
   }, [targetTimestamp]);
 
   return (
-    <section className="mx-auto w-full max-w-3xl">
-      <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-8">
+    <section className="mx-auto w-full max-w-4xl">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5 md:gap-6">
         <CountdownItem value={pad(countdown.days)} label="Dias" />
         <CountdownItem value={pad(countdown.hours)} label="Horas" />
         <CountdownItem value={pad(countdown.minutes)} label="Min" />

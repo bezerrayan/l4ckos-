@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { apiUrl } from "../../const";
 
 function isValidEmail(email: string) {
@@ -44,44 +44,40 @@ export default function WaitlistForm() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-3xl">
-      <div className="space-y-4 rounded-2xl bg-zinc-950/35 p-5 sm:p-6">
+    <section className="mx-auto w-full max-w-4xl">
+      <div className="space-y-5 rounded-2xl border border-white/10 bg-zinc-950/45 p-5 sm:p-7">
         <p className="text-center text-lg font-semibold uppercase tracking-[0.16em] text-white sm:text-xl">
           Acesso antecipado
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <input
             type="email"
             value={email}
             onChange={event => setEmail(event.target.value)}
             placeholder="Digite seu email"
-            className="h-13 w-full rounded-xl border border-white/20 bg-black/30 px-4 text-base text-white outline-none transition placeholder:text-zinc-500 focus:border-red-500/65 focus:ring-2 focus:ring-red-500/20 sm:h-14 sm:text-lg"
+            className="h-13 w-full rounded-xl border border-white/18 bg-black/35 px-4 text-base text-white outline-none transition placeholder:text-zinc-500 focus:border-red-500/55 focus:ring-2 focus:ring-red-500/20 sm:h-14 sm:text-lg"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="h-13 w-full rounded-xl bg-white px-4 text-sm font-semibold uppercase tracking-[0.09em] text-black transition hover:bg-red-500 hover:text-white disabled:opacity-70 sm:h-14 sm:text-base"
+            className="h-13 w-full rounded-xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-4 text-sm font-semibold uppercase tracking-[0.09em] text-white shadow-[0_12px_26px_rgba(255,0,0,0.25)] transition duration-200 hover:-translate-y-0.5 hover:from-red-600 hover:via-red-500 hover:to-red-400 hover:shadow-[0_18px_36px_rgba(255,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 sm:h-14 sm:text-base"
           >
             {loading ? "Enviando..." : "Quero acesso antecipado"}
           </button>
         </form>
 
-        {feedback ? (
-          <p className="text-center text-sm text-zinc-300 sm:text-base">{feedback}</p>
-        ) : null}
+        {feedback ? <p className="text-center text-sm text-zinc-300 sm:text-base">{feedback}</p> : null}
 
-        <p className="text-center text-sm text-zinc-400 sm:text-base">
-          1.274 pessoas ja entraram na lista
-        </p>
+        <p className="text-center text-sm text-zinc-500 sm:text-[15px]">1.274 pessoas ja entraram na lista</p>
 
         <div>
           <a
             href="https://instagram.com/l4ckos"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/20 bg-transparent text-sm font-medium text-zinc-300 transition hover:border-white/40 hover:text-white"
+            className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/16 bg-transparent text-sm font-medium text-zinc-300 transition hover:border-white/32 hover:bg-white/5 hover:text-white"
           >
             Seguir novidades
           </a>
