@@ -50,7 +50,7 @@ export default function CountdownTimer() {
   }, [targetTimestamp]);
 
   return (
-    <section className="mx-auto w-full max-w-4xl">
+    <section className="mx-auto w-full max-w-3xl">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <CountdownItem value={pad(countdown.days)} label="Dias" />
         <CountdownItem value={pad(countdown.hours)} label="Horas" />

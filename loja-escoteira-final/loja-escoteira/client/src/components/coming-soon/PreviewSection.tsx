@@ -7,7 +7,7 @@ export default function PreviewSection() {
         {teaserItems.map(item => (
           <article
             key={item}
-            className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 text-center transition hover:-translate-y-0.5 hover:border-red-500/30 hover:bg-white/[0.04]"
+            className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 text-center transition hover:-translate-y-0.5 hover:border-red-500/30 hover:bg-white/[0.04] sm:min-h-[124px] sm:flex sm:items-center sm:justify-center"
           >
             <p className="font-['Inter'] text-sm font-medium tracking-[0.03em] text-zinc-200 sm:text-base">{item}</p>
           </article>

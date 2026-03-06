@@ -10,11 +10,11 @@ export default function HeroSection() {
         </p>
       </div>
 
-      <p className="font-['Inter'] mt-8 text-balance text-3xl font-semibold leading-[1.05] text-white sm:text-4xl md:text-6xl">
+      <p className="font-['Inter'] mt-8 text-balance text-3xl font-semibold leading-[1.06] text-white sm:text-4xl md:text-6xl">
         A nova loja escoteira esta chegando.
       </p>
 
-      <p className="font-['Inter'] mx-auto mt-4 max-w-2xl text-balance text-sm font-normal leading-relaxed text-zinc-300 sm:text-base md:text-lg">
+      <p className="font-['Inter'] mx-auto mt-5 max-w-xl text-balance text-sm font-normal leading-relaxed text-zinc-300 sm:text-base md:text-lg">
         Equipamentos, aventura e tecnologia em uma experiencia nova.
       </p>
     </section>

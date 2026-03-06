@@ -75,6 +75,17 @@ export default function WaitlistForm() {
         <p className="font-['Inter'] mt-4 text-center text-xs text-zinc-500 sm:text-sm">
           1.274 pessoas ja entraram na lista
         </p>
+
+        <div className="mt-4">
+          <a
+            href="https://instagram.com/l4ckos"
+            target="_blank"
+            rel="noreferrer"
+            className="font-['Inter'] inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/20 bg-white/[0.03] text-sm font-medium uppercase tracking-[0.08em] text-zinc-300 transition hover:border-white/40 hover:text-white"
+          >
+            Seguir novidades
+          </a>
+        </div>
       </div>
     </section>
   );
