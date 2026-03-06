@@ -21,6 +21,23 @@ function getCountdown(targetTimestamp: number): CountdownState {
   };
 }
 
+function CountdownItem({ value, label, pulse = false }: { value: string; label: string; pulse?: boolean }) {
+  return (
+    <article className="rounded-2xl border border-white/12 bg-black/35 px-3 py-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <p
+        className={`font-['Inter'] text-4xl font-bold tracking-tight text-white sm:text-5xl ${
+          pulse ? "coming-seconds-pulse" : ""
+        }`}
+      >
+        {value}
+      </p>
+      <p className="font-['Inter'] mt-1 text-[10px] font-medium uppercase tracking-[0.24em] text-zinc-400 sm:text-xs">
+        {label}
+      </p>
+    </article>
+  );
+}
+
 export default function CountdownTimer() {
   const targetTimestamp = useMemo(() => new Date("2026-06-30T12:00:00-03:00").getTime(), []);
   const [countdown, setCountdown] = useState<CountdownState>(() => getCountdown(targetTimestamp));
@@ -33,34 +50,12 @@ export default function CountdownTimer() {
   }, [targetTimestamp]);
 
   return (
-    <section className="coming-fade-up mx-auto mt-2 w-full max-w-5xl rounded-2xl border border-white/14 bg-black/58 px-3 py-4 backdrop-blur-md md:px-5 md:py-5">
-      <div className="grid grid-cols-4 gap-2 md:gap-3">
-        <div className="rounded-xl border border-white/14 bg-zinc-950/92 px-2 py-2.5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:py-3.5">
-          <span className="coming-glow-red block text-5xl font-black tracking-[0.04em] text-white md:text-7xl">
-            {pad(countdown.days)}
-          </span>
-        </div>
-        <div className="rounded-xl border border-white/14 bg-zinc-950/92 px-2 py-2.5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:py-3.5">
-          <span className="coming-glow-red block text-5xl font-black tracking-[0.04em] text-white md:text-7xl">
-            {pad(countdown.hours)}
-          </span>
-        </div>
-        <div className="rounded-xl border border-white/14 bg-zinc-950/92 px-2 py-2.5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:py-3.5">
-          <span className="coming-glow-red block text-5xl font-black tracking-[0.04em] text-white md:text-7xl">
-            {pad(countdown.minutes)}
-          </span>
-        </div>
-        <div className="rounded-xl border border-white/14 bg-zinc-950/92 px-2 py-2.5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] md:py-3.5">
-          <span className="coming-glow-red coming-seconds-pulse block text-5xl font-black tracking-[0.04em] text-white md:text-7xl">
-            {pad(countdown.seconds)}
-          </span>
-        </div>
-      </div>
-      <div className="mt-2.5 grid grid-cols-4 gap-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500 md:text-xs">
-        <span>Dias</span>
-        <span>Horas</span>
-        <span>Min</span>
-        <span>Seg</span>
+    <section className="mx-auto w-full max-w-4xl">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <CountdownItem value={pad(countdown.days)} label="Dias" />
+        <CountdownItem value={pad(countdown.hours)} label="Horas" />
+        <CountdownItem value={pad(countdown.minutes)} label="Min" />
+        <CountdownItem value={pad(countdown.seconds)} label="Seg" pulse />
       </div>
     </section>
   );
