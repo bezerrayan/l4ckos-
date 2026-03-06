@@ -44,25 +44,25 @@ export default function WaitlistForm() {
   }
 
   return (
-    <section className="coming-fade-up mx-auto mt-10 w-full max-w-2xl px-1 sm:px-0">
-      <div className="rounded-2xl border border-white/20 bg-zinc-950/65 p-4 shadow-[0_0_40px_rgba(255,255,255,0.05)] backdrop-blur-md md:p-6">
-        <h2 className="text-center text-lg font-black uppercase tracking-wide text-white md:text-2xl">
+    <section className="coming-fade-up mx-auto mt-8 w-full max-w-2xl px-1 sm:mt-10 sm:px-0">
+      <div className="rounded-2xl border border-white/16 bg-zinc-950/72 p-4 shadow-[0_0_28px_rgba(255,255,255,0.04)] backdrop-blur-md md:p-6">
+        <h2 className="text-center text-base font-black uppercase tracking-[0.18em] text-white md:text-xl">
           Acesso antecipado
         </h2>
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-3">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <input
             type="email"
             value={email}
             onChange={event => setEmail(event.target.value)}
             placeholder="Digite seu email"
-            className="h-12 w-full rounded-xl border border-white/45 bg-transparent px-4 text-white outline-none transition focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(255,0,0,0.18)]"
+            className="h-12 w-full rounded-xl border border-white/35 bg-black/35 px-4 text-white outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(255,0,0,0.18)]"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="h-12 w-full rounded-xl border border-white bg-black font-semibold uppercase tracking-wide text-white transition hover:border-red-500 hover:shadow-[0_0_28px_rgba(255,0,0,0.45)] disabled:opacity-70"
+            className="h-12 w-full rounded-xl border border-white/95 bg-black font-semibold uppercase tracking-wide text-white transition hover:border-red-500 hover:shadow-[0_0_24px_rgba(255,0,0,0.4)] disabled:opacity-70"
           >
             {loading ? "Enviando..." : "Quero acesso antecipado"}
           </button>
@@ -70,7 +70,7 @@ export default function WaitlistForm() {
 
         {feedback ? <p className="mt-3 text-center text-sm text-zinc-200">{feedback}</p> : null}
 
-        <p className="mt-4 text-center text-sm font-medium text-zinc-300">1.274 pessoas ja estao esperando</p>
+        <p className="mt-3 text-center text-sm font-medium text-zinc-300">1.274 pessoas ja estao esperando</p>
 
         <div className="mt-4">
           <a

@@ -25,7 +25,7 @@ export default function ComingSoon() {
       <BackgroundEffects />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-center">
-        <div className="flex min-h-[92vh] w-full max-w-5xl flex-col items-center justify-center gap-1">
+        <div className="flex min-h-[92vh] w-full max-w-5xl flex-col items-center justify-center gap-0.5">
           <HeroSection />
           <TerminalIntro />
           <CountdownTimer />

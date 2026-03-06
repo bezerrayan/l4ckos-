@@ -68,7 +68,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Anton', 'Oswald', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   font-weight: 400;
   letter-spacing: 0.06em;
-  color: var(--text-dark);
+  color: inherit;
   line-height: 1.02;
   text-transform: uppercase;
   text-rendering: optimizeLegibility;
@@ -291,5 +291,5 @@ small {
 }
 
 .coming-glitch {
-  animation: comingGlitchA 5.5s steps(1, end) infinite;
+  animation: comingGlitchA 7s steps(1, end) infinite;
 }
