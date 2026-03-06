@@ -110,6 +110,7 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   const isProduction = process.env.NODE_ENV === "production";
+  app.disable("x-powered-by");
 
   // Render/Reverse proxies set X-Forwarded-* headers.
   // express-rate-limit requires trust proxy enabled to resolve client IP safely.
@@ -187,6 +188,28 @@ async function startServer() {
       legacyHeaders: false,
     }),
   );
+
+  // Tighter limit for authentication endpoints to reduce brute force attempts.
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: isProduction ? 20 : 80,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true,
+    message: { error: "Too many authentication attempts. Try again later." },
+  });
+  app.use("/api/oauth/login", authLimiter);
+  app.use("/api/trpc/auth.localLogin", authLimiter);
+
+  // Additional protection for admin-only API routes.
+  const adminApiLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: isProduction ? 120 : 400,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many admin requests. Try again later." },
+  });
+  app.use("/api/trpc/admin", adminApiLimiter);
 
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));

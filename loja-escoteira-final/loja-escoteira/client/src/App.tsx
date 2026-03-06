@@ -23,6 +23,21 @@ import AcompanharPedido from "./pages/AcompanharPedido";
 import TrocasDevolucoes from "./pages/TrocasDevolucoes";
 import PedidoDetalhe from "./pages/PedidoDetalhe";
 import { useIsMobile } from "./hooks/useIsMobile";
+import { useUser } from "./contexts/UserContext";
+
+function AdminRoute() {
+  const { user, isAuthenticated, isLoading } = useUser();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated || user?.role !== "admin") {
+    return <NotFound />;
+  }
+
+  return <Admin />;
+}
 
 /**
  * App - Componente raiz com rotas
@@ -58,7 +73,7 @@ export default function App() {
           <Route path="/meus-pedidos" element={<MeusPedidos />} />
           <Route path="/meus-pedidos/:id" element={<PedidoDetalhe />} />
           <Route path="/acompanhar-pedido" element={<AcompanharPedido />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<AdminRoute />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/contato" element={<Contato />} />
           <Route path="/faqs" element={<FAQs />} />

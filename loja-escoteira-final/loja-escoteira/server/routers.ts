@@ -14,38 +14,81 @@ import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { sdk } from "./_core/sdk";
 import { ENV } from "./_core/env";
-import { getLocalAuthCredentialByEmail, getUserByOpenId, upsertLocalAuthCredential, upsertUser } from "./db";
+import {
+  getLocalAuthCredentialByEmail,
+  getUserByOpenId,
+  upsertLocalAuthCredential,
+  upsertUser,
+} from "./db";
 
-const loginAttemptStore = new Map<string, { count: number; firstAt: number }>();
+type LoginAttemptState = {
+  failCount: number;
+  windowStartAt: number;
+  blockedUntil: number;
+};
+
+const loginAttemptStore = new Map<string, LoginAttemptState>();
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
-const LOGIN_MAX_ATTEMPTS = 8;
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_BLOCK_MS = 15 * 60 * 1000;
 
 function isAdminEmail(email: string) {
   return ENV.adminEmails.includes(email.trim().toLowerCase());
 }
 
+function getNormalizedAttemptState(key: string, now: number): LoginAttemptState {
+  const current = loginAttemptStore.get(key);
+  if (!current) {
+    return { failCount: 0, windowStartAt: now, blockedUntil: 0 };
+  }
+
+  if (current.blockedUntil > now) {
+    return current;
+  }
+
+  if (now - current.windowStartAt > LOGIN_WINDOW_MS) {
+    return { failCount: 0, windowStartAt: now, blockedUntil: 0 };
+  }
+
+  return current;
+}
+
 function assertLoginAttemptLimit(key: string) {
   const now = Date.now();
-  const current = loginAttemptStore.get(key);
+  const current = getNormalizedAttemptState(key, now);
+  loginAttemptStore.set(key, current);
 
-  if (!current || now - current.firstAt > LOGIN_WINDOW_MS) {
-    loginAttemptStore.set(key, { count: 1, firstAt: now });
+  if (current.blockedUntil > now) {
+    const remainingMs = current.blockedUntil - now;
+    const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: `Muitas tentativas de login. Tente novamente em ${remainingMin} minuto(s).`,
+    });
+  }
+}
+
+function registerLoginAttemptFailure(key: string) {
+  const now = Date.now();
+  const current = getNormalizedAttemptState(key, now);
+
+  if (current.blockedUntil > now) {
+    loginAttemptStore.set(key, current);
     return;
   }
 
-  if (current.count >= LOGIN_MAX_ATTEMPTS) {
-    throw new TRPCError({
-      code: "TOO_MANY_REQUESTS",
-      message: "Muitas tentativas. Tente novamente em alguns minutos.",
-    });
-  }
+  const nextFailCount = current.failCount + 1;
+  const shouldBlock = nextFailCount >= LOGIN_MAX_ATTEMPTS;
 
-  current.count += 1;
-  loginAttemptStore.set(key, current);
+  loginAttemptStore.set(key, {
+    failCount: shouldBlock ? 0 : nextFailCount,
+    windowStartAt: shouldBlock ? now : current.windowStartAt,
+    blockedUntil: shouldBlock ? now + LOGIN_BLOCK_MS : 0,
+  });
 }
 
-function clearLoginAttemptLimit(key: string) {
-  loginAttemptStore.delete(key);
+function clearLoginAttemptLimit(...keys: string[]) {
+  keys.forEach(key => loginAttemptStore.delete(key));
 }
 
 export const appRouter = router({
@@ -66,15 +109,23 @@ export const appRouter = router({
 
         const normalizedEmail = input.email.trim().toLowerCase();
         const requestIp = ctx.req.ip || "unknown";
-        assertLoginAttemptLimit(`local-login:${normalizedEmail}:${requestIp}`);
+        const emailIpKey = `local-login:email-ip:${normalizedEmail}:${requestIp}`;
+        const ipKey = `local-login:ip:${requestIp}`;
+        assertLoginAttemptLimit(emailIpKey);
+        assertLoginAttemptLimit(ipKey);
+
         const credential = await getLocalAuthCredentialByEmail(normalizedEmail);
         if (!credential) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais inválidas" });
+          registerLoginAttemptFailure(emailIpKey);
+          registerLoginAttemptFailure(ipKey);
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais invalidas" });
         }
 
         const passwordOk = await bcrypt.compare(input.password, credential.passwordHash);
         if (!passwordOk) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais inválidas" });
+          registerLoginAttemptFailure(emailIpKey);
+          registerLoginAttemptFailure(ipKey);
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais invalidas" });
         }
 
         if (isAdminEmail(normalizedEmail)) {
@@ -88,10 +139,8 @@ export const appRouter = router({
           });
         }
 
-        clearLoginAttemptLimit(`local-login:${normalizedEmail}:${requestIp}`);
-
         const localOpenId = `local:${normalizedEmail}`;
-        const inferredName = normalizedEmail.split("@")[0] || "Usuário Local";
+        const inferredName = normalizedEmail.split("@")[0] || "Usuario Local";
         await upsertUser({
           openId: localOpenId,
           name: inferredName,
@@ -99,6 +148,11 @@ export const appRouter = router({
           loginMethod: "local-dev",
           lastSignedIn: new Date(),
         });
+
+        const user = await getUserByOpenId(localOpenId);
+        if (user?.isBlocked === 1 && user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Usuario bloqueado" });
+        }
 
         const sessionToken = await sdk.createSessionToken(localOpenId, {
           name: inferredName,
@@ -108,10 +162,7 @@ export const appRouter = router({
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-        const user = await getUserByOpenId(localOpenId);
-        if (user?.isBlocked === 1 && user.role !== "admin") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Usuário bloqueado" });
-        }
+        clearLoginAttemptLimit(emailIpKey, ipKey);
         return { success: true, user: user ?? null } as const;
       }),
     localSignup: publicProcedure
@@ -145,7 +196,7 @@ export const appRouter = router({
 
         const user = await getUserByOpenId(localOpenId);
         if (!user) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Falha ao criar usuário" });
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Falha ao criar usuario" });
         }
 
         const passwordHash = await bcrypt.hash(input.password, 10);
