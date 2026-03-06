@@ -50,30 +50,30 @@ export default function ComingSoon() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+    <main className="relative min-h-[100dvh] overflow-hidden bg-black text-white">
       {showIntro ? <SplashIntro onComplete={handleIntroComplete} /> : null}
 
       <BackgroundEffects />
 
       <div
-        className={`relative z-10 mx-auto flex min-h-screen w-full items-center justify-center px-4 py-10 transition-opacity duration-700 sm:px-6 sm:py-12 md:px-10 ${
+        className={`relative z-10 mx-auto flex min-h-[100dvh] w-full items-center justify-center px-3 py-8 transition-opacity duration-700 sm:px-5 sm:py-10 md:px-8 ${
           showIntro ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="w-full max-w-6xl">
-          <section className="coming-fade-up mx-auto w-full max-w-5xl">
+        <div className="w-full max-w-[min(1700px,98vw)]">
+          <section className="coming-fade-up mx-auto w-full max-w-[min(1450px,96vw)]">
             <HeroSection />
           </section>
 
-          <section className="coming-slide-up mx-auto mt-10 w-full max-w-5xl sm:mt-12">
+          <section className="coming-slide-up mx-auto mt-8 w-full max-w-[min(1450px,96vw)] sm:mt-10">
             <CountdownTimer />
           </section>
 
-          <section className="coming-slide-up mx-auto mt-8 w-full max-w-3xl sm:mt-10" style={{ animationDelay: "120ms" }}>
+          <section className="coming-slide-up mx-auto mt-7 w-full max-w-[min(1100px,94vw)] sm:mt-8" style={{ animationDelay: "120ms" }}>
             <WaitlistForm />
           </section>
 
-          <section className="coming-slide-up mx-auto mt-9 w-full max-w-5xl sm:mt-11" style={{ animationDelay: "220ms" }}>
+          <section className="coming-slide-up mx-auto mt-8 w-full max-w-[min(1450px,96vw)] sm:mt-9" style={{ animationDelay: "220ms" }}>
             <PreviewSection />
           </section>
         </div>
