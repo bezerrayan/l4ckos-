@@ -56,13 +56,13 @@ export default function ComingSoon() {
       <BackgroundEffects />
 
       <div
-        className={`relative z-10 mx-auto flex min-h-[100dvh] w-full items-center px-4 py-8 transition-opacity duration-700 sm:px-6 sm:py-10 md:px-8 ${
+        className={`relative z-10 mx-auto flex min-h-[100dvh] w-full items-center justify-center px-4 py-10 transition-opacity duration-700 sm:px-6 sm:py-12 md:px-8 ${
           showIntro ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="mx-auto w-full max-w-[1620px]">
-          <section className="grid gap-6 xl:grid-cols-12">
-            <section className="xl:col-span-8">
+        <div className="mx-auto w-full max-w-[1360px]">
+          <section className="grid gap-6 lg:grid-cols-12">
+            <section className="lg:col-span-8">
               <section className="coming-fade-up mx-auto w-full rounded-3xl border border-zinc-200/85 bg-white/58 px-4 py-6 shadow-[0_16px_46px_rgba(0,0,0,0.09)] backdrop-blur-sm sm:px-8 sm:py-9">
                 <HeroSection />
               </section>
@@ -75,7 +75,7 @@ export default function ComingSoon() {
               </section>
             </section>
 
-            <section className="coming-slide-up xl:col-span-4" style={{ animationDelay: "120ms" }}>
+            <section className="coming-slide-up lg:col-span-4" style={{ animationDelay: "120ms" }}>
               <div className="h-full rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-7">
                 <h2 className="font-sans text-xl font-semibold text-zinc-800 sm:text-3xl">O que voce vai receber</h2>
                 <p className="mt-2 font-sans text-sm leading-relaxed text-zinc-600 sm:text-lg">
