@@ -222,10 +222,18 @@ export default function Pagamento() {
       const options = data.options?.length ? data.options : buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
       setShippingOptions(options);
       setSelectedShippingId(options[0]?.id ?? null);
+      const sanitizedProviderError = (data.providerError || "")
+        .replace(/\s*\|\s*/g, "; ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const publicWarning =
+        data.warning && data.warning.includes("Melhor Envio nao retornou cotacoes")
+          ? "No momento, so ha entrega local disponivel para este CEP."
+          : data.warning || "";
       const detailedWarning = data.warning
-        ? data.providerError && canShowTechnicalShippingError
-          ? `${data.warning} (${data.providerError})`
-          : data.warning
+        ? sanitizedProviderError && canShowTechnicalShippingError
+          ? `${data.warning} (${sanitizedProviderError})`
+          : publicWarning
         : "";
       setShippingError(detailedWarning);
     } catch {

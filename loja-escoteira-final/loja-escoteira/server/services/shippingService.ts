@@ -108,10 +108,15 @@ function extractMelhorEnvioItemErrors(data: any): string {
   const messages = data
     .filter((item: any) => item?.error)
     .map((item: any) => {
-      const service = String(item?.name || item?.company?.name || "Servico");
-      const reason = String(item?.error || item?.message || "Erro nao informado");
+      const service = String(item?.name || item?.company?.name || "Servico")
+        .replace(/^[\s\W_]+/g, "")
+        .trim();
+      const reason = String(item?.error || item?.message || "Erro nao informado")
+        .replace(/^[\s\W_]+/g, "")
+        .trim();
       return `${service}: ${reason}`;
-    });
+    })
+    .filter((message: string) => message !== "Servico: Erro nao informado");
 
   return messages.slice(0, 4).join(" | ");
 }
