@@ -56,45 +56,44 @@ export default function ComingSoon() {
       <BackgroundEffects />
 
       <div
-        className={`relative z-10 mx-auto flex min-h-[100dvh] w-full items-center justify-center px-4 py-8 transition-opacity duration-700 sm:px-6 sm:py-10 md:px-8 ${
+        className={`relative z-10 mx-auto flex min-h-[100dvh] w-full items-center px-4 py-8 transition-opacity duration-700 sm:px-6 sm:py-10 md:px-8 ${
           showIntro ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="mx-auto w-full max-w-[1120px]">
-          <section className="coming-fade-up mx-auto mb-7 w-full rounded-3xl border border-zinc-200/85 bg-white/58 px-4 py-6 shadow-[0_16px_46px_rgba(0,0,0,0.09)] backdrop-blur-sm sm:px-7 sm:py-8">
-            <HeroSection />
-          </section>
+        <div className="mx-auto w-full max-w-[1620px]">
+          <section className="grid gap-6 xl:grid-cols-12">
+            <section className="xl:col-span-8">
+              <section className="coming-fade-up mx-auto w-full rounded-3xl border border-zinc-200/85 bg-white/58 px-4 py-6 shadow-[0_16px_46px_rgba(0,0,0,0.09)] backdrop-blur-sm sm:px-8 sm:py-9">
+                <HeroSection />
+              </section>
 
-          <section className="grid gap-5 xl:grid-cols-3">
-            <section className="coming-slide-up xl:col-span-2" style={{ animationDelay: "60ms" }}>
-              <div className="rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
+              <section className="coming-slide-up mx-auto mt-5 w-full rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6" style={{ animationDelay: "60ms" }}>
                 <CountdownTimer />
-
                 <section className="mt-6">
                   <WaitlistForm />
                 </section>
-              </div>
+              </section>
             </section>
 
-            <section className="coming-slide-up xl:col-span-1" style={{ animationDelay: "120ms" }}>
-              <div className="h-full rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-6">
-                <h2 className="font-sans text-xl font-semibold text-zinc-800 sm:text-2xl">O que voce vai receber</h2>
-                <p className="mt-2 font-sans text-sm leading-relaxed text-zinc-600 sm:text-base">
+            <section className="coming-slide-up xl:col-span-4" style={{ animationDelay: "120ms" }}>
+              <div className="h-full rounded-3xl border border-zinc-200/85 bg-white/60 p-4 shadow-[0_16px_42px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:p-7">
+                <h2 className="font-sans text-xl font-semibold text-zinc-800 sm:text-3xl">O que voce vai receber</h2>
+                <p className="mt-2 font-sans text-sm leading-relaxed text-zinc-600 sm:text-lg">
                   Acesso antecipado aos produtos, aviso de lancamento e condicoes especiais da estreia.
                 </p>
 
-                <div className="mt-5 space-y-3">
-                  <div className="rounded-xl border border-zinc-200 bg-white/70 px-4 py-3">
+                <div className="mt-6 space-y-3">
+                  <div className="rounded-xl border border-zinc-200 bg-white/72 px-4 py-3">
                     <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Previsao</p>
-                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800">Lançamento em 2026</p>
+                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Lancamento em 2026</p>
                   </div>
-                  <div className="rounded-xl border border-zinc-200 bg-white/70 px-4 py-3">
+                  <div className="rounded-xl border border-zinc-200 bg-white/72 px-4 py-3">
                     <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Primeiros avisos</p>
-                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800">Email + novidades exclusivas</p>
+                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Email + novidades exclusivas</p>
                   </div>
-                  <div className="rounded-xl border border-zinc-200 bg-white/70 px-4 py-3">
+                  <div className="rounded-xl border border-zinc-200 bg-white/72 px-4 py-3">
                     <p className="font-sans text-xs uppercase tracking-[0.18em] text-zinc-500">Beneficio</p>
-                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800">Cupom especial de estreia</p>
+                    <p className="mt-1 font-sans text-base font-semibold text-zinc-800 sm:text-xl">Cupom especial de estreia</p>
                   </div>
                 </div>
               </div>
@@ -105,9 +104,9 @@ export default function ComingSoon() {
             <PreviewSection />
           </section>
 
-          <section className="coming-slide-up mt-6 w-full" style={{ animationDelay: "280ms" }}>
+          <section className="coming-slide-up mt-5 w-full" style={{ animationDelay: "280ms" }}>
             <div className="rounded-2xl border border-zinc-200/85 bg-white/54 px-4 py-4 text-center shadow-[0_12px_28px_rgba(0,0,0,0.07)] backdrop-blur-sm sm:px-8">
-              <p className="font-sans text-sm text-zinc-600 sm:text-base">
+              <p className="font-sans text-sm text-zinc-600 sm:text-lg">
                 Quer prioridade real? Entre na lista para receber o link assim que a loja abrir.
               </p>
             </div>
