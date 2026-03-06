@@ -1,9 +1,12 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+const isDev = Boolean((import.meta as any).env?.DEV);
+const defaultApiUrl = isDev ? "http://localhost:3010" : "https://api.l4ckos.com.br";
+
 const envApiUrl =
   (import.meta as any).env?.VITE_API_URL ||
   (import.meta as any).env?.VITE_BACKEND_URL ||
-  "http://localhost:3010";
+  defaultApiUrl;
 
 function resolveApiUrl() {
   try {

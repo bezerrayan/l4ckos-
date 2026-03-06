@@ -48,8 +48,9 @@ function AppRoutes() {
   const isAdmin = isAuthenticated && user?.role === "admin";
   const isLoginRoute = location.pathname === "/login";
 
-  if (!isLoading && comingSoonEnabled && !isAdmin && !isLoginRoute) {
-    return <ComingSoon />;
+  if (comingSoonEnabled && !isLoginRoute) {
+    if (isLoading) return <ComingSoon />;
+    if (!isAdmin) return <ComingSoon />;
   }
 
   return (
