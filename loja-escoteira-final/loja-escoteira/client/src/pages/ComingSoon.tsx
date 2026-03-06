@@ -8,8 +8,10 @@ type Countdown = {
   seconds: string;
 };
 
-const TARGET_DATE = new Date("2026-09-01T00:00:00-03:00").getTime();
+const TARGET_DATE = new Date("2025-09-01T00:00:00-03:00").getTime();
 const INTRO_KEY = "l4ckos_intro_seen";
+const LOGO_L4K_SRC = "/images/logo_branco.png?v=3";
+const LOGO_L4CKOS_SRC = "/images/logo-principal.png?v=3";
 
 function pad(value: number) {
   return String(Math.max(0, value)).padStart(2, "0");
@@ -49,11 +51,11 @@ export default function ComingSoon() {
       return;
     }
 
-    const firstTimer = window.setTimeout(() => setSplashOut(true), 2000);
+    const firstTimer = window.setTimeout(() => setSplashOut(true), 2700);
     const secondTimer = window.setTimeout(() => {
       sessionStorage.setItem(INTRO_KEY, "1");
       setIntroDone(true);
-    }, 2900);
+    }, 3400);
 
     return () => {
       window.clearTimeout(firstTimer);
@@ -100,36 +102,45 @@ export default function ComingSoon() {
     <div className="l4-coming-root">
       {!introDone && (
         <div className={`l4-splash ${splashOut ? "is-out" : ""}`}>
-          <div className="l4-splash-logo">L4K</div>
-          <div className="l4-splash-bar" />
+          <div className="l4-sp-stage">
+            <img className="l4-sp-img l4-sp-l4k" src={LOGO_L4K_SRC} alt="L4K" />
+            <img className="l4-sp-img l4-sp-lyckos" src={LOGO_L4CKOS_SRC} alt="L4ckos" />
+            <div className="l4-splash-bar" />
+            <div className="l4-splash-sub">Loja Escoteira</div>
+          </div>
         </div>
       )}
 
       <div className="l4-coming-page" style={{ opacity: introDone ? 1 : 0 }}>
+        <div className="l4-noise" aria-hidden />
+
         <header className="l4-coming-header a1">
-          <div className="l4-coming-logo-word">L4ckos</div>
+          <img className="l4-coming-logo-word" src={LOGO_L4CKOS_SRC} alt="L4ckos" />
           <div className="l4-coming-live">
             <span className="l4-coming-live-dot" />
             <span>Em breve</span>
           </div>
         </header>
 
-        <main className="l4-coming-main">
+        <main className="l4-coming-main l4-coming-main-grid">
           <section className="l4-left-panel">
-            <div className="l4-tag a2">
+            <div className="l4-tag a2 l4-eyebrow">
               <span className="l4-tag-line" />
-              <span>Loja escoteira e outdoor</span>
+              <span>Loja Escoteira &amp; Outdoor</span>
             </div>
 
-            <h1 className="l4-hero-title a3">A nova loja escoteira esta chegando</h1>
+            <div className="l4-hero-wm a3">
+              <img src={LOGO_L4CKOS_SRC} alt="L4ckos" />
+            </div>
+
             <p className="l4-hero-copy a3">
               A loja que faltava pro escoteiro brasileiro. <strong>Gear de campo, aventura e outdoor</strong> com
-              curadoria real.
+              curadoria real - testado por quem vive na natureza.
             </p>
 
             {!success && (
               <div className="a4">
-                <p className="l4-form-label">Lista de acesso antecipado</p>
+                <p className="l4-form-label">Lista de acesso antecipado - frete gratis no lancamento</p>
                 <div className={`l4-form-row ${error ? "has-error" : ""}`}>
                   <input
                     type="email"
@@ -152,35 +163,43 @@ export default function ComingSoon() {
 
             {success && (
               <div className="l4-form-success a4">
-                <span>✓</span>
+                <span>OK</span>
                 <span>Voce esta na lista. Avisaremos quando abrir.</span>
               </div>
             )}
 
             <div className="l4-stats a4">
               <div className="l4-stat">
-                <div className="l4-stat-n">+200k</div>
+                <div className="l4-stat-n">
+                  +200<b>k</b>
+                </div>
                 <div className="l4-stat-l">produtos outdoor</div>
               </div>
               <div className="l4-stat">
-                <div className="l4-stat-n">48h</div>
+                <div className="l4-stat-n">
+                  48<b>h</b>
+                </div>
                 <div className="l4-stat-l">entrega express</div>
               </div>
               <div className="l4-stat">
-                <div className="l4-stat-n">Set/26</div>
+                <div className="l4-stat-n">
+                  Set<b>/25</b>
+                </div>
                 <div className="l4-stat-l">lancamento</div>
               </div>
             </div>
           </section>
 
+          <div className="l4-vdiv" />
+
           <section className="l4-right-panel">
             <div className="l4-right-hero a5">
               <div className="l4-right-orb" />
               <div className="l4-right-inner">
-                <div className="l4-right-l4k">L4K</div>
+                <img className="l4-right-l4k" src={LOGO_L4K_SRC} alt="L4K" />
                 <div className="l4-right-coming">Chegando em</div>
                 <div className="l4-right-date">
-                  Setembro <span>2026</span>
+                  Setembro <span>2025</span>
                 </div>
               </div>
             </div>
@@ -211,27 +230,31 @@ export default function ComingSoon() {
 
         <section className="l4-benefits a7">
           <article className="l4-ben">
+            <div className="l4-bi">🏕️</div>
             <div className="l4-ben-title">Gear certificado</div>
-            <div className="l4-ben-desc">Equipamento para trilha, camping e aventura.</div>
+            <div className="l4-ben-desc">Equipamento para trilha, camping e aventura extrema.</div>
           </article>
           <article className="l4-ben">
+            <div className="l4-bi">🧭</div>
             <div className="l4-ben-title">Curadoria de campo</div>
             <div className="l4-ben-desc">Selecionado por escoteiros e guias experientes.</div>
           </article>
           <article className="l4-ben">
+            <div className="l4-bi">⚡</div>
             <div className="l4-ben-title">Entrega nacional</div>
-            <div className="l4-ben-desc">Logistica rapida para o seu role.</div>
+            <div className="l4-ben-desc">Logistica rapida pra nao perder a janela da expedicao.</div>
           </article>
           <article className="l4-ben">
-            <div className="l4-ben-title">Garantia real</div>
-            <div className="l4-ben-desc">Troca sem burocracia se nao performar no campo.</div>
+            <div className="l4-bi">🛡️</div>
+            <div className="l4-ben-title">Garantia de campo</div>
+            <div className="l4-ben-desc">Troca sem burocracia se nao performar na real.</div>
           </article>
         </section>
 
         <footer className="l4-footer a8">
           <span>© {year} L4ckos - Todos os direitos reservados.</span>
           <div className="l4-footer-links">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer">
+            <a href="https://instagram.com/l4ckos" target="_blank" rel="noreferrer">
               Instagram
             </a>
             <a href="https://wa.me" target="_blank" rel="noreferrer">
