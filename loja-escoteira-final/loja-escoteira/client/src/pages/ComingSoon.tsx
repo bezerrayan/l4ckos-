@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiUrl } from "../const";
+import logoBranco from "../images/logo_branco.jpeg";
+import logoPrincipal from "../images/logo-principal.jpeg";
 
 type Countdown = {
   days: string;
@@ -9,8 +11,8 @@ type Countdown = {
 };
 
 const TARGET_DATE = Date.now() + 120 * 24 * 60 * 60 * 1000;
-const LOGO_L4K_SRC = "/images/logo_branco.png?v=3";
-const LOGO_L4CKOS_SRC = "/images/logo-principal.png?v=3";
+const LOGO_L4K_SRC = logoBranco;
+const LOGO_L4CKOS_SRC = logoPrincipal;
 
 function pad(value: number) {
   return String(Math.max(0, value)).padStart(2, "0");
