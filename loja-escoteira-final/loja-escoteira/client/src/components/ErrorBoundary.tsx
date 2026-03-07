@@ -1,6 +1,4 @@
-import { cn } from "@/lib/utils";
-import { AlertTriangle, RotateCcw } from "lucide-react";
-import { Component, ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -24,34 +22,32 @@ class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex items-center justify-center min-h-screen p-8 bg-background">
-          <div className="flex flex-col items-center w-full max-w-2xl p-8">
-            <AlertTriangle
-              size={48}
-              className="text-destructive mb-6 flex-shrink-0"
-            />
+        <main className="l4-error-wrap l4-error-wrap-full">
+          <div className="l4-error-noise" aria-hidden />
+          <div className="l4-error-grid" aria-hidden />
 
-            <h2 className="text-xl mb-4">An unexpected error occurred.</h2>
+          <section className="l4-error-card">
+            <p className="l4-error-code">500</p>
+            <h2 className="l4-error-title">Erro inesperado</h2>
+            <p className="l4-error-text">Algo deu errado ao carregar esta pagina.</p>
 
-            <div className="p-4 w-full rounded bg-muted overflow-auto mb-6">
-              <pre className="text-sm text-muted-foreground whitespace-break-spaces">
-                {this.state.error?.stack}
-              </pre>
+            <div className="l4-error-actions">
+              <button type="button" className="l4-error-btn l4-error-btn-primary" onClick={() => window.location.reload()}>
+                Recarregar pagina
+              </button>
+              <button type="button" className="l4-error-btn l4-error-btn-ghost" onClick={() => (window.location.href = "/")}>
+                Ir para Home
+              </button>
             </div>
 
-            <button
-              onClick={() => window.location.reload()}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg",
-                "bg-primary text-primary-foreground",
-                "hover:opacity-90 cursor-pointer"
-              )}
-            >
-              <RotateCcw size={16} />
-              Reload Page
-            </button>
-          </div>
-        </div>
+            {this.state.error?.stack ? (
+              <details className="l4-error-debug">
+                <summary>Detalhes tecnicos</summary>
+                <pre>{this.state.error.stack}</pre>
+              </details>
+            ) : null}
+          </section>
+        </main>
       );
     }
 
