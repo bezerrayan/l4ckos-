@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiUrl } from "../const";
-import logoPreta from "../images/logo_preta.jpeg";
-import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
+import logoPreta from "../images/logo_preta-sem fundo.png";
+import logoPrincipalPreta from "../images/logo-principal-preta-sem fundo.png";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
 
