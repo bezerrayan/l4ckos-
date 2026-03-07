@@ -28,12 +28,12 @@ export default function WaitlistForm() {
         body: JSON.stringify({ email: normalizedEmail }),
       });
 
-      const data = (await response.json()) as { message?: string };
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
       if (!response.ok) {
-        throw new Error(data.message || "Nao foi possivel entrar na lista agora.");
+        throw new Error(data?.message || "Nao foi possivel entrar na lista agora.");
       }
 
-      setFeedback("Voce entrou na lista VIP.");
+      setFeedback(data?.message || "Voce entrou na lista VIP.");
       setEmail("");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Nao foi possivel entrar na lista agora.";

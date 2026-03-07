@@ -63,3 +63,45 @@ export async function sendContactEmail({ name, email, subject, message }) {
   return data;
 }
 
+export async function sendWaitlistEmail({ email }) {
+  const from = sanitizeText(process.env.EMAIL_FROM);
+  const to = sanitizeText(process.env.EMAIL_TO);
+
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("Missing RESEND_API_KEY");
+  }
+  if (!from) {
+    throw new Error("Missing EMAIL_FROM");
+  }
+  if (!to) {
+    throw new Error("Missing EMAIL_TO");
+  }
+
+  const cleanEmail = sanitizeText(email).toLowerCase();
+  const sentAt = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111">
+      <h2>Novo cadastro na lista de espera</h2>
+      <p><strong>E-mail:</strong> ${escapeHtml(cleanEmail)}</p>
+      <p><strong>Data/hora:</strong> ${escapeHtml(sentAt)}</p>
+      <p>Origem: seção Em Breve (waitlist).</p>
+    </div>
+  `;
+
+  const { data, error } = await resend.emails.send({
+    from,
+    to: [to],
+    replyTo: cleanEmail,
+    subject: "Nova inscricao na lista de espera - L4CKOS",
+    html,
+  });
+
+  if (error) {
+    const err = new Error(error.message || "Resend failed");
+    err.name = "ResendError";
+    throw err;
+  }
+
+  return data;
+}

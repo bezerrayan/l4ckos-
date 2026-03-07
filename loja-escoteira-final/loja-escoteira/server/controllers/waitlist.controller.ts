@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { createWaitlistEmail, getWaitlistEmailByEmail } from "../db";
+import { sendWaitlistEmail } from "../services/emailService.js";
 
 export function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -22,6 +23,17 @@ export async function createWaitlistEntry(req: Request, res: Response) {
     }
 
     await createWaitlistEmail(email);
+
+    try {
+      await sendWaitlistEmail({ email });
+    } catch (mailError) {
+      // Nao bloqueia cadastro na waitlist por falha de notificacao.
+      console.error("[Waitlist] Failed to send notification email", {
+        name: mailError instanceof Error ? mailError.name : "UnknownError",
+        message: mailError instanceof Error ? mailError.message : "Unknown error",
+      });
+    }
+
     res.status(201).json({ success: true, message: "Voce sera avisado do lancamento." });
   } catch (error) {
     const duplicateError = (error as { code?: string } | undefined)?.code === "ER_DUP_ENTRY";

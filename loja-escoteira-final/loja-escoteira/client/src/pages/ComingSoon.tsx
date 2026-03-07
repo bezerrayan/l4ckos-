@@ -44,6 +44,7 @@ export default function ComingSoon() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const firstTimer = window.setTimeout(() => setSplashOut(true), 2700);
@@ -65,6 +66,7 @@ export default function ComingSoon() {
   async function handleSubmit() {
     const normalizedEmail = email.trim().toLowerCase();
     setError("");
+    setSuccessMessage("");
     if (!isValidEmail(normalizedEmail)) {
       setError("Insira um e-mail valido.");
       return;
@@ -78,13 +80,16 @@ export default function ComingSoon() {
         body: JSON.stringify({ email: normalizedEmail }),
       });
 
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
       if (!response.ok) {
-        throw new Error("request_failed");
+        throw new Error(data?.message || "Algo deu errado. Tente novamente.");
       }
 
       setSuccess(true);
-    } catch {
-      setError("Algo deu errado. Tente novamente.");
+      setSuccessMessage(data?.message || "Voce esta na lista. Avisaremos quando abrir.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Algo deu errado. Tente novamente.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -156,7 +161,7 @@ export default function ComingSoon() {
             {success && (
               <div className="l4-form-success a4">
                 <span>OK</span>
-                <span>Voce esta na lista. Avisaremos quando abrir.</span>
+                <span>{successMessage || "Voce esta na lista. Avisaremos quando abrir."}</span>
               </div>
             )}
 
