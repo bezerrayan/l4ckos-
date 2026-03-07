@@ -10,6 +10,7 @@ import { trpc } from "../lib/trpc";
 import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
+import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 
 export default function Home() {
   const isMobile = useIsMobile(980);
@@ -58,7 +59,7 @@ export default function Home() {
         </div>
 
         <div style={{ ...styles.heroVisual, height: isMobile ? 240 : styles.heroVisual.height }}>
-          <img src="/images/logo-principal.png" alt="Logo da marca" style={styles.heroImage} />
+          <img src={logoPrincipalPreta} alt="Logo da marca" style={styles.heroImage} />
         </div>
       </div>
 

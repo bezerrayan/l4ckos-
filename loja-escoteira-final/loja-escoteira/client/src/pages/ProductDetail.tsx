@@ -11,6 +11,8 @@ import type { CSSProperties } from "react";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
+import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
+import logoPreta from "../images/logo_preta.jpeg";
 
 const DEFAULT_COLORS = ["Preto", "Branco", "Azul", "Vermelho", "Verde"];
 const DEFAULT_SIZES = ["PP", "P", "M", "G", "GG", "XG"];
@@ -39,8 +41,8 @@ const RATINGS = [
 
 const EXTRA_IMAGES = [
   "/images/camisa.png",
-  "/images/logo-principal.png",
-  "/images/logo_branco.png",
+  logoPrincipalPreta,
+  logoPreta,
 ];
 
 function normalizePrice(value: number) {

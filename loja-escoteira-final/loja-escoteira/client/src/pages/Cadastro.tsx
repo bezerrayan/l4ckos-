@@ -10,6 +10,7 @@ import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
+import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -131,7 +132,7 @@ export default function Cadastro() {
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
-            <img src="/images/logo-principal.png" alt="Logo da marca" style={styles.logoImage as CSSProperties} />
+            <img src={logoPrincipalPreta} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
           </div>
         </div>
       </div>
