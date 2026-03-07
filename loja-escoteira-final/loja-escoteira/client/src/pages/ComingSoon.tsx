@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiUrl } from "../const";
+import logoPreta from "../images/logo_preta.jpeg";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
@@ -34,8 +35,8 @@ export default function ComingSoon() {
   const [introDone, setIntroDone] = useState(false);
 
   useEffect(() => {
-    const startOut = window.setTimeout(() => setSplashOut(true), 1250);
-    const finish = window.setTimeout(() => setIntroDone(true), 1750);
+    const startOut = window.setTimeout(() => setSplashOut(true), 1850);
+    const finish = window.setTimeout(() => setIntroDone(true), 2350);
     return () => {
       window.clearTimeout(startOut);
       window.clearTimeout(finish);
@@ -80,7 +81,10 @@ export default function ComingSoon() {
     <div className="l4-coming-v2-root">
       {!introDone && (
         <div className={`l4-coming-v2-splash ${splashOut ? "is-out" : ""}`}>
-          <img src={logoPrincipalPreta} alt="L4CKOS" />
+          <div className="l4-coming-v2-splash-stage">
+            <img className="l4-coming-v2-splash-mark" src={logoPreta} alt="L4K" />
+            <img className="l4-coming-v2-splash-word" src={logoPrincipalPreta} alt="L4CKOS" />
+          </div>
         </div>
       )}
 
