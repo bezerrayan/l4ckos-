@@ -1310,7 +1310,7 @@ small {
 
 .l4-coming-v2-splash-stage {
   position: relative;
-  width: min(620px, 80vw);
+  width: min(700px, 86vw);
   height: min(280px, 34vw);
 }
 
@@ -1323,15 +1323,17 @@ small {
 }
 
 .l4-coming-v2-splash-mark {
-  width: min(190px, 28vw);
-  animation: l4v2MarkIn 0.75s ease both;
+  z-index: 3;
+  width: min(240px, 34vw);
+  animation: l4v2MarkToWord 1.25s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .l4-coming-v2-splash-word {
-  width: min(560px, 76vw);
+  z-index: 2;
+  width: min(600px, 80vw);
   opacity: 0;
-  transform: translate(-46%, -50%) scale(1.02);
-  animation: l4v2WordIn 0.75s ease 0.65s both;
+  transform: translate(-41%, -50%) scale(0.98);
+  animation: l4v2WordIn 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) 0.55s both;
 }
 
 .l4-coming-v2-splash.is-out {
@@ -1668,14 +1670,22 @@ small {
   }
 }
 
-@keyframes l4v2MarkIn {
+@keyframes l4v2MarkToWord {
   from {
     opacity: 0;
-    transform: translate(-50%, -48%) scale(0.86);
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+  65% {
+    opacity: 0.95;
+    transform: translate(-66%, -50%) scale(0.92);
   }
   to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+    transform: translate(-82%, -50%) scale(0.78);
   }
 }
 

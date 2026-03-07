@@ -35,8 +35,8 @@ export default function ComingSoon() {
   const [introDone, setIntroDone] = useState(false);
 
   useEffect(() => {
-    const startOut = window.setTimeout(() => setSplashOut(true), 1850);
-    const finish = window.setTimeout(() => setIntroDone(true), 2350);
+    const startOut = window.setTimeout(() => setSplashOut(true), 2200);
+    const finish = window.setTimeout(() => setIntroDone(true), 2750);
     return () => {
       window.clearTimeout(startOut);
       window.clearTimeout(finish);
