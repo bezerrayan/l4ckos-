@@ -52,6 +52,10 @@ const defaultPaymentDraft: Omit<PaymentMethod, "id"> = {
   isDefault: false,
 };
 
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
 export default function Perfil() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -209,13 +213,19 @@ export default function Perfil() {
   };
 
   const handleSaveProfile = async () => {
-    if (!profileName.trim() || !profileEmail.trim()) {
+    const normalizedEmail = profileEmail.trim().toLowerCase();
+    if (!profileName.trim() || !normalizedEmail) {
       showToast({ message: "Nome e email são obrigatórios", duration: 2800 });
       return;
     }
 
+    if (!isValidEmail(normalizedEmail)) {
+      showToast({ message: "Informe um email valido", duration: 2800 });
+      return;
+    }
+
     try {
-      await persistProfileData(profileName.trim(), profileEmail.trim(), phone, addresses, payments, true);
+      await persistProfileData(profileName.trim(), normalizedEmail, phone, addresses, payments, true);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Não foi possível salvar o perfil no banco";
       showToast({ message, duration: 3000 });
@@ -225,7 +235,7 @@ export default function Perfil() {
     setUser({
       ...user,
       name: profileName.trim(),
-      email: profileEmail.trim(),
+      email: normalizedEmail,
     });
 
     setIsEditingProfile(false);

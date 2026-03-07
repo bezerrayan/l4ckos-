@@ -28,6 +28,7 @@ export default function Header() {
     location.pathname === "/produtos" || location.pathname.startsWith("/produto/");
   const isOrdersActive = location.pathname === "/meus-pedidos";
   const isTrackOrderActive = location.pathname === "/acompanhar-pedido";
+  const isContactActive = location.pathname === "/contato";
   const isFavoritesActive = location.pathname === "/favoritos";
   const isCartActive = location.pathname === "/carrinho";
 
@@ -228,6 +229,25 @@ export default function Header() {
                 to="/acompanhar-pedido"
               >
                 Acompanhar
+              </Link>
+              <Link
+                style={{ ...styles.link, ...(isContactActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
+                onClick={closeMobileMenu}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
+                  el.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.backgroundColor = isContactActive
+                    ? "rgba(255,255,255,0.2)"
+                    : "transparent";
+                  el.style.transform = "translateY(0)";
+                }}
+                to="/contato"
+              >
+                Contato
               </Link>
               <Link
                 style={{ ...styles.link, ...(isFavoritesActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}

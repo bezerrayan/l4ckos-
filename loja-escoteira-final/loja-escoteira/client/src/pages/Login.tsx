@@ -11,6 +11,10 @@ import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
 export default function Login() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -26,10 +30,19 @@ export default function Login() {
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const normalizedEmail = email.trim().toLowerCase();
     
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       showToast({
         message: "Por favor, preencha todos os campos",
+        duration: 3000,
+      });
+      return;
+    }
+    if (!isValidEmail(normalizedEmail)) {
+      showToast({
+        message: "Informe um email valido",
         duration: 3000,
       });
       return;
@@ -37,7 +50,7 @@ export default function Login() {
 
     setIsSubmitting(true);
     try {
-      await localLoginMutation.mutateAsync({ email, password });
+      await localLoginMutation.mutateAsync({ email: normalizedEmail, password });
       await utils.auth.me.invalidate();
       showToast({
         message: "Login realizado com sucesso!",

@@ -6,6 +6,11 @@ import { useState, useEffect } from "react";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { apiUrl } from "../const";
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
 
 export default function Contato() {
   const isMobile = useIsMobile();
@@ -30,11 +35,12 @@ export default function Contato() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const normalizedEmail = formData.email.trim().toLowerCase();
 
     // Validação básica
-    if (!formData.nome || !formData.email || !formData.mensagem) {
+    if (!formData.nome || !normalizedEmail || !formData.mensagem) {
       showToast({
         message: "Por favor, preencha todos os campos obrigatórios",
         duration: 3000,
@@ -42,10 +48,35 @@ export default function Contato() {
       return;
     }
 
+    if (!isValidEmail(normalizedEmail)) {
+      showToast({
+        message: "Informe um email valido",
+        duration: 3000,
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simular envio
-    setTimeout(() => {
+    try {
+      const response = await fetch(apiUrl("/api/contact"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.nome,
+          email: normalizedEmail,
+          subject: formData.assunto,
+          message: formData.mensagem,
+        }),
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error || "Erro ao enviar mensagem.");
+      }
+
       showToast({
         message: "Mensagem enviada com sucesso! Responderemos em breve.",
         duration: 4000,
@@ -57,8 +88,14 @@ export default function Contato() {
         assunto: "duvida",
         mensagem: "",
       });
+    } catch (error) {
+      showToast({
+        message: error instanceof Error ? error.message : "Erro ao enviar mensagem.",
+        duration: 4000,
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   return (

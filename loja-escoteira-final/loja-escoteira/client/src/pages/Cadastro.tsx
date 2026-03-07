@@ -11,6 +11,10 @@ import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
 export default function Cadastro() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -37,16 +41,25 @@ export default function Cadastro() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    const normalizedEmail = formData.email.trim().toLowerCase();
 
     // Validações
     if (
       !formData.firstName ||
-      !formData.email ||
+      !normalizedEmail ||
       !formData.password ||
       !formData.confirmPassword
     ) {
       showToast({
         message: "Por favor, preencha todos os campos obrigatórios",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
+      showToast({
+        message: "Informe um email valido",
         duration: 3000,
       });
       return;
@@ -72,7 +85,7 @@ export default function Cadastro() {
     try {
       await localSignupMutation.mutateAsync({
         name: `${formData.firstName} ${formData.lastName}`.trim() || formData.firstName,
-        email: formData.email,
+        email: normalizedEmail,
         password: formData.password,
       });
       await utils.auth.me.invalidate();
