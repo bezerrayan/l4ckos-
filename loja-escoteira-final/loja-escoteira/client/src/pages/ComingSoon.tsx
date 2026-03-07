@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiUrl } from "../const";
-import logoBranco from "../images/logo_branco.jpeg";
-import logoPrincipal from "../images/logo-principal.jpeg";
+import logoBranco from "../images/logo_branco.png";
+import logoPrincipal from "../images/logo-principal.png";
 
 type Countdown = {
   days: string;
