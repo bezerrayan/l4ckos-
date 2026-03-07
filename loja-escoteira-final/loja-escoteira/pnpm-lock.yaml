@@ -204,7 +204,7 @@ importers:
         specifier: ^2.15.2
         version: 2.15.4(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       resend:
-        specifier: ^4.6.0
+        specifier: ^4.8.0
         version: 4.8.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       sonner:
         specifier: ^2.0.7
