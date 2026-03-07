@@ -5,7 +5,6 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
@@ -15,14 +14,15 @@ import { trpc } from "../lib/trpc";
 export default function Login() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { isLoading } = useUser();
   const { showToast } = useToast();
   const utils = trpc.useUtils();
   const localLoginMutation = trpc.auth.localLogin.useMutation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isBusy = isSubmitting || localLoginMutation.isPending;
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +113,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com"
               style={styles.input as CSSProperties}
-              disabled={isSubmitting || isLoading || localLoginMutation.isPending}
+              disabled={isBusy}
             />
           </div>
 
@@ -123,13 +123,23 @@ export default function Login() {
             </label>
             <input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               style={styles.input as CSSProperties}
-              disabled={isSubmitting || isLoading || localLoginMutation.isPending}
+              disabled={isBusy}
             />
+            <label style={{ ...styles.checkboxLabel, marginTop: 4 } as CSSProperties}>
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+                style={{ marginRight: 8 }}
+                disabled={isBusy}
+              />
+              Mostrar senha
+            </label>
           </div>
 
           {/* Lembrar e Esqueceu Senha */}
@@ -148,12 +158,12 @@ export default function Login() {
             type="submit"
             style={{
               ...styles.submitBtn,
-              opacity: isSubmitting || isLoading || localLoginMutation.isPending ? 0.7 : 1,
-              cursor: isSubmitting || isLoading || localLoginMutation.isPending ? "not-allowed" : "pointer",
+              opacity: isBusy ? 0.7 : 1,
+              cursor: isBusy ? "not-allowed" : "pointer",
             } as CSSProperties}
-            disabled={isSubmitting || isLoading || localLoginMutation.isPending}
+            disabled={isBusy}
             onMouseEnter={(e) => {
-              if (!isSubmitting && !isLoading && !localLoginMutation.isPending) {
+              if (!isBusy) {
                 const btn = e.currentTarget as HTMLElement;
                 btn.style.transform = "translateY(-2px)";
                 btn.style.boxShadow = "0 12px 24px rgba(26,26,26,0.3)";
@@ -165,7 +175,7 @@ export default function Login() {
               btn.style.boxShadow = "0 4px 12px rgba(26,26,26,0.2)";
             }}
           >
-            {isSubmitting || isLoading || localLoginMutation.isPending ? "Entrando..." : "Entrar"}
+            {isBusy ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
@@ -186,7 +196,7 @@ export default function Login() {
             const btn = e.currentTarget as HTMLElement;
             btn.style.background = "white";
           }}
-          disabled={isSubmitting || isLoading || localLoginMutation.isPending}
+          disabled={isBusy}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" style={{marginRight: 12}} aria-hidden="true" focusable="false">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
