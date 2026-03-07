@@ -44,7 +44,11 @@ function AppRoutes() {
   const isMobile = useIsMobile(980);
   const location = useLocation();
   const { user, isAuthenticated, isLoading } = useUser();
-  const comingSoonEnabled = String(import.meta.env.VITE_COMING_SOON || "false").toLowerCase() === "true";
+  const comingSoonRaw = String(import.meta.env.VITE_COMING_SOON ?? "true")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+  const comingSoonEnabled = comingSoonRaw === "true";
   const isAdmin = isAuthenticated && user?.role === "admin";
   const isLoginRoute = location.pathname === "/login";
 
