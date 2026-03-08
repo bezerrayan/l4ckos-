@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { sendContactEmail } from "../services/emailService.js";
+import {
+  sendAutoReplyToCustomer,
+  sendContactNotificationToStore,
+} from "../services/emailService.js";
 
 const router = Router();
 
@@ -7,8 +10,9 @@ function sanitizeInput(value: unknown) {
   return String(value ?? "").trim();
 }
 
-// Frontend form should call: POST /api/contact
-// Payload compatible with existing clients: { name, email, message, subject? }
+// Frontend form should call this endpoint:
+// POST /api/contact
+// Compatible payload: { name, email, message, subject? }
 router.post("/contact", async (req, res) => {
   try {
     const { name, email, message, subject } = req.body ?? {};
@@ -17,61 +21,60 @@ router.post("/contact", async (req, res) => {
     const cleanMessage = sanitizeInput(message);
     const cleanSubject = sanitizeInput(subject);
 
-    if (!cleanName) {
-      res.status(400).json({ success: false, error: "O campo name é obrigatório." });
-      return;
-    }
-    if (!cleanEmail) {
-      res.status(400).json({ success: false, error: "O campo email é obrigatório." });
-      return;
-    }
-    if (!cleanMessage) {
-      res.status(400).json({ success: false, error: "O campo message é obrigatório." });
-      return;
-    }
+    if (!cleanName) return res.status(400).json({ success: false, error: "O campo name e obrigatorio." });
+    if (!cleanEmail) return res.status(400).json({ success: false, error: "O campo email e obrigatorio." });
+    if (!cleanMessage) return res.status(400).json({ success: false, error: "O campo message e obrigatorio." });
 
-    await sendContactEmail({
+    await sendContactNotificationToStore({
       name: cleanName,
       email: cleanEmail,
       subject: cleanSubject,
       message: cleanMessage,
     });
 
-    res.status(200).json({ success: true, message: "Mensagem enviada com sucesso." });
+    await sendAutoReplyToCustomer({
+      name: cleanName,
+      email: cleanEmail,
+    });
+
+    return res.status(200).json({ success: true, message: "Mensagem enviada com sucesso." });
   } catch (error) {
-    console.error("[Contact] Failed to send email", {
+    console.error("[Contact] Failed to process contact flow", {
+      route: "/api/contact",
+      provider: "resend",
       name: error instanceof Error ? error.name : "UnknownError",
       message: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
-      provider: "resend",
+      cause: error instanceof Error && error.cause ? error.cause : undefined,
     });
-    res.status(500).json({ success: false, error: "Erro ao enviar mensagem." });
+    return res.status(500).json({ success: false, error: "Erro ao enviar mensagem." });
   }
 });
 
-// Minimal test endpoint to verify provider integration.
-// Keep disabled in production by default. Enable only with CONTACT_TEST_ENABLED=true.
+// Minimal test endpoint for provider verification.
+// Keep disabled in production by default and enable only with CONTACT_TEST_ENABLED=true.
 router.post("/contact/test", async (_req, res) => {
   if (process.env.CONTACT_TEST_ENABLED !== "true") {
-    res.status(404).json({ success: false, error: "Not found" });
-    return;
+    return res.status(404).json({ success: false, error: "Not found" });
   }
 
   try {
-    await sendContactEmail({
+    await sendContactNotificationToStore({
       name: "Teste da API",
       email: "no-reply@l4ckos.com.br",
       subject: "Teste de contato",
       message: "Teste do endpoint /api/contact/test.",
     });
-    res.status(200).json({ success: true, message: "Teste enviado com sucesso." });
+    return res.status(200).json({ success: true, message: "Teste enviado com sucesso." });
   } catch (error) {
     console.error("[ContactTest] Failed to send email", {
+      route: "/api/contact/test",
+      provider: "resend",
       name: error instanceof Error ? error.name : "UnknownError",
       message: error instanceof Error ? error.message : "Unknown error",
-      provider: "resend",
+      stack: error instanceof Error ? error.stack : undefined,
     });
-    res.status(500).json({ success: false, error: "Erro ao enviar teste." });
+    return res.status(500).json({ success: false, error: "Erro ao enviar teste." });
   }
 });
 
