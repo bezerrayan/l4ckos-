@@ -16,6 +16,14 @@ type AsaasCheckoutResponse = {
   id: string;
 };
 
+type AsaasPaymentResponse = {
+  id: string;
+  externalReference?: string | null;
+  checkout?: {
+    id?: string | null;
+  } | null;
+};
+
 function getAsaasConfig() {
   const apiKey = process.env.ASAAS_API_KEY?.trim();
   const apiUrl = (process.env.ASAAS_API_URL?.trim() || DEFAULT_ASAAS_API_URL).replace(/\/+$/, "");
@@ -95,6 +103,20 @@ export async function createAsaasCheckout(input: {
       id: data.id,
       checkoutUrl: `${checkoutBaseUrl}/checkoutSession/show?id=${encodeURIComponent(data.id)}`,
     };
+  } catch (error) {
+    throw mapAsaasError(error);
+  }
+}
+
+export async function getAsaasPayment(paymentId: string) {
+  try {
+    const client = buildClient();
+    const normalizedId = String(paymentId || "").trim();
+    if (!normalizedId) {
+      throw new Error("Invalid payment id");
+    }
+    const { data } = await client.get<AsaasPaymentResponse>(`/payments/${encodeURIComponent(normalizedId)}`);
+    return data;
   } catch (error) {
     throw mapAsaasError(error);
   }

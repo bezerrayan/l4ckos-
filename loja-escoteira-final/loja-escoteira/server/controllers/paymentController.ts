@@ -11,6 +11,7 @@ import {
 import {
   createAsaasCheckout,
   createAsaasCustomer,
+  getAsaasPayment,
   validateAsaasWebhookSignature,
 } from "../services/asaasService";
 
@@ -20,7 +21,7 @@ type AuthenticatedRequest = Request & {
   };
 };
 
-const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
+const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED", "PAYMENT_OVERDUE_RECEIVED"]);
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
@@ -40,6 +41,12 @@ function parseCheckoutIdFromWebhook(payload: any): string | null {
   const nested = payload?.payment?.checkout?.id;
   if (typeof nested === "string" && nested.trim()) return nested.trim();
 
+  return null;
+}
+
+function parsePaymentIdFromWebhook(payload: any): string | null {
+  const direct = payload?.payment?.id;
+  if (typeof direct === "string" && direct.trim()) return direct.trim();
   return null;
 }
 
@@ -168,7 +175,11 @@ export async function createCheckoutHandler(req: Request, res: Response) {
 
 export async function asaasWebhookHandler(req: Request, res: Response) {
   try {
-    if (!validateAsaasWebhookSignature(req.headers as Record<string, unknown>)) {
+    const signatureValid = validateAsaasWebhookSignature(req.headers as Record<string, unknown>);
+    if (!signatureValid) {
+      console.warn("[Asaas webhook] Invalid signature", {
+        hasTokenHeader: Boolean((req.headers as Record<string, unknown>)["asaas-access-token"]),
+      });
       res.status(401).json({ error: "Invalid webhook signature" });
       return;
     }
@@ -177,26 +188,54 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
     const event = String(payload?.event || "").trim();
 
     if (!PAID_EVENTS.has(event)) {
+      console.log("[Asaas webhook] Ignored event", { event });
       res.status(200).json({ handled: false, reason: "event_ignored" });
       return;
     }
 
     let orderId = parseOrderIdFromWebhook(payload);
+    let checkoutId = parseCheckoutIdFromWebhook(payload);
+    const paymentId = parsePaymentIdFromWebhook(payload);
 
     if (!orderId) {
-      const checkoutId = parseCheckoutIdFromWebhook(payload);
       if (checkoutId) {
         const order = await getOrderByAsaasCheckoutId(checkoutId);
         orderId = order?.id ?? null;
       }
     }
 
+    // Fallback: some Asaas payloads do not include externalReference/checkout.
+    if (!orderId && paymentId) {
+      try {
+        const payment = await getAsaasPayment(paymentId);
+        orderId = Number(payment?.externalReference) || null;
+        if (!checkoutId) {
+          checkoutId = payment?.checkout?.id?.trim() || null;
+        }
+        if (!orderId && checkoutId) {
+          const order = await getOrderByAsaasCheckoutId(checkoutId);
+          orderId = order?.id ?? null;
+        }
+      } catch (error) {
+        console.error("[Asaas webhook] Failed to resolve payment by id", {
+          paymentId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
     if (!orderId) {
+      console.warn("[Asaas webhook] Could not resolve order", {
+        event,
+        paymentId,
+        checkoutId,
+      });
       res.status(200).json({ handled: false, reason: "order_not_resolved" });
       return;
     }
 
     await updateOrderStatus(orderId, "paid");
+    console.log("[Asaas webhook] Order updated", { event, orderId, paymentId, checkoutId });
 
     res.status(200).json({ handled: true, event, orderId });
   } catch (error) {
