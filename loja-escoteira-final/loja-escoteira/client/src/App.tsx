@@ -50,9 +50,10 @@ function AppRoutes() {
     .replace(/[^a-z]/g, "");
   const comingSoonEnabled = comingSoonRaw === "true";
   const isAdmin = isAuthenticated && user?.role === "admin";
-  const isLoginRoute = location.pathname === "/login";
+  const comingSoonAllowedRoutes = new Set(["/login", "/cadastro"]);
+  const isAllowedDuringComingSoon = comingSoonAllowedRoutes.has(location.pathname);
 
-  if (comingSoonEnabled && !isLoginRoute) {
+  if (comingSoonEnabled && !isAllowedDuringComingSoon) {
     if (isLoading) return <ComingSoon />;
     if (!isAdmin) return <ComingSoon />;
   }
