@@ -73,9 +73,13 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
+    const normalizedEmail = (user.email ?? "").trim().toLowerCase();
+    const canBeAdmin = user.openId === ENV.ownerOpenId || ENV.adminEmails.includes(normalizedEmail);
+
     if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
+      const safeRole = user.role === "admin" && !canBeAdmin ? "user" : user.role;
+      values.role = safeRole;
+      updateSet.role = safeRole;
     } else if (user.openId === ENV.ownerOpenId) {
       values.role = 'admin';
       updateSet.role = 'admin';
@@ -519,6 +523,14 @@ export async function getAllUsers() {
 export async function updateUserRole(userId: number, role: "user" | "admin") {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  if (role === "admin") {
+    const target = await getUserById(userId);
+    const normalizedEmail = String(target?.email ?? "").trim().toLowerCase();
+    const isAllowed = Boolean(normalizedEmail) && ENV.adminEmails.includes(normalizedEmail);
+    if (!isAllowed) {
+      throw new Error("Admin role assignment not allowed for this email");
+    }
+  }
   return await db.update(users).set({ role }).where(eq(users.id, userId));
 }
 

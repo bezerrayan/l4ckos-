@@ -15,6 +15,7 @@ import {
   deletePromoBanner,
   getDashboardKpis,
   getAllOrders,
+  getUserById,
   getOrdersByFilters,
   getProductsAdmin,
   getSalesByPeriod,
@@ -28,6 +29,8 @@ import {
   updateCoupon,
   updateUserRole,
 } from "../db";
+import { ENV } from "../_core/env";
+import { TRPCError } from "@trpc/server";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -70,6 +73,18 @@ export const adminRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (input.role === "admin") {
+        const targetUser = await getUserById(input.userId);
+        const normalizedEmail = String(targetUser?.email ?? "").trim().toLowerCase();
+        const allowedAdmin = Boolean(normalizedEmail) && ENV.adminEmails.includes(normalizedEmail);
+        if (!allowedAdmin) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Este email nao pode receber permissao de admin.",
+          });
+        }
+      }
+
       await updateUserRole(input.userId, input.role);
       await createAuditLog({
         actorUserId: ctx.user.id,
