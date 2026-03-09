@@ -60,10 +60,21 @@ router.post("/contact", async (req, res) => {
       message: cleanMessage + (cleanPhone ? `\n\nTelefone: ${cleanPhone}` : ""),
     });
 
-    await sendAutoReplyToCustomer({
-      name: cleanName,
-      email: cleanEmail,
-    });
+    try {
+      await sendAutoReplyToCustomer({
+        name: cleanName,
+        email: cleanEmail,
+      });
+    } catch (autoReplyError) {
+      console.error("[Contact] Auto-reply failed, but store notification succeeded", {
+        route: "/api/contact",
+        provider: "resend",
+        name: autoReplyError instanceof Error ? autoReplyError.name : "UnknownError",
+        message: autoReplyError instanceof Error ? autoReplyError.message : "Unknown error",
+        stack: autoReplyError instanceof Error ? autoReplyError.stack : undefined,
+        cause: autoReplyError instanceof Error && autoReplyError.cause ? autoReplyError.cause : undefined,
+      });
+    }
 
     return res.status(200).json({ success: true, message: "Mensagem enviada com sucesso." });
   } catch (error) {
