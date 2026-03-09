@@ -47,6 +47,8 @@
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 30px;
   padding: 70px 64px;
   overflow: hidden;
 }
@@ -72,6 +74,22 @@
   position: relative;
   z-index: 2;
   max-width: 920px;
+}
+
+.l4-home-hero-logo-wrap {
+  position: relative;
+  z-index: 2;
+  background: #f0ede8;
+  border: 1px solid #2a2a2a;
+  padding: 26px;
+  width: min(38vw, 420px);
+  min-width: 260px;
+}
+
+.l4-home-hero-logo {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .l4-home-tag,
@@ -535,10 +553,18 @@
 
   .l4-home-hero {
     min-height: 64vh;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .l4-home-hero-cta {
     flex-direction: column;
+  }
+
+  .l4-home-hero-logo-wrap {
+    width: 100%;
+    min-width: 0;
+    max-width: 360px;
   }
 
   .l4-home-categories-grid {
@@ -576,4 +602,3 @@
     align-items: flex-start;
   }
 }
-

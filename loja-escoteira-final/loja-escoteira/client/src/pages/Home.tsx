@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { trpc } from "../lib/trpc";
 import "./Home.css";
+import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 
 type ProductItem = {
   id: number;
@@ -24,22 +25,22 @@ const productBgClasses = [
 
 const testimonials = [
   {
-    initials: "MV",
-    name: "Matheus Vieira",
+    initials: "CL",
+    name: "Carlos Lima",
+    city: "Brasilia, DF",
+    text: "Produto de qualidade e entrega rapida. O atendimento ajudou em tudo no meu primeiro pedido.",
+  },
+  {
+    initials: "MF",
+    name: "Marina Freitas",
     city: "Sao Paulo, SP",
-    text: "Qualidade absurda, oversized do jeito certo. L4CKOS virou minha marca principal.",
+    text: "Comprei para trilha e acampamento. Chegou bem embalado e exatamente como descrito no site.",
   },
   {
-    initials: "RA",
-    name: "Rafaela Alves",
-    city: "Rio de Janeiro, RJ",
-    text: "Entrega rapida e acabamento premium. A calca cargo e diferenciada.",
-  },
-  {
-    initials: "GS",
-    name: "Gabriel Santos",
+    initials: "JP",
+    name: "Joao Pedro",
     city: "Belo Horizonte, MG",
-    text: "Suporte resolveu troca em menos de 24h. Atendimento de verdade.",
+    text: "Precisei trocar tamanho e resolveram muito rapido. Experiencia bem segura do inicio ao fim.",
   },
 ];
 
@@ -89,23 +90,26 @@ export default function Home() {
         <div className="l4-home-hero-content">
           <div className="l4-home-tag">Drop 04 - Disponivel Agora</div>
           <h1 className="l4-home-title">
-            <span>VESTE</span>
+            <span>BEM-VINDO</span>
             <br />
-            <span className="outline">QUEM</span>
+            <span className="outline">A NOSSA</span>
             <br />
-            <span className="accent">MANDA</span>
+            <span className="accent">LOJA</span>
           </h1>
           <p className="l4-home-subtitle">
-            Streetwear sem compromisso. Pecas que falam antes de voce. Feitas pra quem nao pede licenca.
+            Descubra uma selecao variada de produtos de qualidade para esportes, aventura e movimento escoteiro.
           </p>
           <div className="l4-home-hero-cta">
             <Link to="/produtos" className="l4-btn-primary">
-              Ver Colecao
+              Explorar Catalogo
             </Link>
             <a href="#l4-products" className="l4-btn-outline">
-              Mais Vendidos
+              Ver Destaques
             </a>
           </div>
+        </div>
+        <div className="l4-home-hero-logo-wrap">
+          <img src={logoPrincipalPreta} alt="Logo L4CKOS" className="l4-home-hero-logo" />
         </div>
       </section>
 
@@ -136,19 +140,19 @@ export default function Home() {
         </div>
         <div className="l4-home-categories-grid">
           <Link className="l4-home-cat l4-home-cat-large l4-home-cat-1" to="/produtos">
-            <span className="l4-home-cat-name">CAMISETAS</span>
+            <span className="l4-home-cat-name">CAMPING</span>
           </Link>
           <Link className="l4-home-cat l4-home-cat-2" to="/produtos">
-            <span className="l4-home-cat-name">MOLETONS</span>
+            <span className="l4-home-cat-name">UNIFORMES</span>
           </Link>
           <Link className="l4-home-cat l4-home-cat-3" to="/produtos">
-            <span className="l4-home-cat-name">CALCAS</span>
+            <span className="l4-home-cat-name">TRILHA</span>
           </Link>
           <Link className="l4-home-cat l4-home-cat-4" to="/produtos">
             <span className="l4-home-cat-name">ACESSORIOS</span>
           </Link>
           <Link className="l4-home-cat l4-home-cat-5" to="/produtos">
-            <span className="l4-home-cat-name">HEADWEAR</span>
+            <span className="l4-home-cat-name">MOCHILAS</span>
           </Link>
         </div>
       </section>
@@ -193,7 +197,7 @@ export default function Home() {
         <div>
           <div className="l4-home-section-tag">Oferta Limitada</div>
           <h2 className="l4-home-promo-title">
-            ATE <span>50%</span> OFF
+            ATE <span>30%</span> OFF
           </h2>
         </div>
         <div className="l4-home-promo-side">
@@ -243,8 +247,8 @@ export default function Home() {
 
       <section className="l4-home-newsletter">
         <div>
-          <h3>ENTRE NO RADAR</h3>
-          <p>Seja o primeiro a saber de novos drops e promocoes.</p>
+          <h3>FIQUE POR DENTRO</h3>
+          <p>Receba novidades, promocoes e lancamentos em primeira mao.</p>
         </div>
         <Link to="/contato" className="l4-btn-primary">
           Falar com a loja
@@ -253,4 +257,3 @@ export default function Home() {
     </div>
   );
 }
-
