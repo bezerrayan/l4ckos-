@@ -31,6 +31,8 @@ export default function ComingSoon() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [reservationCode, setReservationCode] = useState("");
+  const [secondsFlash, setSecondsFlash] = useState(false);
   const [splashOut, setSplashOut] = useState(false);
   const [introDone, setIntroDone] = useState(false);
 
@@ -44,9 +46,20 @@ export default function ComingSoon() {
   }, []);
 
   useEffect(() => {
-    const id = window.setInterval(() => setCountdown(getCountdown(targetDate)), 1000);
+    const id = window.setInterval(() => {
+      setCountdown(getCountdown(targetDate));
+      setSecondsFlash(true);
+      window.setTimeout(() => setSecondsFlash(false), 120);
+    }, 1000);
     return () => window.clearInterval(id);
   }, [targetDate]);
+
+  function generateReservationCode() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let out = "#L4K-";
+    for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  }
 
   async function handleSubmit() {
     const normalizedEmail = email.trim().toLowerCase();
@@ -69,6 +82,7 @@ export default function ComingSoon() {
         throw new Error(data?.message || "Algo deu errado. Tente novamente.");
       }
       setSuccess(true);
+      setReservationCode(generateReservationCode());
       setSuccessMessage(data?.message || "Voce esta na lista. Avisaremos quando abrir.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Algo deu errado. Tente novamente.");
@@ -79,6 +93,10 @@ export default function ComingSoon() {
 
   return (
     <div className="l4-coming-v2-root">
+      <div className="l4-coming-v2-glow-top" />
+      <div className="l4-coming-v2-glow-bot" />
+      <div className="l4-coming-v2-grid-bg" />
+
       {!introDone && (
         <div className={`l4-coming-v2-splash ${splashOut ? "is-out" : ""}`}>
           <div className="l4-coming-v2-splash-stage">
@@ -88,122 +106,121 @@ export default function ComingSoon() {
         </div>
       )}
 
-      <div className={`l4-coming-v2-page ${introDone ? "is-ready" : ""}`}>
-        <main className="l4-coming-v2-main">
-          <section className="l4-coming-v2-left">
-            <div className="l4-coming-v2-badge">
-              <span className="dot" />
-              Loja Escoteira &amp; Outdoor
+      <div className={`l4-coming-v2-shell ${introDone ? "is-ready" : ""}`}>
+        <header className="l4-coming-v2-header">
+          <a className="l4-coming-v2-logo-text" href="/">
+            L<em>4</em>CKOS
+          </a>
+          <div className="l4-coming-v2-live-pill">
+            <span className="dot" />
+            Drop 05
+          </div>
+        </header>
+
+        <section className="l4-coming-v2-hero">
+          <div className="l4-coming-v2-drop-tag">// Acesso antecipado</div>
+          <h1 className="l4-coming-v2-title">
+            <span className="t1" data-t="ALGO">
+              ALGO
+            </span>
+            <span className="t2">GRANDE</span>
+            <span className="t3">VEM AI.</span>
+          </h1>
+
+          <div className="l4-coming-v2-divider" />
+          <p className="l4-coming-v2-desc">
+            O próximo drop está quase pronto.
+            <br />
+            Entre na lista e garanta <strong>acesso 24h antes</strong> de todo mundo.
+          </p>
+
+          <div className="l4-coming-v2-countdown">
+            <div className="cu">
+              <div className="cn">{countdown.days}</div>
+              <div className="cl">Dias</div>
             </div>
-
-            <div className="l4-coming-v2-logo-wrap">
-              <img src={logoPrincipalPreta} alt="L4CKOS" className="l4-coming-v2-logo" />
+            <div className="csep">:</div>
+            <div className="cu">
+              <div className="cn">{countdown.hours}</div>
+              <div className="cl">Hr</div>
             </div>
+            <div className="csep">:</div>
+            <div className="cu">
+              <div className="cn">{countdown.minutes}</div>
+              <div className="cl">Min</div>
+            </div>
+            <div className="csep">:</div>
+            <div className="cu">
+              <div className={`cn ${secondsFlash ? "is-flash" : ""}`}>{countdown.seconds}</div>
+              <div className="cl">Seg</div>
+            </div>
+          </div>
+        </section>
 
-            <p className="l4-coming-v2-tagline">
-              A loja que faltava pro escoteiro brasileiro.
-              <br />
-              <strong>Gear de campo, aventura e outdoor</strong> com curadoria real - testado por quem vive na
-              natureza.
-            </p>
+        {!success ? (
+          <section className="l4-coming-v2-form-section">
+            <div className="l4-coming-v2-form-heading">Reservar minha vaga</div>
+            <div className="l4-coming-v2-input-wrap">
+              <input
+                className={`l4-coming-v2-email-in ${error ? "has-error" : ""}`}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    void handleSubmit();
+                  }
+                }}
+                placeholder="seu@email.com"
+                autoComplete="email"
+              />
+              <button className="l4-coming-v2-cta-btn" type="button" onClick={() => void handleSubmit()} disabled={loading}>
+                {loading ? "ENVIANDO..." : "GARANTIR ACESSO →"}
+              </button>
+            </div>
+            {error ? <div className="l4-coming-v2-form-error">{error}</div> : null}
 
-            <div>
-              <div className="l4-coming-v2-cd-label">Abrindo em</div>
-              <div className="l4-coming-v2-cd-row">
-                <div className="l4-coming-v2-cd-cell">
-                  <span className="num">{countdown.days}</span>
-                  <span className="lbl">Dias</span>
-                </div>
-                <div className="l4-coming-v2-cd-cell">
-                  <span className="num">{countdown.hours}</span>
-                  <span className="lbl">Horas</span>
-                </div>
-                <div className="l4-coming-v2-cd-cell">
-                  <span className="num">{countdown.minutes}</span>
-                  <span className="lbl">Min</span>
-                </div>
-                <div className="l4-coming-v2-cd-cell">
-                  <span className="num">{countdown.seconds}</span>
-                  <span className="lbl">Seg</span>
-                </div>
+            <div className="l4-coming-v2-perks">
+              <div className="perk">
+                <div className="pk">24H</div>
+                <div className="pd">Antes de todos</div>
+              </div>
+              <div className="perk">
+                <div className="pk">15%</div>
+                <div className="pd">Desconto exclusivo</div>
+              </div>
+              <div className="perk">
+                <div className="pk">FRETE</div>
+                <div className="pd">Gratis no 1o pedido</div>
               </div>
             </div>
+            <div className="l4-coming-v2-form-note">Sem spam. So avisamos quando abrir.</div>
           </section>
-
-          <section className="l4-coming-v2-right">
-            <div className="l4-coming-v2-right-top">
-              <div className="mini">Acesso antecipado</div>
-              <h1>
-                CHEGANDO
-                <br />
-                EM BREVE
-              </h1>
-              <p>
-                Entra na lista agora e garante frete gratis, desconto exclusivo e acesso 24h antes de todo mundo.
-              </p>
-
-              {!success ? (
-                <div className="l4-coming-v2-form-wrap">
-                  <div className="l4-coming-v2-form-label">Seu e-mail</div>
-                  <div className={`l4-coming-v2-form-row ${error ? "has-error" : ""}`}>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          void handleSubmit();
-                        }
-                      }}
-                      placeholder="voce@email.com"
-                    />
-                    <button type="button" onClick={() => void handleSubmit()} disabled={loading}>
-                      {loading ? "..." : "ENTRAR NA LISTA"}
-                    </button>
-                  </div>
-                  {error ? <div className="l4-coming-v2-form-error">{error}</div> : null}
-                  <div className="l4-coming-v2-form-note">Sem spam. So avisamos quando abrir.</div>
-                </div>
-              ) : (
-                <div className="l4-coming-v2-success">
-                  <div className="icon">OK</div>
-                  <div className="title">VAGA GARANTIDA</div>
-                  <div className="sub">{successMessage || "Voce sera avisado antes de todo mundo."}</div>
-                </div>
-              )}
+        ) : (
+          <section className="l4-coming-v2-ok on">
+            <div className="ok-box">
+              <div className="ok-icon">OK</div>
+              <div className="ok-txt">Vaga reservada - voce esta na lista</div>
             </div>
-
-            <div className="l4-coming-v2-diff">
-              <div>
-                <span>Frete gratis no lancamento</span>
-                <b>-</b>
-              </div>
-              <div>
-                <span>Acesso 24h antes</span>
-                <b>-</b>
-              </div>
-              <div>
-                <span>Desconto exclusivo de 10%</span>
-                <b>-</b>
-              </div>
-              <div>
-                <span>Gear testado de verdade</span>
-                <b>-</b>
-              </div>
-            </div>
+            <div className="ok-num">{reservationCode}</div>
+            <div className="ok-sub">{successMessage || "Voce sera avisado primeiro quando abrir."}</div>
           </section>
-        </main>
+        )}
 
         <footer className="l4-coming-v2-footer">
-          <div className="copy">(c) 2026 L4ckos - Brasilia/DF</div>
-          <div className="links">
+          <div className="f-copy">
+            (c) 2026 <em>L4CKOS</em>
+          </div>
+          <div className="socials">
             <a href="https://instagram.com/l4ckos" target="_blank" rel="noreferrer">
-              Instagram
+              IG
+            </a>
+            <a href="https://www.tiktok.com" target="_blank" rel="noreferrer">
+              TK
             </a>
             <a href="https://wa.me/5561998030913" target="_blank" rel="noreferrer">
-              WhatsApp
+              WA
             </a>
-            <a href="mailto:contato@l4ckos.com.br">contato@l4ckos.com.br</a>
           </div>
         </footer>
       </div>
