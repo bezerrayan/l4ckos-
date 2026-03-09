@@ -12,6 +12,7 @@ import { useCreateAsaasCharge } from "../hooks/useOrders";
 import { useUser } from "../contexts/UserContext";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
+import camisaFallback from "../images/camisa.png";
 
 type CheckoutMethod = "PIX" | "BOLETO" | "CARD";
 
@@ -408,7 +409,7 @@ export default function Pagamento() {
                           alt={item.product.name}
                           style={styles.mobileImage}
                           onError={(event) => {
-                            event.currentTarget.src = "/images/camisa.png";
+                            event.currentTarget.src = camisaFallback;
                           }}
                         />
                       </div>
@@ -481,7 +482,7 @@ export default function Pagamento() {
                           alt={item.product.name}
                           style={styles.itemImage}
                           onError={(event) => {
-                            event.currentTarget.src = "/images/camisa.png";
+                            event.currentTarget.src = camisaFallback;
                           }}
                         />
                       </div>
@@ -889,12 +890,12 @@ const styles: Record<string, CSSProperties> = {
   header: {
     marginBottom: 48,
     paddingBottom: 32,
-    borderBottom: "2px solid #e2e8f0",
+    borderBottom: "1px solid #262626",
   },
   title: {
     fontSize: 40,
     fontWeight: 900,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     marginBottom: 8,
   },
   subtitle: {
@@ -916,7 +917,7 @@ const styles: Record<string, CSSProperties> = {
   sectionTitle: {
     fontSize: 20,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     marginBottom: 24,
   },
   itemsList: {
@@ -1148,11 +1149,11 @@ const styles: Record<string, CSSProperties> = {
     height: "fit-content",
   },
   summaryCard: {
-    background: "white",
+    background: "#101010",
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #2a2a2a",
     padding: 24,
-    boxShadow: "0 4px 6px rgba(0,0,0,0.07)",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.28)",
   },
   summaryRow: {
     display: "flex",
@@ -1167,11 +1168,11 @@ const styles: Record<string, CSSProperties> = {
   },
   summaryValue: {
     fontWeight: 600,
-    color: "#1a1a1a",
+    color: "#f0ede8",
   },
   divider: {
     height: 1,
-    background: "#e2e8f0",
+    background: "#2a2a2a",
     margin: "16px 0",
   },
   totalRow: {
@@ -1183,12 +1184,12 @@ const styles: Record<string, CSSProperties> = {
   totalLabel: {
     fontSize: 20,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f0ede8",
   },
   totalAmount: {
     fontSize: 24,
     fontWeight: 900,
-    color: "#555555",
+    color: "#f0ede8",
   },
   methodSelector: {
     display: "grid",
@@ -1197,11 +1198,11 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: 12,
   },
   methodButton: {
-    border: "1px solid #d1d5db",
+    border: "1px solid #2f2f2f",
     borderRadius: 8,
     padding: "10px 8px",
-    background: "#ffffff",
-    color: "#1a1a1a",
+    background: "#121212",
+    color: "#c6c6c6",
     fontSize: 13,
     fontWeight: 700,
     cursor: "pointer",
@@ -1219,26 +1220,26 @@ const styles: Record<string, CSSProperties> = {
   },
   checkoutInput: {
     width: "100%",
-    border: "1px solid #d1d5db",
+    border: "1px solid #2f2f2f",
     borderRadius: 8,
     padding: "10px 12px",
     fontSize: 14,
-    color: "#1a1a1a",
-    background: "#ffffff",
+    color: "#f0ede8",
+    background: "#0f0f0f",
     outline: "none",
   },
   shippingBox: {
-    border: "1px solid #e2e8f0",
+    border: "1px solid #2a2a2a",
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
-    background: "#f8fafc",
+    background: "#151515",
   },
   shippingTitle: {
     margin: "0 0 10px 0",
     fontSize: 13,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f0ede8",
   },
   shippingInputRow: {
     display: "grid",
@@ -1265,23 +1266,23 @@ const styles: Record<string, CSSProperties> = {
     gap: 8,
   },
   shippingOption: {
-    border: "1px solid #d1d5db",
+    border: "1px solid #2f2f2f",
     borderRadius: 8,
     padding: 10,
-    background: "#ffffff",
+    background: "#0f0f0f",
     textAlign: "left",
     cursor: "pointer",
   },
   shippingOptionActive: {
-    border: "1px solid #111827",
-    background: "#f3f4f6",
+    border: "1px solid #3d3d3d",
+    background: "#1b1b1b",
   },
   shippingOptionTop: {
     display: "flex",
     justifyContent: "space-between",
     gap: 10,
     fontSize: 13,
-    color: "#111827",
+    color: "#f0ede8",
     marginBottom: 4,
   },
   shippingOptionText: {
@@ -1371,27 +1372,27 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "center",
     width: "100%",
     padding: "14px 12px",
-    color: "#111827",
+    color: "#f0ede8",
     border: "none",
     borderRadius: 10,
     fontWeight: 700,
     margin: "0 auto 12px auto",
     fontSize: 16,
     transition: "all 0.3s ease",
-    background: "#e5e7eb",
+    background: "#1f1f1f",
     cursor: "pointer",
   },
   infoBox: {
     marginTop: 24,
     padding: 16,
-    background: "#f8fafc",
+    background: "#151515",
     borderRadius: 8,
-    border: "1px solid #dbeafe",
+    border: "1px solid #2a2a2a",
   },
   infoTitle: {
     fontSize: 14,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     margin: "0 0 8px 0",
   },
   infoBenefits: {

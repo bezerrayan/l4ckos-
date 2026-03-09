@@ -45,12 +45,12 @@ export default function PromoCarousel() {
   const promos = useMemo<Promo[]>(() => {
     const fromApi = (promotionsQuery.data ?? []).map((item: any) => ({
       id: Number(item.id),
-      badge: String(item.badge ?? "PROMOCAO"),
+      badge: String(item.badge ?? "").trim() || "PROMOCAO",
       title: String(item.title ?? ""),
       description: String(item.description ?? ""),
-      ctaLabel: String(item.ctaLabel ?? "Aproveitar oferta"),
-      discount: String(item.discountText ?? ""),
-      discountLabel: String(item.discountLabel ?? "OFF"),
+      ctaLabel: String(item.ctaLabel ?? "").trim() || "Aproveitar oferta",
+      discount: String(item.discountText ?? "").trim() || "30%",
+      discountLabel: String(item.discountLabel ?? "").trim() || "OFF",
       color: String(item.bgStyle ?? "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)"),
     }));
 

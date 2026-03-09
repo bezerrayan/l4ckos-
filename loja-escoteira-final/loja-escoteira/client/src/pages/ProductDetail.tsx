@@ -11,8 +11,10 @@ import type { CSSProperties } from "react";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
+import { apiUrl } from "../const";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 import logoPreta from "../images/logo_preta.jpeg";
+import camisaFallback from "../images/camisa.png";
 
 const DEFAULT_COLORS = ["Preto", "Branco", "Azul", "Vermelho", "Verde"];
 const DEFAULT_SIZES = ["PP", "P", "M", "G", "GG", "XG"];
@@ -40,13 +42,24 @@ const RATINGS = [
 ];
 
 const EXTRA_IMAGES = [
-  "/images/camisa.png",
+  camisaFallback,
   logoPrincipalPreta,
   logoPreta,
 ];
 
 function normalizePrice(value: number) {
   return value / 100;
+}
+
+function resolveProductImageUrl(imageUrl?: string | null) {
+  if (!imageUrl) return camisaFallback;
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("data:")) {
+    return imageUrl;
+  }
+  if (imageUrl.startsWith("/")) {
+    return apiUrl(imageUrl);
+  }
+  return apiUrl(`/${imageUrl}`);
 }
 
 function parseJsonList(raw: unknown): string[] {
@@ -85,7 +98,7 @@ export default function ProductDetail() {
         name: productQuery.data.name,
         description: productQuery.data.description || "",
         price: normalizePrice(Number(productQuery.data.price)),
-        image: productQuery.data.imageUrl || "/images/camisa.png",
+        image: resolveProductImageUrl(productQuery.data.imageUrl),
         category: productQuery.data.category,
         stock: Number(productQuery.data.stock ?? 0),
         optionColors: parseJsonList((productQuery.data as any).optionColors),
@@ -94,7 +107,7 @@ export default function ProductDetail() {
         images:
           Array.isArray((productQuery.data as any).images) &&
           (productQuery.data as any).images.length > 0
-            ? ((productQuery.data as any).images as string[])
+            ? ((productQuery.data as any).images as string[]).map((img) => resolveProductImageUrl(img))
             : [],
       }
     : null;
@@ -221,7 +234,7 @@ export default function ProductDetail() {
               alt={product.name}
               style={styles.productImage as CSSProperties}
               onError={(event) => {
-                event.currentTarget.src = "/images/camisa.png";
+                event.currentTarget.src = camisaFallback;
               }}
             />
           </div>
@@ -244,7 +257,7 @@ export default function ProductDetail() {
                     alt={`Foto ${idx + 1}`}
                     style={styles.thumbImage as CSSProperties}
                     onError={(event) => {
-                      event.currentTarget.src = "/images/camisa.png";
+                      event.currentTarget.src = camisaFallback;
                     }}
                   />
                 </button>

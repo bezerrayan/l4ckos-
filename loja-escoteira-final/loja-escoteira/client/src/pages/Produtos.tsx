@@ -9,9 +9,22 @@ import type { Product } from "../types/product";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
+import { apiUrl } from "../const";
+import camisaFallback from "../images/camisa.png";
 
 function normalizePrice(value: number) {
   return value / 100;
+}
+
+function resolveProductImageUrl(imageUrl?: string | null) {
+  if (!imageUrl) return camisaFallback;
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("data:")) {
+    return imageUrl;
+  }
+  if (imageUrl.startsWith("/")) {
+    return apiUrl(imageUrl);
+  }
+  return apiUrl(`/${imageUrl}`);
 }
 
 export default function Produtos() {
@@ -30,7 +43,7 @@ export default function Produtos() {
         name: item.name,
         description: item.description || "",
         price: normalizePrice(Number(item.price)),
-        image: item.imageUrl || "/images/camisa.png",
+        image: resolveProductImageUrl(item.imageUrl),
         category: item.category,
         stock: Number(item.stock ?? 0),
       })),

@@ -3,6 +3,7 @@ import { useCart } from "../contexts/CartContext";
 import { formatPrice } from "../lib/utils";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
+import camisaFallback from "../images/camisa.png";
 
 export default function Carrinho() {
   const isMobile = useIsMobile();
@@ -69,7 +70,7 @@ export default function Carrinho() {
                     height: isMobile ? 64 : 80,
                   }}
                   onError={(event) => {
-                    event.currentTarget.src = "/images/camisa.png";
+                    event.currentTarget.src = camisaFallback;
                   }}
                 />
 
