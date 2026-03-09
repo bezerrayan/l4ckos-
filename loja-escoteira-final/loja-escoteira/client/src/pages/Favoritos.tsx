@@ -1,11 +1,7 @@
-/**
- * Página Favoritos - Exibe todos os produtos salvos como favoritos
- */
-
 import { Link } from "react-router-dom";
+import type { CSSProperties } from "react";
 import ProductCard from "../components/ProductCard";
 import { useFavorites } from "../contexts/FavoritesContext";
-import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Favoritos() {
@@ -14,34 +10,37 @@ export default function Favoritos() {
 
   return (
     <div>
-      {/* Header da Página */}
       <div style={{ ...styles.pageHeader, marginBottom: isMobile ? 28 : styles.pageHeader.marginBottom } as CSSProperties}>
-        <h1 style={{ ...styles.pageTitle, fontSize: isMobile ? 30 : styles.pageTitle.fontSize } as CSSProperties}> 🤍 Meus Favoritos</h1>
+        <h1 style={{ ...styles.pageTitle, fontSize: isMobile ? 30 : styles.pageTitle.fontSize } as CSSProperties}>
+          Meus Favoritos
+        </h1>
         <p style={{ ...styles.pageSubtitle, fontSize: isMobile ? 15 : styles.pageSubtitle.fontSize } as CSSProperties}>
           {favorites.length === 0
-            ? "Você ainda não tem produtos favoritos"
-            : `Você tem ${favorites.length} produto${favorites.length !== 1 ? "s" : ""} salvo${favorites.length !== 1 ? "s" : ""}`}
+            ? "Voce ainda nao tem produtos favoritos"
+            : `Voce tem ${favorites.length} produto${favorites.length !== 1 ? "s" : ""} salvo${favorites.length !== 1 ? "s" : ""}`}
         </p>
       </div>
 
       {favorites.length === 0 ? (
-        // Estado vazio
         <div style={{ ...styles.emptyState, padding: isMobile ? 36 : styles.emptyState.padding } as CSSProperties}>
-          <div style={styles.emptyIcon as CSSProperties}>🤍</div>
-          <h2 style={styles.emptyTitle as CSSProperties}>
-            Nenhum favorito ainda
-          </h2>
+          <div style={styles.emptyIcon as CSSProperties}>F</div>
+          <h2 style={styles.emptyTitle as CSSProperties}>Nenhum favorito ainda</h2>
           <p style={styles.emptyText as CSSProperties}>
-            Explore nossos produtos e adicione seus favoritos para acessá-los rapidamente
+            Explore nossos produtos e adicione seus favoritos para acessa-los rapidamente
           </p>
           <Link to="/produtos" style={styles.emptyButton as CSSProperties}>
-            Explorar Produtos →
+            Explorar Produtos
           </Link>
         </div>
       ) : (
-        // Grid de produtos favoritos
         <>
-          <div style={{ ...styles.productsGrid, gridTemplateColumns: isMobile ? "1fr" : styles.productsGrid.gridTemplateColumns, gap: isMobile ? 16 : styles.productsGrid.gap } as CSSProperties}>
+          <div
+            style={{
+              ...styles.productsGrid,
+              gridTemplateColumns: isMobile ? "1fr" : styles.productsGrid.gridTemplateColumns,
+              gap: isMobile ? 16 : styles.productsGrid.gap,
+            } as CSSProperties}
+          >
             {favorites.map((produto, idx) => (
               <div
                 key={produto.id}
@@ -54,18 +53,13 @@ export default function Favoritos() {
             ))}
           </div>
 
-          {/* Botões de ação */}
           <div style={styles.actionSection as CSSProperties}>
             <Link to="/produtos" style={styles.continueShopping as CSSProperties}>
-              ← Continuar Comprando
+              Continuar Comprando
             </Link>
             <button
               onClick={() => {
-                if (
-                  window.confirm(
-                    "Tem certeza que deseja limpar todos os favoritos?"
-                  )
-                ) {
+                if (window.confirm("Tem certeza que deseja limpar todos os favoritos?")) {
                   clearFavorites();
                 }
               }}
@@ -79,7 +73,7 @@ export default function Favoritos() {
                 btn.style.background = "#dc2626";
               }}
             >
-              🗑️ Limpar Favoritos
+              Limpar Favoritos
             </button>
           </div>
         </>
@@ -112,9 +106,11 @@ const styles: Record<string, CSSProperties> = {
     border: "1px dashed #3a3a3a",
   },
   emptyIcon: {
-    fontSize: 80,
-    marginBottom: 24,
-    animation: "pulse 2s infinite",
+    fontSize: 66,
+    marginBottom: 20,
+    color: "#d4d4d8",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
   },
   emptyTitle: {
     fontSize: 28,
@@ -126,12 +122,12 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 16,
     color: "#9ca3af",
     marginBottom: 32,
-    maxWidth: 400,
+    maxWidth: 460,
     margin: "0 auto 32px",
   },
   emptyButton: {
     display: "inline-block",
-    padding: "14px 48px",
+    padding: "14px 40px",
     background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
     color: "white",
     borderRadius: 8,
@@ -177,3 +173,4 @@ const styles: Record<string, CSSProperties> = {
     transition: "all 0.3s ease",
   },
 };
+

@@ -10,6 +10,10 @@ function sanitizeInput(value: unknown) {
   return String(value ?? "").trim();
 }
 
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // Frontend form should call this endpoint:
 // POST /api/contact
 // Compatible payload: { name, email, message, subject? }
@@ -24,6 +28,7 @@ router.post("/contact", async (req, res) => {
     if (!cleanName) return res.status(400).json({ success: false, error: "O campo name e obrigatorio." });
     if (!cleanEmail) return res.status(400).json({ success: false, error: "O campo email e obrigatorio." });
     if (!cleanMessage) return res.status(400).json({ success: false, error: "O campo message e obrigatorio." });
+    if (!isValidEmail(cleanEmail)) return res.status(400).json({ success: false, error: "Email invalido." });
 
     await sendContactNotificationToStore({
       name: cleanName,

@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { trpc } from "../lib/trpc";
+import { apiUrl } from "../const";
 import "./Home.css";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 
@@ -48,7 +49,16 @@ function formatCurrency(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format((cents || 0) / 100);
 }
 
+function resolveProductImageUrl(raw: string | null | undefined) {
+  const value = (raw || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value) || value.startsWith("data:")) return value;
+  if (value.startsWith("/")) return apiUrl(value);
+  return apiUrl(`/${value}`);
+}
+
 export default function Home() {
+  const navigate = useNavigate();
   const productsQuery = trpc.products.list.useQuery({ limit: 12 });
   const [countdown, setCountdown] = useState(8 * 3600 + 47 * 60 + 23);
 
@@ -58,7 +68,7 @@ export default function Home() {
         id: item.id,
         name: item.name,
         priceCents: Number(item.price ?? 0),
-        imageUrl: item.imageUrl || "",
+        imageUrl: resolveProductImageUrl(item.imageUrl),
         category: item.category,
       })),
     [productsQuery.data],
@@ -169,23 +179,40 @@ export default function Home() {
         </div>
         <div className="l4-home-products-grid">
           {products.map((product, idx) => (
-            <article key={product.id} className="l4-home-product-card">
+            <article
+              key={product.id}
+              className="l4-home-product-card"
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/produto/${product.id}`)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  navigate(`/produto/${product.id}`);
+                }
+              }}
+            >
               <div className={`l4-home-product-img ${productBgClasses[idx % productBgClasses.length]}`}>
                 {product.imageUrl ? (
-                  <img src={product.imageUrl} alt={product.name} />
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    loading="lazy"
+                    onError={(event) => {
+                      event.currentTarget.src = "/images/camisa.png";
+                    }}
+                  />
                 ) : (
                   <div className="l4-home-product-fallback">L4</div>
                 )}
               </div>
               <div className="l4-home-product-info">
-                <Link to={`/produto/${product.id}`} className="l4-home-product-name">
-                  {product.name}
-                </Link>
+                <h3 className="l4-home-product-name">{product.name}</h3>
                 <div className="l4-home-product-meta">
                   <span>{formatCurrency(product.priceCents)}</span>
-                  <Link to={`/produto/${product.id}`} className="l4-home-product-link">
+                  <span className="l4-home-product-link">
                     ver
-                  </Link>
+                  </span>
                 </div>
               </div>
             </article>

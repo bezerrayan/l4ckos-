@@ -473,11 +473,11 @@ export default function Perfil() {
               value={profileName}
               onChange={(event) => setProfileName(event.target.value)}
               disabled={!isEditingProfile}
-              style={{
-                ...styles.input,
-                opacity: isEditingProfile ? 1 : 0.85,
-                background: isEditingProfile ? "white" : "#f9f9f9",
-              } as CSSProperties}
+                style={{
+                  ...styles.input,
+                  opacity: isEditingProfile ? 1 : 0.85,
+                  background: isEditingProfile ? "#0f0f0f" : "#141414",
+                } as CSSProperties}
             />
           </div>
           <div style={styles.inputGroup as CSSProperties}>
@@ -486,11 +486,11 @@ export default function Perfil() {
               value={profileEmail}
               onChange={(event) => setProfileEmail(event.target.value)}
               disabled={!isEditingProfile}
-              style={{
-                ...styles.input,
-                opacity: isEditingProfile ? 1 : 0.85,
-                background: isEditingProfile ? "white" : "#f9f9f9",
-              } as CSSProperties}
+                style={{
+                  ...styles.input,
+                  opacity: isEditingProfile ? 1 : 0.85,
+                  background: isEditingProfile ? "#0f0f0f" : "#141414",
+                } as CSSProperties}
             />
           </div>
           <div style={styles.inputGroup as CSSProperties}>
@@ -822,28 +822,29 @@ const styles: Record<string, CSSProperties> = {
   container: {
     maxWidth: 1200,
     margin: "0 auto",
+    color: "#f0ede8",
   },
   notLoggedIn: {
     textAlign: "center",
     padding: 80,
-    background: "#f9f9f9",
+    background: "#111111",
     borderRadius: 12,
-    border: "2px dashed #e0e0e0",
+    border: "1px dashed #3a3a3a",
   },
   title: {
     fontSize: 32,
     fontWeight: 900,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     marginBottom: 16,
   },
   message: {
     fontSize: 16,
-    color: "#666",
+    color: "#a1a1aa",
     marginBottom: 32,
   },
   button: {
     padding: "12px 32px",
-    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
     color: "white",
     border: "none",
     borderRadius: 8,
@@ -856,7 +857,8 @@ const styles: Record<string, CSSProperties> = {
     gap: 40,
     alignItems: "flex-start",
     padding: 40,
-    background: "linear-gradient(135deg, #f5f5f5 0%, #f0f0f0 100%)",
+    background: "linear-gradient(135deg, #111111 0%, #191919 100%)",
+    border: "1px solid #2b2b2b",
     borderRadius: 12,
     marginBottom: 40,
   },
@@ -864,7 +866,7 @@ const styles: Record<string, CSSProperties> = {
     width: 120,
     height: 120,
     borderRadius: "50%",
-    background: "#1a1a1a",
+    background: "#222222",
     color: "white",
     display: "flex",
     alignItems: "center",
@@ -880,19 +882,19 @@ const styles: Record<string, CSSProperties> = {
   userName: {
     fontSize: 32,
     fontWeight: 900,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     margin: 0,
     marginBottom: 8,
   },
   email: {
     fontSize: 16,
-    color: "#666",
+    color: "#a1a1aa",
     margin: 0,
     marginBottom: 4,
   },
   memberDate: {
     fontSize: 14,
-    color: "#999",
+    color: "#a1a1aa",
     margin: 0,
   },
   sectionsGrid: {
@@ -903,21 +905,21 @@ const styles: Record<string, CSSProperties> = {
   },
   section: {
     padding: 24,
-    background: "white",
-    border: "1px solid #e0e0e0",
+    background: "#101010",
+    border: "1px solid #2b2b2b",
     borderRadius: 12,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     marginBottom: 20,
     margin: 0,
   },
   infoLabel: {
     fontSize: 12,
     fontWeight: 700,
-    color: "#999",
+    color: "#a1a1aa",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
     display: "block",
@@ -930,22 +932,23 @@ const styles: Record<string, CSSProperties> = {
     width: "100%",
     boxSizing: "border-box",
     padding: "10px 12px",
-    border: "1px solid #dcdcdc",
+    border: "1px solid #2f2f2f",
     borderRadius: 8,
     fontSize: 14,
-    color: "#1a1a1a",
+    color: "#f0ede8",
+    background: "#0f0f0f",
     outline: "none",
   },
   emptyText: {
     fontSize: 14,
-    color: "#999",
+    color: "#a1a1aa",
     margin: 0,
     marginBottom: 16,
   },
   editBtn: {
     width: "100%",
     padding: "10px 16px",
-    background: "#1a1a1a",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
     color: "white",
     border: "none",
     borderRadius: 6,
@@ -957,9 +960,9 @@ const styles: Record<string, CSSProperties> = {
   addBtn: {
     width: "100%",
     padding: "10px 16px",
-    background: "white",
-    color: "#1a1a1a",
-    border: "2px solid #1a1a1a",
+    background: "#0f0f0f",
+    color: "#f0ede8",
+    border: "1px solid #2f2f2f",
     borderRadius: 6,
     fontWeight: 700,
     fontSize: 13,
@@ -979,10 +982,10 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: 12,
   },
   listItem: {
-    border: "1px solid #e6e6e6",
+    border: "1px solid #2f2f2f",
     borderRadius: 10,
     padding: 12,
-    background: "#fafafa",
+    background: "#0f0f0f",
   },
   listItemHeader: {
     display: "flex",
@@ -993,15 +996,15 @@ const styles: Record<string, CSSProperties> = {
   },
   listItemText: {
     margin: "0 0 4px 0",
-    color: "#555",
+    color: "#a1a1aa",
     fontSize: 13,
     lineHeight: 1.4,
   },
   badge: {
     fontSize: 11,
     fontWeight: 700,
-    color: "#0f5132",
-    background: "#d1e7dd",
+    color: "#86efac",
+    background: "#14532d",
     borderRadius: 999,
     padding: "2px 8px",
   },
@@ -1012,9 +1015,9 @@ const styles: Record<string, CSSProperties> = {
     marginTop: 8,
   },
   inlineBtn: {
-    border: "1px solid #1a1a1a",
-    background: "white",
-    color: "#1a1a1a",
+    border: "1px solid #2f2f2f",
+    background: "#121212",
+    color: "#f0ede8",
     fontSize: 12,
     fontWeight: 700,
     borderRadius: 6,
@@ -1022,9 +1025,9 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
   inlineBtnDanger: {
-    border: "1px solid #a40000",
-    background: "white",
-    color: "#a40000",
+    border: "1px solid #7f1d1d",
+    background: "#121212",
+    color: "#ef4444",
     fontSize: 12,
     fontWeight: 700,
     borderRadius: 6,
@@ -1033,7 +1036,7 @@ const styles: Record<string, CSSProperties> = {
   },
   formCard: {
     marginTop: 12,
-    border: "1px dashed #cfcfcf",
+    border: "1px dashed #3a3a3a",
     borderRadius: 10,
     padding: 12,
     display: "flex",
@@ -1043,7 +1046,7 @@ const styles: Record<string, CSSProperties> = {
   formTitle: {
     margin: 0,
     fontSize: 14,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     fontWeight: 700,
   },
   twoCols: {
@@ -1056,23 +1059,23 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     gap: 8,
     fontSize: 13,
-    color: "#333",
+    color: "#d4d4d8",
   },
   preferenceItem: {
     display: "flex",
     alignItems: "center",
     gap: 12,
     padding: 12,
-    background: "#f9f9f9",
+    background: "#121212",
     borderRadius: 6,
     marginBottom: 12,
   },
   changePasswordBtn: {
     width: "100%",
     padding: "10px 16px",
-    background: "#ffffff",
-    color: "#000000",
-    border: "2px solid #000000",
+    background: "#0f0f0f",
+    color: "#f0ede8",
+    border: "1px solid #2f2f2f",
     borderRadius: 6,
     fontWeight: 700,
     fontSize: 13,
@@ -1082,9 +1085,9 @@ const styles: Record<string, CSSProperties> = {
   twoFactorBtn: {
     width: "100%",
     padding: "10px 16px",
-    background: "#ffffff",
-    color: "#000000",
-    border: "2px solid #000000",
+    background: "#0f0f0f",
+    color: "#f0ede8",
+    border: "1px solid #2f2f2f",
     borderRadius: 6,
     fontWeight: 700,
     fontSize: 13,
@@ -1106,9 +1109,9 @@ const styles: Record<string, CSSProperties> = {
   deleteBtnLarge: {
     width: "100%",
     padding: "10px 16px",
-    background: "white",
-    color: "#000000",
-    border: "2px solid #000000",
+    background: "#0f0f0f",
+    color: "#f0ede8",
+    border: "1px solid #2f2f2f",
     borderRadius: 6,
     fontWeight: 700,
     fontSize: 13,
