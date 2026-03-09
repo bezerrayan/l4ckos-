@@ -4,6 +4,7 @@ import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
 import "./Home.css";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
+import camisaFallback from "../images/camisa.png";
 
 type ProductItem = {
   id: number;
@@ -199,11 +200,12 @@ export default function Home() {
                     alt={product.name}
                     loading="lazy"
                     onError={(event) => {
-                      event.currentTarget.src = "/images/camisa.png";
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = camisaFallback;
                     }}
                   />
                 ) : (
-                  <div className="l4-home-product-fallback">L4</div>
+                  <img src={camisaFallback} alt={product.name} loading="lazy" />
                 )}
               </div>
               <div className="l4-home-product-info">

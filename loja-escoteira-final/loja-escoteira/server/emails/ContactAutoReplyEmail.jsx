@@ -9,13 +9,13 @@ export function ContactAutoReplyEmail({ name }) {
       preview="Recebemos sua mensagem - L4CKOS"
       title="Recebemos sua mensagem"
       subtitle="Obrigado por entrar em contato com a L4CKOS"
-      footerNote="Este e um email automatico. Nossa equipe respondera em breve."
+      footerNote="Este é um e-mail automático. Nossa equipe responderá em breve."
     >
-      <Text>Ola, {safeName}.</Text>
-      <Text>Obrigado pelo seu contato. Sua mensagem foi recebida com sucesso e ja esta com o nosso time.</Text>
-      <Text>Em breve voce recebera um retorno da equipe L4CKOS.</Text>
+      <Text>Olá, {safeName}.</Text>
+      <Text>Obrigado pelo seu contato. Sua mensagem foi recebida com sucesso e já está com o nosso time.</Text>
+      <Text>Em breve, você receberá um retorno da equipe L4CKOS.</Text>
       <Text style={{ color: "#6d6d6d", fontSize: "12px" }}>
-        Por seguranca, nao compartilhe senhas, codigos ou dados sensiveis por email.
+        Por segurança, não compartilhe senhas, códigos ou dados sensíveis por e-mail.
       </Text>
     </EmailLayout>
   );

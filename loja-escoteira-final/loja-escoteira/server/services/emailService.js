@@ -6,7 +6,18 @@ import { PaymentApprovedEmail } from "../emails/PaymentApprovedEmail.jsx";
 import { ResetPasswordEmail } from "../emails/ResetPasswordEmail.jsx";
 import { WelcomeEmail } from "../emails/WelcomeEmail.jsx";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient = null;
+
+function getResendClient() {
+  const apiKey = sanitizeText(process.env.RESEND_API_KEY);
+  if (!apiKey) {
+    throw new Error("Missing env var: RESEND_API_KEY");
+  }
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
 
 function sanitizeText(value) {
   return String(value ?? "").trim();
@@ -39,9 +50,7 @@ function brDateTime() {
 }
 
 async function sendWithResend({ from, to, replyTo, subject, html, react }) {
-  if (!sanitizeText(process.env.RESEND_API_KEY)) {
-    throw new Error("Missing env var: RESEND_API_KEY");
-  }
+  const resend = getResendClient();
 
   const payload = {
     from: sanitizeText(from),
@@ -65,8 +74,8 @@ async function sendWithResend({ from, to, replyTo, subject, html, react }) {
 }
 
 export async function sendContactNotificationToStore({ name, email, subject, message }) {
-  const from = requireEnv("EMAIL_FROM_CONTACT");
-  const to = requireEnv("EMAIL_TO_CONTACT");
+  const from = requireEnv("EMAIL_FROM_CONTACT", ["EMAIL_FROM"]);
+  const to = requireEnv("EMAIL_TO_CONTACT", ["EMAIL_TO"]);
   const cleanName = sanitizeText(name);
   const cleanEmail = sanitizeEmail(email);
   const cleanSubject = sanitizeText(subject) || "L4CKOS";
@@ -81,7 +90,7 @@ export async function sendContactNotificationToStore({ name, email, subject, mes
       <p><strong>Mensagem:</strong><br/>${escapeHtml(cleanMessage).replaceAll("\n", "<br/>")}</p>
       <p><strong>Data/hora:</strong> ${escapeHtml(brDateTime())}</p>
       <hr style="border:none;border-top:1px solid #ececec;margin:20px 0" />
-      <p style="font-size:12px;color:#666;margin:0">Notificacao interna automatica da L4CKOS.</p>
+      <p style="font-size:12px;color:#666;margin:0">Notificação interna automática da L4CKOS.</p>
     </div>
   `;
 
@@ -96,7 +105,7 @@ export async function sendContactNotificationToStore({ name, email, subject, mes
 
 export async function sendAutoReplyToCustomer({ name, email }) {
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_NOREPLY"),
+    from: requireEnv("EMAIL_FROM_NOREPLY", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
     to: sanitizeEmail(email),
     subject: "Recebemos sua mensagem - L4CKOS",
     react: ContactAutoReplyEmail({ name: sanitizeText(name) }),
@@ -105,17 +114,17 @@ export async function sendAutoReplyToCustomer({ name, email }) {
 
 export async function sendWelcomeEmail({ name, email }) {
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_NOREPLY"),
+    from: requireEnv("EMAIL_FROM_NOREPLY", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
     to: sanitizeEmail(email),
-    subject: "Bem-vindo a L4CKOS",
+    subject: "Bem-vindo à L4CKOS",
     react: WelcomeEmail({ name: sanitizeText(name) }),
   });
 }
 
 export async function sendSupportEmail({ to, subject, html }) {
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_SUPPORT"),
-    to: sanitizeText(to) || requireEnv("EMAIL_TO_SUPPORT"),
+    from: requireEnv("EMAIL_FROM_SUPPORT", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
+    to: sanitizeText(to) || requireEnv("EMAIL_TO_SUPPORT", ["EMAIL_TO_CONTACT", "EMAIL_TO"]),
     subject: sanitizeText(subject) || "Contato com suporte - L4CKOS",
     html: sanitizeText(html) || "<p>Mensagem de suporte.</p>",
   });
@@ -123,8 +132,8 @@ export async function sendSupportEmail({ to, subject, html }) {
 
 export async function sendSalesEmail({ to, subject, html }) {
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_SALES"),
-    to: sanitizeText(to) || requireEnv("EMAIL_TO_SALES"),
+    from: requireEnv("EMAIL_FROM_SALES", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
+    to: sanitizeText(to) || requireEnv("EMAIL_TO_SALES", ["EMAIL_TO_CONTACT", "EMAIL_TO"]),
     subject: sanitizeText(subject) || "Contato comercial - L4CKOS",
     html: sanitizeText(html) || "<p>Mensagem comercial.</p>",
   });
@@ -132,8 +141,8 @@ export async function sendSalesEmail({ to, subject, html }) {
 
 export async function sendFinanceEmail({ to, subject, html }) {
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_FINANCE"),
-    to: sanitizeText(to) || requireEnv("EMAIL_TO_FINANCE"),
+    from: requireEnv("EMAIL_FROM_FINANCE", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
+    to: sanitizeText(to) || requireEnv("EMAIL_TO_FINANCE", ["EMAIL_TO_CONTACT", "EMAIL_TO"]),
     subject: sanitizeText(subject) || "Contato financeiro - L4CKOS",
     html: sanitizeText(html) || "<p>Mensagem financeira.</p>",
   });
@@ -142,7 +151,7 @@ export async function sendFinanceEmail({ to, subject, html }) {
 export async function sendOrderReceivedEmail({ customerName, customerEmail, orderNumber, items, total }) {
   const cleanOrder = sanitizeText(orderNumber);
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_NOREPLY"),
+    from: requireEnv("EMAIL_FROM_NOREPLY", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
     to: sanitizeEmail(customerEmail),
     subject: `Recebemos seu pedido #${cleanOrder}`,
     react: OrderReceivedEmail({
@@ -157,7 +166,7 @@ export async function sendOrderReceivedEmail({ customerName, customerEmail, orde
 export async function sendPaymentApprovedEmail({ customerName, customerEmail, orderNumber, total }) {
   const cleanOrder = sanitizeText(orderNumber);
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_FINANCE"),
+    from: requireEnv("EMAIL_FROM_FINANCE", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
     to: sanitizeEmail(customerEmail),
     subject: `Pagamento aprovado - Pedido #${cleanOrder}`,
     react: PaymentApprovedEmail({
@@ -171,7 +180,7 @@ export async function sendPaymentApprovedEmail({ customerName, customerEmail, or
 export async function sendOrderShippedEmail({ customerName, customerEmail, orderNumber, trackingCode, trackingUrl }) {
   const cleanOrder = sanitizeText(orderNumber);
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_SALES"),
+    from: requireEnv("EMAIL_FROM_SALES", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
     to: sanitizeEmail(customerEmail),
     subject: `Seu pedido foi enviado #${cleanOrder}`,
     react: OrderShippedEmail({
@@ -185,7 +194,7 @@ export async function sendOrderShippedEmail({ customerName, customerEmail, order
 
 export async function sendResetPasswordEmail({ name, email, resetUrl }) {
   return sendWithResend({
-    from: requireEnv("EMAIL_FROM_NOREPLY"),
+    from: requireEnv("EMAIL_FROM_NOREPLY", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
     to: sanitizeEmail(email),
     subject: "Redefinir senha - L4CKOS",
     react: ResetPasswordEmail({
@@ -196,8 +205,8 @@ export async function sendResetPasswordEmail({ name, email, resetUrl }) {
 }
 
 export async function sendWaitlistEmail({ email }) {
-  const from = requireEnv("EMAIL_FROM_CONTACT");
-  const to = requireEnv("EMAIL_TO_CONTACT");
+  const from = requireEnv("EMAIL_FROM_CONTACT", ["EMAIL_FROM"]);
+  const to = requireEnv("EMAIL_TO_CONTACT", ["EMAIL_TO"]);
   const cleanEmail = sanitizeEmail(email);
 
   const html = `
@@ -205,7 +214,7 @@ export async function sendWaitlistEmail({ email }) {
       <h2>Novo cadastro na lista de espera</h2>
       <p><strong>E-mail:</strong> ${escapeHtml(cleanEmail)}</p>
       <p><strong>Data/hora:</strong> ${escapeHtml(brDateTime())}</p>
-      <p>Origem: secao Em Breve (waitlist).</p>
+      <p>Origem: seção Em Breve (waitlist).</p>
     </div>
   `;
 
@@ -213,7 +222,7 @@ export async function sendWaitlistEmail({ email }) {
     from,
     to,
     replyTo: cleanEmail,
-    subject: "Nova inscricao na lista de espera - L4CKOS",
+    subject: "Nova inscrição na lista de espera - L4CKOS",
     html,
   });
 }
