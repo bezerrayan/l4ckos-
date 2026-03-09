@@ -104,12 +104,42 @@ export async function sendContactNotificationToStore({ name, email, subject, mes
 }
 
 export async function sendAutoReplyToCustomer({ name, email }) {
-  return sendWithResend({
-    from: requireEnv("EMAIL_FROM_NOREPLY", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]),
-    to: sanitizeEmail(email),
-    subject: "Recebemos sua mensagem - L4CKOS",
-    react: ContactAutoReplyEmail({ name: sanitizeText(name) }),
-  });
+  const toEmail = sanitizeEmail(email);
+  const safeName = sanitizeText(name);
+  const subject = "Recebemos sua mensagem - L4CKOS";
+  const primaryFrom = requireEnv("EMAIL_FROM_NOREPLY", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]);
+  const fallbackFrom = requireEnv("EMAIL_FROM_CONTACT", ["EMAIL_FROM"]);
+
+  try {
+    return await sendWithResend({
+      from: primaryFrom,
+      to: toEmail,
+      subject,
+      replyTo: fallbackFrom,
+      react: ContactAutoReplyEmail({ name: safeName }),
+    });
+  } catch (error) {
+    // Retry with contato@ when noreply sender has provider/domain restrictions.
+    if (sanitizeText(primaryFrom).toLowerCase() === sanitizeText(fallbackFrom).toLowerCase()) {
+      throw error;
+    }
+
+    console.error("[Email] Auto-reply primary sender failed, retrying with fallback sender", {
+      primaryFrom,
+      fallbackFrom,
+      name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : "Unknown error",
+      cause: error instanceof Error ? error.cause : undefined,
+    });
+
+    return await sendWithResend({
+      from: fallbackFrom,
+      to: toEmail,
+      subject,
+      replyTo: fallbackFrom,
+      react: ContactAutoReplyEmail({ name: safeName }),
+    });
+  }
 }
 
 export async function sendWelcomeEmail({ name, email }) {
