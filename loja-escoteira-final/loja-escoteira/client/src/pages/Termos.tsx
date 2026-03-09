@@ -204,27 +204,27 @@ const styles: Record<string, CSSProperties> = {
   sectionTitle: {
     fontSize: 24,
     fontWeight: 800,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     margin: "0 0 16px 0",
   },
   text: {
     fontSize: 15,
-    color: "#555555",
+    color: "#a6a6a6",
     lineHeight: "1.8",
     margin: "0 0 16px 0",
   },
   list: {
     fontSize: 15,
-    color: "#555555",
+    color: "#a6a6a6",
     lineHeight: "1.8",
     paddingLeft: 24,
     margin: 0,
   },
   contactBox: {
     padding: 24,
-    background: "#f8fafc",
+    background: "#151515",
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #2a2a2a",
     marginTop: 16,
   },
 };

@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
 import "./Home.css";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 import camisaFallback from "../images/camisa.png";
+import PromoCarousel from "../components/PromoCarousel";
 
 type ProductItem = {
   id: number;
@@ -61,7 +62,6 @@ function resolveProductImageUrl(raw: string | null | undefined) {
 export default function Home() {
   const navigate = useNavigate();
   const productsQuery = trpc.products.list.useQuery({ limit: 12 });
-  const [countdown, setCountdown] = useState(8 * 3600 + 47 * 60 + 23);
 
   const products = useMemo<ProductItem[]>(
     () =>
@@ -74,17 +74,6 @@ export default function Home() {
       })),
     [productsQuery.data],
   );
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const hours = String(Math.floor(countdown / 3600)).padStart(2, "0");
-  const minutes = String(Math.floor((countdown % 3600) / 60)).padStart(2, "0");
-  const seconds = String(countdown % 60).padStart(2, "0");
 
   return (
     <div className="l4-home">
@@ -222,32 +211,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="l4-home-promo">
-        <div>
-          <div className="l4-home-section-tag">Oferta Limitada</div>
-          <h2 className="l4-home-promo-title">
-            ATE <span>30%</span> OFF
-          </h2>
-        </div>
-        <div className="l4-home-promo-side">
-          <div className="l4-home-countdown">
-            <div>
-              <strong>{hours}</strong>
-              <span>Horas</span>
-            </div>
-            <div>
-              <strong>{minutes}</strong>
-              <span>Min</span>
-            </div>
-            <div>
-              <strong>{seconds}</strong>
-              <span>Seg</span>
-            </div>
-          </div>
-          <Link to="/produtos" className="l4-btn-dark">
-            Aproveitar Agora
-          </Link>
-        </div>
+      <section className="l4-home-section" style={{ paddingTop: 0 }}>
+        <PromoCarousel />
       </section>
 
       <section className="l4-home-section">
