@@ -1,362 +1,256 @@
-/**
- * Pagina Home - Pagina inicial com promocoes e destaques
- * Exibe carrossel de promocoes e alguns produtos em destaque
- */
-
 import { Link } from "react-router-dom";
-import ProductCard from "../components/ProductCard";
-import PromoCarousel from "../components/PromoCarousel";
+import { useEffect, useMemo, useState } from "react";
 import { trpc } from "../lib/trpc";
-import { useMemo } from "react";
-import type { CSSProperties } from "react";
-import { useIsMobile } from "../hooks/useIsMobile";
-import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
+import "./Home.css";
+
+type ProductItem = {
+  id: number;
+  name: string;
+  priceCents: number;
+  imageUrl: string;
+  category?: string | null;
+};
+
+const productBgClasses = [
+  "l4-home-prod-img-1",
+  "l4-home-prod-img-2",
+  "l4-home-prod-img-3",
+  "l4-home-prod-img-4",
+  "l4-home-prod-img-5",
+  "l4-home-prod-img-6",
+  "l4-home-prod-img-7",
+  "l4-home-prod-img-8",
+];
+
+const testimonials = [
+  {
+    initials: "MV",
+    name: "Matheus Vieira",
+    city: "Sao Paulo, SP",
+    text: "Qualidade absurda, oversized do jeito certo. L4CKOS virou minha marca principal.",
+  },
+  {
+    initials: "RA",
+    name: "Rafaela Alves",
+    city: "Rio de Janeiro, RJ",
+    text: "Entrega rapida e acabamento premium. A calca cargo e diferenciada.",
+  },
+  {
+    initials: "GS",
+    name: "Gabriel Santos",
+    city: "Belo Horizonte, MG",
+    text: "Suporte resolveu troca em menos de 24h. Atendimento de verdade.",
+  },
+];
+
+function formatCurrency(cents: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format((cents || 0) / 100);
+}
 
 export default function Home() {
-  const isMobile = useIsMobile(980);
-  const productsQuery = trpc.products.list.useQuery({ limit: 6 });
-  const destaque = useMemo(
+  const productsQuery = trpc.products.list.useQuery({ limit: 12 });
+  const [countdown, setCountdown] = useState(8 * 3600 + 47 * 60 + 23);
+
+  const products = useMemo<ProductItem[]>(
     () =>
-      (productsQuery.data ?? []).slice(0, 3).map(item => ({
+      (productsQuery.data ?? []).slice(0, 8).map(item => ({
         id: item.id,
         name: item.name,
-        description: item.description || "",
-        price: Number(item.price) / 100,
-        image: item.imageUrl || "/images/camisa.png",
+        priceCents: Number(item.price ?? 0),
+        imageUrl: item.imageUrl || "",
         category: item.category,
-        stock: Number(item.stock ?? 0),
       })),
     [productsQuery.data],
   );
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const hours = String(Math.floor(countdown / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((countdown % 3600) / 60)).padStart(2, "0");
+  const seconds = String(countdown % 60).padStart(2, "0");
+
   return (
-    <div>
-      {/* Hero Section */}
-      <div
-        style={{
-          ...styles.heroContainer,
-          gridTemplateColumns: isMobile ? "1fr" : styles.heroContainer.gridTemplateColumns,
-          gap: isMobile ? 24 : styles.heroContainer.gap,
-          marginBottom: isMobile ? 36 : styles.heroContainer.marginBottom,
-          padding: isMobile ? "18px 0" : styles.heroContainer.padding,
-        }}
-      >
-        <div style={styles.heroContent}>
-          <h1 style={{ ...styles.heroTitle, fontSize: isMobile ? 34 : styles.heroTitle.fontSize }}>
-            Bem-vindo a Nossa Loja
+    <div className="l4-home">
+      <div className="l4-home-announce">
+        <span className="l4-home-announce-track">
+          FRETE GRATIS ACIMA DE R$299 - NOVA COLECAO DISPONIVEL - USE L4CKOS10 E GANHE 10% OFF - TROCA GRATIS EM 30 DIAS
+          - FRETE GRATIS ACIMA DE R$299 - NOVA COLECAO DISPONIVEL - USE L4CKOS10 E GANHE 10% OFF - TROCA GRATIS EM 30 DIAS
+        </span>
+      </div>
+
+      <section className="l4-home-hero">
+        <div className="l4-home-hero-grid" />
+        <div className="l4-home-hero-bg" />
+        <div className="l4-home-hero-content">
+          <div className="l4-home-tag">Drop 04 - Disponivel Agora</div>
+          <h1 className="l4-home-title">
+            <span>VESTE</span>
+            <br />
+            <span className="outline">QUEM</span>
+            <br />
+            <span className="accent">MANDA</span>
           </h1>
-          <p style={{ ...styles.heroSubtitle, fontSize: isMobile ? 16 : styles.heroSubtitle.fontSize }}>
-            Descubra uma selecao variada de produtos de qualidade para esportes, aventura e muito mais
+          <p className="l4-home-subtitle">
+            Streetwear sem compromisso. Pecas que falam antes de voce. Feitas pra quem nao pede licenca.
           </p>
-          <div style={{ ...styles.heroButtons, flexDirection: isMobile ? "column" : "row" }}>
-            <Link to="/produtos" style={{ ...styles.ctaPrimary, width: isMobile ? "100%" : undefined, textAlign: "center" }}>
-              Explorar Catalogo
+          <div className="l4-home-hero-cta">
+            <Link to="/produtos" className="l4-btn-primary">
+              Ver Colecao
             </Link>
-            <a href="#destaques" style={{ ...styles.ctaSecondary, width: isMobile ? "100%" : undefined, textAlign: "center" }}>
-              Ver Destaques
+            <a href="#l4-products" className="l4-btn-outline">
+              Mais Vendidos
             </a>
           </div>
         </div>
+      </section>
 
-        <div style={{ ...styles.heroVisual, height: isMobile ? 240 : styles.heroVisual.height }}>
-          <img src={logoPrincipalPreta} alt="Logo da marca" style={styles.heroImage} />
+      <div className="l4-home-marquee">
+        <div className="l4-home-marquee-track">
+          <span>STREETWEAR</span>
+          <span>L4CKOS</span>
+          <span>NOVO DROP</span>
+          <span>LIMITED EDITION</span>
+          <span>URBAN CULTURE</span>
+          <span>STREETWEAR</span>
+          <span>L4CKOS</span>
+          <span>NOVO DROP</span>
+          <span>LIMITED EDITION</span>
+          <span>URBAN CULTURE</span>
         </div>
       </div>
 
-      {/* Carrossel de Promocoes */}
-      <section style={{ ...styles.promoSection, marginBottom: isMobile ? 40 : styles.promoSection.marginBottom }}>
-        <PromoCarousel />
-      </section>
-
-      {/* Destaques da Loja */}
-      <section id="destaques" style={{ ...styles.section, marginBottom: isMobile ? 44 : styles.section.marginBottom }}>
-        <div style={styles.sectionHeader}>
-          <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Produtos em Destaque</h2>
-          <p style={styles.sectionSubtitle}>Conheca nossa selecao especial dos melhores produtos</p>
+      <section className="l4-home-section">
+        <div className="l4-home-section-header">
+          <div>
+            <div className="l4-home-section-tag">// Explorar</div>
+            <h2 className="l4-home-section-title">CATEGORIAS</h2>
+          </div>
+          <Link className="l4-home-view-all" to="/produtos">
+            Ver Todas
+          </Link>
         </div>
-
-        <div style={{ ...styles.productsGrid, gap: isMobile ? 16 : styles.productsGrid.gap }}>
-          {destaque.map((produto, idx) => (
-            <div
-              key={produto.id}
-              style={{
-                animation: `fadeInUp 0.5s ease-out ${idx * 100}ms backwards`,
-              }}
-            >
-              <ProductCard product={produto} />
-            </div>
-          ))}
-        </div>
-
-        <div style={styles.viewAllContainer}>
-          <Link to="/produtos" style={styles.viewAllBtn}>
-            Ver Todos os Produtos
+        <div className="l4-home-categories-grid">
+          <Link className="l4-home-cat l4-home-cat-large l4-home-cat-1" to="/produtos">
+            <span className="l4-home-cat-name">CAMISETAS</span>
+          </Link>
+          <Link className="l4-home-cat l4-home-cat-2" to="/produtos">
+            <span className="l4-home-cat-name">MOLETONS</span>
+          </Link>
+          <Link className="l4-home-cat l4-home-cat-3" to="/produtos">
+            <span className="l4-home-cat-name">CALCAS</span>
+          </Link>
+          <Link className="l4-home-cat l4-home-cat-4" to="/produtos">
+            <span className="l4-home-cat-name">ACESSORIOS</span>
+          </Link>
+          <Link className="l4-home-cat l4-home-cat-5" to="/produtos">
+            <span className="l4-home-cat-name">HEADWEAR</span>
           </Link>
         </div>
       </section>
 
-      {/* Diferenciais */}
-      <section style={{ ...styles.benefitsSection, marginBottom: isMobile ? 44 : styles.benefitsSection.marginBottom }}>
-        <div style={styles.sectionHeader}>
-          <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 30 : styles.sectionTitle.fontSize }}>Por Que Comprar Conosco</h2>
+      <section id="l4-products" className="l4-home-section l4-home-products-wrap">
+        <div className="l4-home-section-header">
+          <div>
+            <div className="l4-home-section-tag">// Destaque</div>
+            <h2 className="l4-home-section-title">MAIS VENDIDOS</h2>
+          </div>
+          <Link className="l4-home-view-all" to="/produtos">
+            Ver Todos
+          </Link>
         </div>
-
-        <div style={styles.benefitsGrid}>
-          <div
-            style={styles.benefitCard}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(-8px)";
-              el.style.boxShadow = "0 20px 40px rgba(0, 0, 0, 0.1)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(0)";
-              el.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.07)";
-            }}
-          >
-            <div style={styles.benefitIcon}></div>
-            <h3 style={styles.benefitTitle}>Entrega Rapida</h3>
-            <p style={styles.benefitText}></p>
-          </div>
-
-          <div
-            style={styles.benefitCard}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(-8px)";
-              el.style.boxShadow = "0 20px 40px rgba(0,0,0,0.1)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(0)";
-              el.style.boxShadow = "0 4px 6px rgba(0,0,0,0.07)";
-            }}
-          >
-            <div style={styles.benefitIcon}></div>
-            <h3 style={styles.benefitTitle}>Seguranca Garantida</h3>
-            <p style={styles.benefitText}>Todos os produtos com garantia e protecao ao comprador</p>
-          </div>
-
-          <div
-            style={styles.benefitCard}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(-8px)";
-              el.style.boxShadow = "0 20px 40px rgba(0,0,0,0.1)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(0)";
-              el.style.boxShadow = "0 4px 6px rgba(0,0,0,0.07)";
-            }}
-          >
-            <div style={styles.benefitIcon}></div>
-            <h3 style={styles.benefitTitle}>Suporte Premium</h3>
-            <p style={styles.benefitText}>Atendimento especializado pronto para ajudar</p>
-          </div>
-
-          <div
-            style={styles.benefitCard}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(-8px)";
-              el.style.boxShadow = "0 20px 40px rgba(0,0,0,0.1)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(0)";
-              el.style.boxShadow = "0 4px 6px rgba(0,0,0,0.07)";
-            }}
-          >
-            <div style={styles.benefitIcon}></div>
-            <h3 style={styles.benefitTitle}>Pagamento Seguro</h3>
-            <p style={styles.benefitText}>Multiplas opcoes de pagamento com seguranca total</p>
-          </div>
+        <div className="l4-home-products-grid">
+          {products.map((product, idx) => (
+            <article key={product.id} className="l4-home-product-card">
+              <div className={`l4-home-product-img ${productBgClasses[idx % productBgClasses.length]}`}>
+                {product.imageUrl ? (
+                  <img src={product.imageUrl} alt={product.name} />
+                ) : (
+                  <div className="l4-home-product-fallback">L4</div>
+                )}
+              </div>
+              <div className="l4-home-product-info">
+                <Link to={`/produto/${product.id}`} className="l4-home-product-name">
+                  {product.name}
+                </Link>
+                <div className="l4-home-product-meta">
+                  <span>{formatCurrency(product.priceCents)}</span>
+                  <Link to={`/produto/${product.id}`} className="l4-home-product-link">
+                    ver
+                  </Link>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section style={{ ...styles.ctaSection, padding: isMobile ? 28 : styles.ctaSection.padding }}>
-        <h2 style={{ ...styles.ctaTitle, fontSize: isMobile ? 28 : styles.ctaTitle.fontSize }}>Pronto para sua proxima compra?</h2>
-        <p style={styles.ctaDescription}>Explore nossa colecao completa de produtos premium</p>
-        <Link to="/produtos" style={{ ...styles.ctaBig, width: isMobile ? "100%" : undefined, textAlign: "center" }}>
-          Navegar pela Loja
+      <section className="l4-home-promo">
+        <div>
+          <div className="l4-home-section-tag">Oferta Limitada</div>
+          <h2 className="l4-home-promo-title">
+            ATE <span>50%</span> OFF
+          </h2>
+        </div>
+        <div className="l4-home-promo-side">
+          <div className="l4-home-countdown">
+            <div>
+              <strong>{hours}</strong>
+              <span>Horas</span>
+            </div>
+            <div>
+              <strong>{minutes}</strong>
+              <span>Min</span>
+            </div>
+            <div>
+              <strong>{seconds}</strong>
+              <span>Seg</span>
+            </div>
+          </div>
+          <Link to="/produtos" className="l4-btn-dark">
+            Aproveitar Agora
+          </Link>
+        </div>
+      </section>
+
+      <section className="l4-home-section">
+        <div className="l4-home-section-header">
+          <div>
+            <div className="l4-home-section-tag">// Reviews</div>
+            <h2 className="l4-home-section-title">O QUE FALAM</h2>
+          </div>
+        </div>
+        <div className="l4-home-testimonials-grid">
+          {testimonials.map(item => (
+            <article key={item.initials} className="l4-home-testimonial">
+              <div className="l4-home-testimonial-quote">"</div>
+              <p>{item.text}</p>
+              <div className="l4-home-testimonial-author">
+                <div className="l4-home-avatar">{item.initials}</div>
+                <div>
+                  <strong>{item.name}</strong>
+                  <span>{item.city}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="l4-home-newsletter">
+        <div>
+          <h3>ENTRE NO RADAR</h3>
+          <p>Seja o primeiro a saber de novos drops e promocoes.</p>
+        </div>
+        <Link to="/contato" className="l4-btn-primary">
+          Falar com a loja
         </Link>
       </section>
     </div>
   );
 }
 
-const styles: Record<string, CSSProperties> = {
-  heroContainer: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 40,
-    alignItems: "center",
-    marginBottom: 80,
-    padding: "60px 0",
-    width: "100%",
-  },
-  heroContent: {
-    animation: "slideInRight 0.8s ease-out",
-  },
-  heroTitle: {
-    fontSize: 48,
-    fontWeight: 900,
-    color: "#1a1a1a",
-    marginBottom: 20,
-    lineHeight: 1.1,
-    letterSpacing: "-1px",
-  },
-  heroSubtitle: {
-    fontSize: 19,
-    color: "#666666",
-    marginBottom: 32,
-    lineHeight: 1.6,
-  },
-  heroButtons: {
-    display: "flex",
-    gap: 16,
-    marginBottom: 0,
-    flexWrap: "wrap",
-  },
-  ctaPrimary: {
-    display: "inline-block",
-    padding: "16px 32px",
-    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
-    color: "white",
-    borderRadius: 8,
-    fontWeight: 700,
-    transition: "all 0.3s ease",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-    fontSize: 16,
-  },
-  ctaSecondary: {
-    display: "inline-block",
-    padding: "16px 32px",
-    background: "transparent",
-    color: "#1a1a1a",
-    border: "2px solid #1a1a1a",
-    borderRadius: 8,
-    fontWeight: 700,
-    transition: "all 0.3s ease",
-    fontSize: 16,
-    cursor: "pointer",
-  },
-  heroVisual: {
-    width: "100%",
-    height: 400,
-    background: "linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)",
-    borderRadius: 16,
-    boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    objectPosition: "center",
-  },
-  promoSection: {
-    marginBottom: 80,
-  },
-  section: {
-    marginBottom: 80,
-  },
-  sectionHeader: {
-    textAlign: "center",
-    marginBottom: 48,
-  },
-  sectionTitle: {
-    fontSize: 40,
-    fontWeight: 900,
-    color: "#1a1a1a",
-    marginBottom: 12,
-  },
-  sectionSubtitle: {
-    fontSize: 18,
-    color: "#666666",
-  },
-  productsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-    gap: 32,
-    marginBottom: 48,
-  },
-  viewAllContainer: {
-    textAlign: "center",
-  },
-  viewAllBtn: {
-    display: "inline-block",
-    padding: "14px 48px",
-    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
-    color: "white",
-    borderRadius: 8,
-    fontWeight: 700,
-    transition: "all 0.3s ease",
-    fontSize: 16,
-  },
-  benefitsSection: {
-    marginBottom: 80,
-  },
-  benefitsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: 24,
-  },
-  benefitCard: {
-    padding: 32,
-    background: "white",
-    borderRadius: 12,
-    border: "1px solid #e0e0e0",
-    textAlign: "center",
-    transition: "all 0.4s ease",
-    boxShadow: "0 4px 6px rgba(0,0,0,0.07)",
-  },
-  benefitIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  benefitTitle: {
-    fontSize: 20,
-    fontWeight: 700,
-    color: "#1a1a1a",
-    marginBottom: 12,
-  },
-  benefitText: {
-    color: "#666666",
-    lineHeight: 1.6,
-  },
-  ctaSection: {
-    padding: 60,
-    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
-    borderRadius: 16,
-    textAlign: "center",
-    marginBottom: 40,
-  },
-  ctaTitle: {
-    fontSize: 40,
-    fontWeight: 900,
-    color: "white",
-    marginBottom: 16,
-  },
-  ctaDescription: {
-    fontSize: 18,
-    color: "rgba(255,255,255,0.8)",
-    marginBottom: 32,
-  },
-  ctaBig: {
-    display: "inline-block",
-    padding: "16px 48px",
-    background: "white",
-    color: "#1a1a1a",
-    borderRadius: 8,
-    fontWeight: 700,
-    transition: "all 0.3s ease",
-    fontSize: 18,
-  },
-};
