@@ -1,0 +1,84 @@
+.l4-footer {
+  background: #121212;
+  border-top: 1px solid #252525;
+  padding: 56px 24px 20px;
+  color: #f0ede8;
+}
+
+.l4-footer-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 24px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid #252525;
+}
+
+.l4-footer-logo {
+  width: 110px;
+  display: block;
+}
+
+.l4-footer-text {
+  margin-top: 14px;
+  color: #9ca3af;
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 340px;
+}
+
+.l4-footer h4 {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 2px;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.l4-footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.l4-footer a {
+  text-decoration: none;
+  color: #a8a8a8;
+  font-size: 13px;
+}
+
+.l4-footer a:hover {
+  color: #f0ede8;
+}
+
+.l4-footer-bottom {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #686868;
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 980px) {
+  .l4-footer {
+    padding: 36px 14px 18px;
+  }
+
+  .l4-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .l4-footer-bottom {
+    flex-direction: column;
+  }
+}
+

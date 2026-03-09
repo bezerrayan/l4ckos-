@@ -1,686 +1,98 @@
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
-import { useEffect, useState, type CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
+import logoBranco from "../images/logo_branco.png";
+import "./Header.css";
+
+function firstName(name?: string, email?: string) {
+  const trimmed = name?.trim();
+  if (trimmed) return trimmed.split(/\s+/)[0];
+  const local = email?.split("@")[0]?.trim();
+  if (!local) return "Usuario";
+  return local.split(/[._-]+/)[0] || local;
+}
 
 export default function Header() {
+  const location = useLocation();
   const { favorites } = useFavorites();
   const { user, logout } = useUser();
   const isMobile = useIsMobile(980);
-  const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const isAuthenticated = Boolean(user?.isAuthenticated);
+  const displayName = firstName(user?.name, user?.email);
 
-  useEffect(() => {
-    if (!isMobile) {
-      setIsMenuOpen(false);
-    }
-  }, [isMobile]);
-
-  const closeMobileMenu = () => {
-    if (isMobile) {
-      setIsMenuOpen(false);
-    }
-  };
-
-  const isHomeActive = location.pathname === "/";
-  const isProductsActive =
-    location.pathname === "/produtos" || location.pathname.startsWith("/produto/");
-  const isOrdersActive = location.pathname === "/meus-pedidos";
-  const isTrackOrderActive = location.pathname === "/acompanhar-pedido";
-  const isContactActive = location.pathname === "/contato";
-  const isFavoritesActive = location.pathname === "/favoritos";
-  const isCartActive = location.pathname === "/carrinho";
-
-  const getDisplayFirstName = (name?: string, email?: string) => {
-    const trimmedName = name?.trim();
-    if (trimmedName) {
-      const firstName = trimmedName.split(/\s+/)[0];
-      return firstName.charAt(0).toLocaleUpperCase("pt-BR") + firstName.slice(1);
-    }
-
-    const emailPrefix = email?.split("@")[0]?.trim();
-    if (emailPrefix) {
-      const firstPartBySeparator = emailPrefix.split(/[._-]+/)[0]?.trim();
-      const rawFirstPart = firstPartBySeparator || emailPrefix;
-
-      const normalizedFirstPart = rawFirstPart.length > 4 && !/[._-]/.test(emailPrefix)
-        ? rawFirstPart.slice(0, 3)
-        : rawFirstPart;
-
-      return normalizedFirstPart.charAt(0).toLocaleUpperCase("pt-BR") + normalizedFirstPart.slice(1);
-    }
-
-    return "Usuário";
-  };
+  const navItems = [
+    { to: "/", label: "Inicio", active: location.pathname === "/" },
+    {
+      to: "/produtos",
+      label: "Produtos",
+      active: location.pathname === "/produtos" || location.pathname.startsWith("/produto/"),
+    },
+    { to: "/meus-pedidos", label: "Pedidos", active: location.pathname === "/meus-pedidos" },
+    { to: "/acompanhar-pedido", label: "Acompanhar", active: location.pathname === "/acompanhar-pedido" },
+    { to: "/contato", label: "Contato", active: location.pathname === "/contato" },
+  ];
 
   return (
-    <header style={styles.header}>
-      <div
-        style={{
-          ...styles.container,
-          padding: isMobile ? "12px 12px" : styles.container.padding,
-          flexDirection: isMobile ? "column" : "row",
-          alignItems: isMobile ? "stretch" : "center",
-          gap: isMobile ? 10 : 0,
-        }}
-      >
-        <div
-          style={{
-            ...styles.mobileTopRow,
-            justifyContent: isMobile ? "center" : styles.mobileTopRow.justifyContent,
-            position: isMobile ? "relative" : undefined,
-          } as CSSProperties}
-        >
-          <Link
-            to="/"
-            style={{
-              ...styles.logoLink,
-              alignItems: isMobile ? "center" : styles.logoLink.alignItems,
-              textAlign: isMobile ? "center" : undefined,
-            } as CSSProperties}
-            onClick={closeMobileMenu}
-          >
-            <div
-              style={{
-                ...styles.logoContainer,
-                alignItems: isMobile ? "center" : styles.logoContainer.alignItems,
-              } as CSSProperties}
-            >
-              <div
-                style={{
-                  ...styles.logoBadge,
-                  alignItems: isMobile ? "center" : styles.logoBadge.alignItems,
-                } as CSSProperties}
-              >
-                <div style={styles.logoText}>L4ckos</div>
-                <div style={styles.logoUnderline}></div>
-              </div>
-              <p style={styles.tagline}>Loja Escoteira</p>
-            </div>
+    <header className="l4-header">
+      <div className="l4-header-inner">
+        <Link to="/" className="l4-header-brand" onClick={() => setMenuOpen(false)}>
+          <img src={logoBranco} alt="L4ckos" />
+          <span>LOJA ESCOTEIRA</span>
+        </Link>
+
+        <button className="l4-header-menu-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
+          {menuOpen ? "x" : "="}
+        </button>
+
+        <nav className={`l4-header-nav ${isMobile ? "mobile" : ""} ${menuOpen ? "open" : ""}`}>
+          {navItems.map(item => (
+            <Link key={item.to} to={item.to} className={`l4-header-link ${item.active ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+              {item.label}
+            </Link>
+          ))}
+          <Link to="/favoritos" className={`l4-header-link ${location.pathname === "/favoritos" ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+            Favoritos{favorites.length > 0 ? ` (${favorites.length})` : ""}
+          </Link>
+          <Link to="/carrinho" className={`l4-header-link ${location.pathname === "/carrinho" ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+            Carrinho
           </Link>
 
-          {isMobile && (
-            <button
-              type="button"
-              aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
-              aria-expanded={isMenuOpen}
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              style={{
-                ...styles.hamburgerBtn,
-                position: "absolute",
-                left: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
-              } as CSSProperties}
-            >
-              <span style={styles.hamburgerIcon as CSSProperties}>{isMenuOpen ? "✕" : "☰"}</span>
-            </button>
-          )}
-
-          {isMobile && (
-            <Link
-              to="/carrinho"
-              aria-label="Carrinho"
-              onClick={closeMobileMenu}
-              style={{
-                ...styles.mobileCartBtn,
-                ...(isCartActive ? styles.mobileCartBtnActive : {}),
-                position: "absolute",
-                right: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
-              } as CSSProperties}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "white" }}>
-                <path d="M6 6h15l-1.5 9h-13z"></path>
-                <circle cx="9" cy="20" r="1"></circle>
-                <circle cx="19" cy="20" r="1"></circle>
-              </svg>
-            </Link>
-          )}
-        </div>
-
-        {(!isMobile || isMenuOpen) && (
-          <>
-            <nav
-              style={{
-                ...styles.nav,
-                gap: isMobile ? 8 : styles.nav.gap,
-                flexWrap: isMobile ? "wrap" : "nowrap",
-                justifyContent: isMobile ? "flex-start" : "flex-start",
-                flexDirection: isMobile ? "column" : "row",
-                alignItems: isMobile ? "stretch" : "center",
-                width: isMobile ? "100%" : undefined,
-              }}
-            >
-              <Link
-                style={{ ...styles.link, ...(isHomeActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
-                onClick={closeMobileMenu}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = isHomeActive
-                    ? "rgba(255,255,255,0.2)"
-                    : "transparent";
-                  el.style.transform = "translateY(0)";
-                }}
-                to="/"
-              >
-                Início
+          {isAuthenticated ? (
+            <div className="l4-header-user">
+              <Link to="/perfil" className="l4-header-chip" onClick={() => setMenuOpen(false)}>
+                Ola, {displayName}
               </Link>
-              <Link
-                style={{ ...styles.link, ...(isProductsActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
-                onClick={closeMobileMenu}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = isProductsActive
-                    ? "rgba(255,255,255,0.2)"
-                    : "transparent";
-                  el.style.transform = "translateY(0)";
-                }}
-                to="/produtos"
-              >
-                Produtos
-              </Link>
-              <Link
-                style={{ ...styles.link, ...(isOrdersActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
-                onClick={closeMobileMenu}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = isOrdersActive
-                    ? "rgba(255,255,255,0.2)"
-                    : "transparent";
-                  el.style.transform = "translateY(0)";
-                }}
-                to="/meus-pedidos"
-              >
-                Pedidos
-              </Link>
-              <Link
-                style={{ ...styles.link, ...(isTrackOrderActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
-                onClick={closeMobileMenu}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = isTrackOrderActive
-                    ? "rgba(255,255,255,0.2)"
-                    : "transparent";
-                  el.style.transform = "translateY(0)";
-                }}
-                to="/acompanhar-pedido"
-              >
-                Acompanhar
-              </Link>
-              <Link
-                style={{ ...styles.link, ...(isContactActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
-                onClick={closeMobileMenu}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = isContactActive
-                    ? "rgba(255,255,255,0.2)"
-                    : "transparent";
-                  el.style.transform = "translateY(0)";
-                }}
-                to="/contato"
-              >
-                Contato
-              </Link>
-              <Link
-                style={{ ...styles.link, ...(isFavoritesActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
-                onClick={closeMobileMenu}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = "rgba(255,255,255,0.1)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.backgroundColor = isFavoritesActive
-                    ? "rgba(255,255,255,0.2)"
-                    : "transparent";
-                  el.style.transform = "translateY(0)";
-                }}
-                to="/favoritos"
-              >
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, position: "relative" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "white" }}>
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                  </svg>
-                  Favoritos
-                  {favorites.length > 0 && (
-                    <span style={{
-                      position: "absolute",
-                      top: -8,
-                      right: -8,
-                      background: "#dc2626",
-                      color: "white",
-                      borderRadius: "50%",
-                      width: 20,
-                      height: 20,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 12,
-                      fontWeight: "bold",
-                    }}>
-                      {favorites.length}
-                    </span>
-                  )}
-                </span>
-              </Link>
-              {!isMobile && (
-                <Link
-                  style={{ ...styles.link, ...(isCartActive ? styles.linkActive : {}), fontSize: isMobile ? 13 : styles.link.fontSize, padding: isMobile ? "10px 12px" : styles.link.padding, width: isMobile ? "100%" : undefined }}
-                  onClick={closeMobileMenu}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.backgroundColor = "rgba(255,255,255,0.1)";
-                    el.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.backgroundColor = isCartActive
-                      ? "rgba(255,255,255,0.2)"
-                      : "transparent";
-                    el.style.transform = "translateY(0)";
-                  }}
-                  to="/carrinho"
-                >
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "white" }}>
-                      <path d="M6 6h15l-1.5 9h-13z"></path>
-                      <circle cx="9" cy="20" r="1"></circle>
-                      <circle cx="19" cy="20" r="1"></circle>
-                    </svg>
-                    Carrinho
-                  </span>
-                </Link>
-              )}
-              {!isMobile && (user && user.isAuthenticated ? (
-                <div
-                  style={{
-                    ...styles.userMenu,
-                    width: isMobile ? "100%" : undefined,
-                    justifyContent: isMobile ? "space-between" : "flex-start",
-                    flexWrap: isMobile ? "wrap" : "nowrap",
-                  } as CSSProperties}
-                >
-                  <Link to="/perfil" style={styles.userInfo as CSSProperties}>
-                    <div style={styles.avatar as CSSProperties}>
-                      {user.avatar ? (
-                        <img src={user.avatar} alt={user.name} style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
-                      ) : (
-                        <span>{getDisplayFirstName(user.name, user.email).charAt(0)}</span>
-                      )}
-                    </div>
-                    <div style={{ ...styles.userName, maxWidth: isMobile ? 90 : styles.userName.maxWidth } as CSSProperties}>
-                      {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
-                    </div>
-                  </Link>
-                  {user.role === "admin" ? (
-                    <Link to="/admin" style={styles.adminBtn as CSSProperties}>
-                      Admin
-                    </Link>
-                  ) : null}
-                  <button
-                    onClick={logout}
-                    style={styles.logoutBtn as CSSProperties}
-                    onMouseEnter={(e) => {
-                      const btn = e.currentTarget as HTMLElement;
-                      btn.style.backgroundColor = "#dc2626";
-                    }}
-                    onMouseLeave={(e) => {
-                      const btn = e.currentTarget as HTMLElement;
-                      btn.style.backgroundColor = "rgba(220,38,38,0.1)";
-                    }}
-                  >
-                    Sair
-                  </button>
-                </div>
-              ) : (
-                <div
-                  style={{
-                    ...styles.authLinks,
-                    width: isMobile ? "100%" : undefined,
-                    justifyContent: isMobile ? "center" : "flex-start",
-                  } as CSSProperties}
-                >
-                  <Link
-                    to="/login"
-                    style={{ ...styles.loginBtn, fontSize: isMobile ? 14 : styles.loginBtn.fontSize, padding: isMobile ? "8px 12px" : styles.loginBtn.padding } as CSSProperties}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget as HTMLElement;
-                      el.style.background = "#333333";
-                      el.style.transform = "scale(1.05)";
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget as HTMLElement;
-                      el.style.background = "rgba(255,255,255,0.15)";
-                      el.style.transform = "scale(1)";
-                    }}
-                  >
-                    Entrar
-                  </Link>
-                  <Link
-                    to="/cadastro"
-                    style={{ ...styles.signupBtn, fontSize: isMobile ? 14 : styles.signupBtn.fontSize, padding: isMobile ? "8px 12px" : styles.signupBtn.padding } as CSSProperties}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget as HTMLElement;
-                      el.style.background = "#ffffff";
-                      el.style.color = "#1a1a1a";
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget as HTMLElement;
-                      el.style.background = "white";
-                      el.style.color = "#1a1a1a";
-                    }}
-                  >
-                    Criar Conta
-                  </Link>
-                </div>
-              ))}
-            </nav>
-
-            {isMobile && (
-          user && user.isAuthenticated ? (
-            <div
-              style={{
-                ...styles.userMenu,
-                width: "100%",
-                justifyContent: "space-between",
-                marginTop: 4,
-              } as CSSProperties}
-            >
-              <Link to="/perfil" style={styles.userInfo as CSSProperties} onClick={closeMobileMenu}>
-                <div style={styles.avatar as CSSProperties}>
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} style={{width: "100%", height: "100%", borderRadius: "50%"}} />
-                  ) : (
-                    <span>{getDisplayFirstName(user.name, user.email).charAt(0)}</span>
-                  )}
-                </div>
-                <div style={{ ...styles.userName, maxWidth: 120 } as CSSProperties}>
-                  {`Olá, ${getDisplayFirstName(user.name, user.email)}`}
-                </div>
-              </Link>
-              {user.role === "admin" ? (
-                <Link to="/admin" style={styles.adminBtn as CSSProperties} onClick={closeMobileMenu}>
+              {user?.role === "admin" ? (
+                <Link to="/admin" className="l4-header-chip admin" onClick={() => setMenuOpen(false)}>
                   Admin
                 </Link>
               ) : null}
               <button
+                className="l4-header-chip danger"
                 onClick={() => {
-                  closeMobileMenu();
+                  setMenuOpen(false);
                   logout();
                 }}
-                style={styles.logoutBtn as CSSProperties}
               >
                 Sair
               </button>
             </div>
           ) : (
-            <div
-              style={{
-                ...styles.authLinks,
-                width: "100%",
-                justifyContent: "space-between",
-                marginTop: 4,
-              } as CSSProperties}
-            >
-              <Link
-                to="/login"
-                onClick={closeMobileMenu}
-                style={{ ...styles.loginBtn, fontSize: 14, padding: "8px 12px", flex: 1, textAlign: "center" } as CSSProperties}
-              >
+            <div className="l4-header-auth">
+              <Link to="/login" className="l4-header-chip" onClick={() => setMenuOpen(false)}>
                 Entrar
               </Link>
-              <Link
-                to="/cadastro"
-                onClick={closeMobileMenu}
-                style={{ ...styles.signupBtn, fontSize: 14, padding: "8px 12px", flex: 1, textAlign: "center" } as CSSProperties}
-              >
+              <Link to="/cadastro" className="l4-header-chip white" onClick={() => setMenuOpen(false)}>
                 Criar Conta
               </Link>
             </div>
-          )
-            )}
-          </>
-        )}
+          )}
+        </nav>
       </div>
     </header>
   );
 }
 
-const styles: Record<string, CSSProperties> = {
-  header: {
-    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
-    borderBottom: "2px solid #444444",
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-    width: "100%",
-    overflowX: "clip",
-  },
-  container: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    maxWidth: 1400,
-    margin: "0 auto",
-    padding: "16px 32px",
-    width: "100%",
-  },
-  mobileTopRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  hamburgerBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.08)",
-    color: "white",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-  },
-  hamburgerIcon: {
-    fontSize: 22,
-    lineHeight: 1,
-  },
-  mobileCartBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.08)",
-    color: "white",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    textDecoration: "none",
-  },
-  mobileCartBtnActive: {
-    background: "rgba(255,255,255,0.2)",
-    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
-  },
-  logoLink: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 0,
-    cursor: "pointer",
-    transition: "transform 0.3s ease",
-  },
-  logoContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 4,
-  },
-  logoBadge: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 2,
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: 900,
-    color: "white",
-    letterSpacing: "-1px",
-    textShadow: "0 2px 8px rgba(0,0,0,0.3)",
-  },
-  logoUnderline: {
-    width: 40,
-    height: 3,
-    background: "linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%)",
-    borderRadius: "2px",
-  },
-  tagline: {
-    fontSize: 11,
-    color: "#9d9d9d",
-    margin: 0,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
-  nav: {
-    display: "flex",
-    gap: 24,
-    alignItems: "center",
-  },
-  link: {
-    color: "white",
-    fontWeight: 600,
-    fontSize: 15,
-    padding: "8px 14px",
-    borderRadius: 6,
-    transition: "all 0.3s ease",
-    cursor: "pointer",
-  },
-  linkActive: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18)",
-  },
-  userMenu: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    padding: "8px 14px",
-    background: "rgba(255,255,255,0.1)",
-    borderRadius: 8,
-    transition: "all 0.3s ease",
-  },
-  userInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    textDecoration: "none",
-    cursor: "pointer",
-    userSelect: "none",
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: "50%",
-    background: "rgba(255,255,255,0.2)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "white",
-    fontWeight: 700,
-    fontSize: 14,
-  },
-  userName: {
-    color: "white",
-    fontWeight: 600,
-    fontSize: 13,
-    maxWidth: 120,
-    textOverflow: "ellipsis",
-    overflow: "hidden",
-    whiteSpace: "nowrap",
-  },
-  logoutBtn: {
-    padding: "6px 14px",
-    background: "rgba(220,38,38,0.1)",
-    color: "#dc2626",
-    border: "none",
-    borderRadius: 4,
-    fontSize: 12,
-    fontWeight: 700,
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  },
-  adminBtn: {
-    color: "#fbbf24",
-    background: "rgba(251,191,36,0.1)",
-    border: "1px solid rgba(251,191,36,0.35)",
-    borderRadius: 20,
-    padding: "6px 12px",
-    fontWeight: 700,
-    fontSize: 13,
-    textDecoration: "none",
-  },
-  loginBtn: {
-    color: "white",
-    fontWeight: 600,
-    fontSize: 15,
-    padding: "8px 16px",
-    borderRadius: 6,
-    background: "rgba(255,255,255,0.15)",
-    border: "1px solid rgba(255,255,255,0.2)",
-    transition: "all 0.3s ease",
-    cursor: "pointer",
-  },
-  authLinks: {
-    display: "flex",
-    gap: 12,
-    alignItems: "center",
-  },
-  signupBtn: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    whiteSpace: "nowrap",
-    flexShrink: 0,
-    color: "#1a1a1a",
-    fontWeight: 600,
-    fontSize: 15,
-    padding: "8px 16px",
-    borderRadius: 6,
-    background: "white",
-    border: "none",
-    transition: "all 0.3s ease",
-    cursor: "pointer",
-  },
-};

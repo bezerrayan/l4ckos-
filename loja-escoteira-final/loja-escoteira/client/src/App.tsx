@@ -64,13 +64,13 @@ function AppRoutes() {
 
       <div
         style={{
-          minHeight: isMobile ? "calc(100vh - 160px)" : "calc(100vh - 200px)",
-          maxWidth: 1400,
+          minHeight: isMobile ? "calc(100vh - 150px)" : "calc(100vh - 170px)",
           margin: "0 auto",
-          padding: isMobile ? "20px 14px" : "40px 32px",
+          padding: isMobile ? "0" : "0",
           width: "100%",
           overflowX: "clip",
         }}
+        className="l4-page-shell"
       >
         <Routes>
           <Route path="/" element={<Home />} />

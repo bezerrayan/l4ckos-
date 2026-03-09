@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap');
 @import "tailwindcss";
 
 * {
@@ -11,15 +11,15 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: 'Oswald', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   font-size: 16px;
   width: 100%;
   overflow-x: hidden;
 }
 
 body {
-  background: #ffffff;
-  color: var(--text-dark, #1f2937);
+  background: #080808;
+  color: var(--text-dark, #f0ede8);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -65,7 +65,7 @@ input[type="reset"]:disabled {
 
 /* Tipografia global */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Anton', 'Oswald', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Bebas Neue', 'DM Sans', sans-serif;
   font-weight: 400;
   letter-spacing: 0.06em;
   color: inherit;
@@ -85,16 +85,16 @@ small {
 
 /* Cores principais */
 :root {
-  --primary: #1a1a1a;      /* Preto escuro */
-  --primary-light: #333333; /* Cinza escuro */
-  --primary-dark: #000000;  /* Preto puro */
-  --accent: #333333;        /* Cinza para accent */
-  --accent-light: #555555;  /* Cinza mais claro */
-  --bg-light: #f5f5f5;      /* Cinza muito claro */
-  --border: #e0e0e0;        /* Borda cinza */
-  --text-dark: #1a1a1a;     /* Texto escuro */
-  --text-light: #666666;    /* Texto cinza */
-  --white: #ffffff;         /* Branco puro */
+  --primary: #080808;
+  --primary-light: #1a1a1a;
+  --primary-dark: #000000;
+  --accent: #e8002a;
+  --accent-light: #ff3d5a;
+  --bg-light: #121212;
+  --border: #262626;
+  --text-dark: #f0ede8;
+  --text-light: #9ca3af;
+  --white: #f0ede8;
 }
 
 /* Estilos de animação */
@@ -1750,4 +1750,45 @@ small {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* Global shell overrides to propagate the new visual style across all existing routes */
+.l4-page-shell {
+  background: #080808;
+}
+
+.l4-page-shell > *:not(.l4-home):not(.coming-root) {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+
+.l4-page-shell input,
+.l4-page-shell select,
+.l4-page-shell textarea {
+  background: #101010 !important;
+  color: #f0ede8 !important;
+  border-color: #2a2a2a !important;
+}
+
+.l4-page-shell button {
+  border-color: #303030 !important;
+}
+
+.l4-page-shell [style*="background-color: rgb(255, 255, 255)"],
+.l4-page-shell [style*="background: white"],
+.l4-page-shell [style*="background-color: white"],
+.l4-page-shell [style*="background-color: rgb(248, 250, 252)"] {
+  background: #121212 !important;
+}
+
+.l4-page-shell [style*="color: rgb(13, 13, 13)"],
+.l4-page-shell [style*="color: rgb(26, 26, 26)"],
+.l4-page-shell [style*="color: rgb(31, 41, 55)"] {
+  color: #f0ede8 !important;
+}
+
+.l4-page-shell [style*="color: rgb(102, 102, 102)"],
+.l4-page-shell [style*="color: rgb(107, 114, 128)"] {
+  color: #9ca3af !important;
 }
