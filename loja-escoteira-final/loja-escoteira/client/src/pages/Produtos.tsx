@@ -114,18 +114,18 @@ export default function Produtos() {
 const styles: Record<string, CSSProperties> = {
   header: {
     marginBottom: 48,
-    paddingBottom: 32,
-    borderBottom: "2px solid #e2e8f0",
+    paddingBottom: 24,
+    borderBottom: "1px solid #262626",
   },
   title: {
     fontSize: 40,
     fontWeight: 900,
-    color: "#0d0d0d",
+    color: "#f0ede8",
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 18,
-    color: "#6b7280",
+    color: "#9ca3af",
     margin: 0,
   },
   searchContainer: {
@@ -136,23 +136,24 @@ const styles: Record<string, CSSProperties> = {
   searchInput: {
     width: "100%",
     padding: "14px 20px",
-    border: "2px solid #e2e8f0",
+    border: "1px solid #2f2f2f",
     borderRadius: 10,
     fontSize: 16,
     transition: "all 0.3s ease",
-    backgroundColor: "white",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+    backgroundColor: "#111111",
+    color: "#f0ede8",
+    boxShadow: "none",
   },
   clearButton: {
     position: "absolute",
     right: 16,
     top: "50%",
     transform: "translateY(-50%)",
-    background: "transparent",
     border: "none",
     fontSize: 20,
     cursor: "pointer",
     color: "#6b7280",
+    background: "transparent",
     padding: 0,
     width: 24,
     height: 24,
@@ -163,7 +164,7 @@ const styles: Record<string, CSSProperties> = {
   },
   resultInfo: {
     marginBottom: 24,
-    color: "#6b7280",
+    color: "#9ca3af",
     fontSize: 14,
   },
   productsGrid: {
@@ -175,7 +176,8 @@ const styles: Record<string, CSSProperties> = {
   emptyState: {
     textAlign: "center",
     padding: "80px 20px",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#111111",
+    border: "1px solid #2a2a2a",
     borderRadius: 16,
     marginBottom: 40,
   },
@@ -186,11 +188,11 @@ const styles: Record<string, CSSProperties> = {
   emptyTitle: {
     fontSize: 24,
     fontWeight: 700,
-    color: "#0d0d0d",
+    color: "#f0ede8",
     marginBottom: 12,
   },
   emptyText: {
-    color: "#6b7280",
+    color: "#9ca3af",
     marginBottom: 24,
   },
   emptyButton: {

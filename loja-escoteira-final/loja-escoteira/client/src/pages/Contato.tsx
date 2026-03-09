@@ -278,9 +278,10 @@ const styles: Record<string, CSSProperties> = {
   container: {
     minHeight: "100vh",
     paddingBottom: 80,
+    color: "#f0ede8",
   },
   hero: {
-    background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
+    background: "linear-gradient(135deg, #101010 0%, #232323 100%)",
     color: "white",
     padding: "60px 40px",
     textAlign: "center",
@@ -295,7 +296,7 @@ const styles: Record<string, CSSProperties> = {
   },
   subtitle: {
     fontSize: 18,
-    color: "rgba(255, 255, 255, 0.8)",
+    color: "#d4d4d8",
     margin: 0,
   },
   content: {
@@ -319,16 +320,16 @@ const styles: Record<string, CSSProperties> = {
   sectionTitle: {
     fontSize: 28,
     fontWeight: 800,
-    color: "#0d0d0d",
+    color: "#f0ede8",
     margin: 0,
   },
   infoCard: {
     display: "flex",
     gap: 16,
     padding: 24,
-    background: "#f8fafc",
+    background: "#111111",
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #2b2b2b",
     transition: "all 0.3s ease",
   },
   infoIcon: {
@@ -339,12 +340,12 @@ const styles: Record<string, CSSProperties> = {
   infoTitle: {
     fontSize: 16,
     fontWeight: 700,
-    color: "#0d0d0d",
+    color: "#f0ede8",
     margin: "0 0 8px 0",
   },
   infoText: {
     fontSize: 14,
-    color: "#666666",
+    color: "#a1a1aa",
     margin: "0 0 4px 0",
   },
   form: {
@@ -360,20 +361,21 @@ const styles: Record<string, CSSProperties> = {
   label: {
     fontSize: 14,
     fontWeight: 600,
-    color: "#0d0d0d",
+    color: "#f0ede8",
   },
   input: {
     padding: "12px 16px",
-    border: "2px solid #e2e8f0",
+    border: "1px solid #2f2f2f",
     borderRadius: 8,
     fontSize: 14,
     fontFamily: "inherit",
     transition: "all 0.3s ease",
-    backgroundColor: "white",
+    backgroundColor: "#0f0f0f",
+    color: "#f0ede8",
   },
   submitButton: {
     padding: "14px 32px",
-    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
     color: "white",
     border: "none",
     borderRadius: 8,

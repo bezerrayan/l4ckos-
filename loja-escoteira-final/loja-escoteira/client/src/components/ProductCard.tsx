@@ -103,13 +103,13 @@ export default function ProductCard({ product }: Props) {
 
 const styles = {
   card: {
-    background: "white",
+    background: "#111111",
     borderRadius: 12,
     overflow: "hidden",
-    boxShadow: "0 4px 6px rgba(0,0,0,0.07)",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.28)",
     transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
     cursor: "pointer",
-    border: "1px solid #e2e8f0",
+    border: "1px solid #2b2b2b",
   },
   imageContainer: {
     position: "relative",
@@ -126,7 +126,7 @@ const styles = {
     position: "absolute",
     top: 12,
     right: 12,
-    background: "#555555",
+    background: "#4a4a4a",
     color: "white",
     padding: "4px 12px",
     borderRadius: 20,
@@ -161,20 +161,20 @@ const styles = {
   name: {
     fontSize: 16,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     margin: "0 0 8px 0",
     lineHeight: 1.3,
   },
   price: {
     fontSize: 20,
     fontWeight: 800,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     margin: "0 0 16px 0",
   },
   button: {
     width: "100%",
     padding: "12px",
-    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #343434 100%)",
     color: "white",
     border: "none",
     borderRadius: 8,

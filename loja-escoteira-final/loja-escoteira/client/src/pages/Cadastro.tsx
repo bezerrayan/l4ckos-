@@ -299,12 +299,12 @@ export default function Cadastro() {
           onMouseEnter={(e) => {
             if (!isSubmitting) {
               const btn = e.currentTarget as HTMLElement;
-              btn.style.background = "#f8f8f8";
+              btn.style.background = "#171717";
             }
           }}
           onMouseLeave={(e) => {
             const btn = e.currentTarget as HTMLElement;
-            btn.style.background = "white";
+            btn.style.background = "#0f0f0f";
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" style={{marginRight: 12}}>
@@ -343,16 +343,17 @@ const styles: Record<string, CSSProperties> = {
     gridTemplateColumns: "1fr 1fr",
     minHeight: "calc(100vh - 200px)",
     gap: 0,
-    background: "white",
+    background: "#0a0a0a",
+    border: "1px solid #1f1f1f",
   },
   leftPanel: {
-    background: "white",
+    background: "#0f0f0f",
     padding: "60px 40px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    color: "#1a1a1a",
+    color: "#f0ede8",
   },
   logoSection: {
     display: "flex",
@@ -364,13 +365,13 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "center",
     width: 320,
     height: 190,
-    background: "transparent",
-    border: "none",
+    background: "#ececec",
+    border: "1px solid #2a2a2a",
     borderRadius: 12,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "rgba(100, 100, 100, 0.6)",
+    color: "rgba(240, 237, 232, 0.7)",
     fontSize: 14,
     fontWeight: 500,
     overflow: "hidden",
@@ -438,7 +439,8 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: "flex-start",
     width: "100%",
     maxWidth: "500px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+    borderTop: "1px solid #27272a",
+    background: "linear-gradient(180deg, #0d0d0d 0%, #080808 100%)",
     overflowY: "auto",
   },
   header: {
@@ -447,13 +449,13 @@ const styles: Record<string, CSSProperties> = {
   title: {
     fontSize: 36,
     fontWeight: 900,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     margin: 0,
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: "#9ca3af",
     margin: 0,
   },
   form: {
@@ -475,36 +477,38 @@ const styles: Record<string, CSSProperties> = {
   label: {
     fontSize: 12,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
   },
   input: {
     padding: "12px 16px",
-    border: "2px solid #e0e0e0",
+    border: "1px solid #2f2f2f",
     borderRadius: 8,
     fontSize: 14,
     fontFamily: "inherit",
     transition: "all 0.3s ease",
     outline: "none",
+    background: "#0f0f0f",
+    color: "#f0ede8",
   },
   termsBox: {
     display: "flex",
     alignItems: "flex-start",
     gap: 12,
     padding: 12,
-    background: "#f9f9f9",
+    background: "#121212",
     borderRadius: 6,
     fontSize: 13,
   },
   termsLabel: {
-    color: "#666",
+    color: "#a1a1aa",
     lineHeight: 1.4,
     cursor: "pointer",
   },
   submitBtn: {
     padding: "14px 24px",
-    background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+    background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
     color: "white",
     border: "none",
     borderRadius: 8,
@@ -512,7 +516,7 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 700,
     cursor: "pointer",
     transition: "all 0.3s ease",
-    boxShadow: "0 4px 12px rgba(26,26,26,0.2)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.35)",
   },
   divider: {
     display: "flex",
@@ -521,7 +525,7 @@ const styles: Record<string, CSSProperties> = {
     margin: "16px 0",
   },
   dividerText: {
-    color: "#999",
+    color: "#71717a",
     fontSize: 13,
     fontWeight: 600,
     textTransform: "uppercase",
@@ -531,8 +535,9 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     justifyContent: "center",
     padding: "12px 24px",
-    background: "white",
-    border: "2px solid #e0e0e0",
+    background: "#0f0f0f",
+    color: "#f0ede8",
+    border: "1px solid #2f2f2f",
     borderRadius: 8,
     fontSize: 14,
     fontWeight: 700,
@@ -543,15 +548,15 @@ const styles: Record<string, CSSProperties> = {
   loginSection: {
     textAlign: "center",
     paddingTop: 16,
-    borderTop: "1px solid #e0e0e0",
+    borderTop: "1px solid #27272a",
   },
   loginText: {
     fontSize: 14,
-    color: "#666",
+    color: "#a1a1aa",
     margin: 0,
   },
   loginLink: {
-    color: "#1a1a1a",
+    color: "#f0ede8",
     fontWeight: 700,
     marginLeft: 8,
     transition: "color 0.2s ease",
