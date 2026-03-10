@@ -45,8 +45,41 @@ function requireEnv(name, fallbackNames = []) {
   throw new Error(`Missing env var: ${name}`);
 }
 
+function getOptionalEnv(name) {
+  const value = sanitizeText(process.env[name]);
+  return value || "";
+}
+
 function brDateTime() {
   return new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+}
+
+function getUniqueSenderCandidates() {
+  const candidates = [
+    getOptionalEnv("EMAIL_FROM_NOREPLY"),
+    getOptionalEnv("EMAIL_FROM_CONTACT"),
+    getOptionalEnv("EMAIL_FROM"),
+  ]
+    .map(sanitizeText)
+    .filter(Boolean);
+  return [...new Set(candidates)];
+}
+
+function buildContactAutoReplyHtml(name) {
+  const safeName = escapeHtml(name || "Cliente");
+  return `
+    <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.6;max-width:680px">
+      <h2 style="margin:0 0 12px">Recebemos sua mensagem</h2>
+      <p>Ola, ${safeName}.</p>
+      <p>Obrigado por entrar em contato com a L4CKOS. Sua mensagem foi recebida com sucesso.</p>
+      <p>Nosso time vai responder em breve.</p>
+      <p style="font-size:12px;color:#666;margin-top:18px">
+        Por seguranca, nao compartilhe senhas, codigos ou dados sensiveis por e-mail.
+      </p>
+      <hr style="border:none;border-top:1px solid #ececec;margin:20px 0" />
+      <p style="font-size:12px;color:#666;margin:0">Este e um e-mail automatico da L4CKOS.</p>
+    </div>
+  `;
 }
 
 async function sendWithResend({ from, to, replyTo, subject, html, react }) {
@@ -107,39 +140,60 @@ export async function sendAutoReplyToCustomer({ name, email }) {
   const toEmail = sanitizeEmail(email);
   const safeName = sanitizeText(name);
   const subject = "Recebemos sua mensagem - L4CKOS";
-  const primaryFrom = requireEnv("EMAIL_FROM_NOREPLY", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]);
-  const fallbackFrom = requireEnv("EMAIL_FROM_CONTACT", ["EMAIL_FROM"]);
-
-  try {
-    return await sendWithResend({
-      from: primaryFrom,
-      to: toEmail,
-      subject,
-      replyTo: fallbackFrom,
-      react: ContactAutoReplyEmail({ name: safeName }),
-    });
-  } catch (error) {
-    // Retry with contato@ when noreply sender has provider/domain restrictions.
-    if (sanitizeText(primaryFrom).toLowerCase() === sanitizeText(fallbackFrom).toLowerCase()) {
-      throw error;
-    }
-
-    console.error("[Email] Auto-reply primary sender failed, retrying with fallback sender", {
-      primaryFrom,
-      fallbackFrom,
-      name: error instanceof Error ? error.name : "UnknownError",
-      message: error instanceof Error ? error.message : "Unknown error",
-      cause: error instanceof Error ? error.cause : undefined,
-    });
-
-    return await sendWithResend({
-      from: fallbackFrom,
-      to: toEmail,
-      subject,
-      replyTo: fallbackFrom,
-      react: ContactAutoReplyEmail({ name: safeName }),
-    });
+  const fromCandidates = getUniqueSenderCandidates();
+  if (fromCandidates.length === 0) {
+    throw new Error("Missing env var: EMAIL_FROM_NOREPLY");
   }
+
+  let lastError = null;
+  const replyTo = fromCandidates[1] || fromCandidates[0];
+
+  // First attempt: React template
+  for (const from of fromCandidates) {
+    try {
+      return await sendWithResend({
+        from,
+        to: toEmail,
+        subject,
+        replyTo,
+        react: ContactAutoReplyEmail({ name: safeName }),
+      });
+    } catch (error) {
+      lastError = error;
+      console.error("[Email] Auto-reply failed with React template, trying next sender", {
+        from,
+        to: toEmail,
+        name: error instanceof Error ? error.name : "UnknownError",
+        message: error instanceof Error ? error.message : "Unknown error",
+        cause: error instanceof Error ? error.cause : undefined,
+      });
+    }
+  }
+
+  // Second attempt: HTML fallback template
+  const htmlFallback = buildContactAutoReplyHtml(safeName);
+  for (const from of fromCandidates) {
+    try {
+      return await sendWithResend({
+        from,
+        to: toEmail,
+        subject,
+        replyTo,
+        html: htmlFallback,
+      });
+    } catch (error) {
+      lastError = error;
+      console.error("[Email] Auto-reply failed with HTML fallback, trying next sender", {
+        from,
+        to: toEmail,
+        name: error instanceof Error ? error.name : "UnknownError",
+        message: error instanceof Error ? error.message : "Unknown error",
+        cause: error instanceof Error ? error.cause : undefined,
+      });
+    }
+  }
+
+  throw lastError || new Error("Auto-reply failed for all sender candidates");
 }
 
 export async function sendWelcomeEmail({ name, email }) {

@@ -60,12 +60,14 @@ router.post("/contact", async (req, res) => {
       message: cleanMessage + (cleanPhone ? `\n\nTelefone: ${cleanPhone}` : ""),
     });
 
+    let autoReplySent = true;
     try {
       await sendAutoReplyToCustomer({
         name: cleanName,
         email: cleanEmail,
       });
     } catch (autoReplyError) {
+      autoReplySent = false;
       console.error("[Contact] Auto-reply failed, but store notification succeeded", {
         route: "/api/contact",
         provider: "resend",
@@ -76,7 +78,12 @@ router.post("/contact", async (req, res) => {
       });
     }
 
-    return res.status(200).json({ success: true, message: "Mensagem enviada com sucesso." });
+    return res.status(200).json({
+      success: true,
+      message: "Mensagem enviada com sucesso.",
+      autoReplySent,
+      warning: autoReplySent ? undefined : "Mensagem interna enviada, mas a resposta automatica nao foi entregue.",
+    });
   } catch (error) {
     console.error("[Contact] Failed to process contact flow", {
       route: "/api/contact",
