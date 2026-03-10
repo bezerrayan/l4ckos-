@@ -56,8 +56,8 @@ function brDateTime() {
 
 function getUniqueSenderCandidates() {
   const candidates = [
-    getOptionalEnv("EMAIL_FROM_NOREPLY"),
     getOptionalEnv("EMAIL_FROM_CONTACT"),
+    getOptionalEnv("EMAIL_FROM_NOREPLY"),
     getOptionalEnv("EMAIL_FROM"),
   ]
     .map(sanitizeText)

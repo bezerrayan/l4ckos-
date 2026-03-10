@@ -60,30 +60,33 @@ router.post("/contact", async (req, res) => {
       message: cleanMessage + (cleanPhone ? `\n\nTelefone: ${cleanPhone}` : ""),
     });
 
-    let autoReplySent = true;
+    let autoReplyFailure: unknown = null;
     try {
       await sendAutoReplyToCustomer({
         name: cleanName,
         email: cleanEmail,
       });
-    } catch (autoReplyError) {
-      autoReplySent = false;
+    } catch (err) {
+      autoReplyFailure = err;
       console.error("[Contact] Auto-reply failed, but store notification succeeded", {
         route: "/api/contact",
         provider: "resend",
-        name: autoReplyError instanceof Error ? autoReplyError.name : "UnknownError",
-        message: autoReplyError instanceof Error ? autoReplyError.message : "Unknown error",
-        stack: autoReplyError instanceof Error ? autoReplyError.stack : undefined,
-        cause: autoReplyError instanceof Error && autoReplyError.cause ? autoReplyError.cause : undefined,
+        name: err instanceof Error ? err.name : "UnknownError",
+        message: err instanceof Error ? err.message : "Unknown error",
+        stack: err instanceof Error ? err.stack : undefined,
+        cause: err instanceof Error && err.cause ? err.cause : undefined,
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "Mensagem enviada com sucesso.",
-      autoReplySent,
-      warning: autoReplySent ? undefined : "Mensagem interna enviada, mas a resposta automatica nao foi entregue.",
-    });
+    if (autoReplyFailure) {
+      return res.status(502).json({
+        success: false,
+        error: "Recebemos sua mensagem, mas nao conseguimos enviar a confirmacao automatica para seu e-mail.",
+        code: "AUTO_REPLY_FAILED",
+      });
+    }
+
+    return res.status(200).json({ success: true, message: "Mensagem enviada com sucesso." });
   } catch (error) {
     console.error("[Contact] Failed to process contact flow", {
       route: "/api/contact",
