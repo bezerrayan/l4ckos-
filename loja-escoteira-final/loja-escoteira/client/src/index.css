@@ -1408,14 +1408,14 @@ small {
 .l4-coming-v2-logo-text {
   color: #f0ede8;
   text-decoration: none;
-  font-family: "Bebas Neue", Impact, sans-serif;
-  font-size: 26px;
-  letter-spacing: 0.2em;
+  display: inline-flex;
+  align-items: center;
 }
 
-.l4-coming-v2-logo-text em {
-  color: #e8002a;
-  font-style: normal;
+.l4-coming-v2-logo-text img {
+  width: clamp(84px, 16vw, 128px);
+  height: auto;
+  display: block;
 }
 
 .l4-coming-v2-live-pill {
