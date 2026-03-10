@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { apiUrl } from "../const";
-import logoBrancaSemFundo from "../images/estampas/logo-branca-sem-fundo.png";
+import logoBrancaSemFundo from "../images/logo-branca-sem-fundo.png";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
 
