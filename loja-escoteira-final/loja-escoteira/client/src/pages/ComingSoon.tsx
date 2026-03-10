@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { apiUrl } from "../const";
-import logoPreta from "../images/logo_preta-sem-fundo.png";
-import logoPrincipalPreta from "../images/logo-principal-preta-sem-fundo.png";
+import logoBrancaSemFundo from "../images/estampas/logo-branca-sem-fundo.png";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
 
@@ -101,8 +100,8 @@ export default function ComingSoon() {
       {!introDone && (
         <div className={`l4-coming-v2-splash ${splashOut ? "is-out" : ""}`}>
           <div className="l4-coming-v2-splash-stage">
-            <img className="l4-coming-v2-splash-mark" src={logoPreta} alt="L4K" />
-            <img className="l4-coming-v2-splash-word" src={logoPrincipalPreta} alt="L4CKOS" />
+            <img className="l4-coming-v2-splash-word-l4" src={logoBrancaSemFundo} alt="L4" />
+            <img className="l4-coming-v2-splash-word-rest" src={logoBrancaSemFundo} alt="CKOS" />
           </div>
         </div>
       )}

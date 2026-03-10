@@ -1343,8 +1343,8 @@ small {
 
 .l4-coming-v2-splash-stage {
   position: relative;
-  width: min(660px, 86vw);
-  height: min(240px, 34vw);
+  width: min(700px, 90vw);
+  height: min(260px, 36vw);
 }
 
 .l4-coming-v2-splash-stage img {
@@ -1354,18 +1354,23 @@ small {
   display: block;
 }
 
-.l4-coming-v2-splash-mark {
-  width: min(130px, 22vw);
-  transform: translate(-50%, -50%) scale(0.9);
-  opacity: 0;
-  animation: l4v2MarkFlow 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+.l4-coming-v2-splash-word-l4,
+.l4-coming-v2-splash-word-rest {
+  width: min(520px, 82vw);
+  transform: translate(-50%, -50%);
 }
 
-.l4-coming-v2-splash-word {
-  width: min(460px, 74vw);
-  transform: translate(-50%, -50%) scale(1.06);
+.l4-coming-v2-splash-word-l4 {
+  clip-path: inset(0 72% 0 0);
   opacity: 0;
-  animation: l4v2WordFlow 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.58s both;
+  filter: drop-shadow(0 8px 24px rgba(232, 0, 42, 0.25));
+  animation: l4v2L4First 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.l4-coming-v2-splash-word-rest {
+  clip-path: inset(0 0 0 28%);
+  opacity: 0;
+  animation: l4v2WordRest 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) 0.62s both;
 }
 
 .l4-coming-v2-splash.is-out {
@@ -1512,7 +1517,7 @@ small {
 .l4-coming-v2-desc {
   margin: 0;
   max-width: 300px;
-  color: #3a3a3a;
+  color: #9ca3af;
   line-height: 1.9;
   font-size: 14px;
   font-weight: 300;
@@ -1568,7 +1573,7 @@ small {
 
 .l4-coming-v2-countdown .cl {
   margin-top: 7px;
-  color: #252525;
+  color: #6b7280;
   text-transform: uppercase;
   font-family: "Space Mono", Consolas, monospace;
   font-size: 7px;
@@ -1591,7 +1596,7 @@ small {
 .l4-coming-v2-form-heading {
   text-align: center;
   margin-bottom: 20px;
-  color: #2a2a2a;
+  color: #6b7280;
   text-transform: uppercase;
   font-family: "Space Mono", Consolas, monospace;
   font-size: 9px;
@@ -1626,7 +1631,7 @@ small {
 }
 
 .l4-coming-v2-email-in::placeholder {
-  color: #272727;
+  color: #6b7280;
 }
 
 .l4-coming-v2-email-in:focus {
@@ -1696,7 +1701,7 @@ small {
 
 .l4-coming-v2-perks .pd {
   margin-top: 2px;
-  color: #2a2a2a;
+  color: #6b7280;
   text-transform: uppercase;
   font-family: "Space Mono", Consolas, monospace;
   font-size: 7px;
@@ -1706,7 +1711,7 @@ small {
 .l4-coming-v2-form-note {
   text-align: center;
   margin-top: 10px;
-  color: #4a4a4a;
+  color: #9ca3af;
   font-size: 11px;
 }
 
@@ -1764,7 +1769,7 @@ small {
 }
 
 .l4-coming-v2-ok .ok-sub {
-  color: #3a3a3a;
+  color: #9ca3af;
   line-height: 1.8;
   font-size: 13px;
 }
@@ -1835,6 +1840,32 @@ small {
   50% {
     opacity: 1;
     transform: translateX(-50%) scale(1.15);
+  }
+}
+
+@keyframes l4v2L4First {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.84);
+  }
+  65% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes l4v2WordRest {
+  0% {
+    opacity: 0;
+    transform: translate(-47%, -50%) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
