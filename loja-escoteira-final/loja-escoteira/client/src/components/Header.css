@@ -136,6 +136,7 @@
     position: relative;
     justify-content: space-between;
     gap: 8px;
+    min-height: 56px;
   }
 
   .l4-header-menu-btn {
@@ -157,14 +158,16 @@
     min-width: auto;
     align-items: center;
     z-index: 1;
+    top: 50%;
+    translate: 0 -50%;
   }
 
   .l4-header-brand img {
-    width: 74px;
+    width: 62px;
   }
 
   .l4-header-brand span {
-    text-align: center;
+    display: none;
   }
 
   .l4-header-nav.mobile {
