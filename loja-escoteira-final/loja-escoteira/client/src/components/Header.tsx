@@ -38,14 +38,23 @@ export default function Header() {
   return (
     <header className="l4-header">
       <div className="l4-header-inner">
+        <button className="l4-header-menu-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
+          {menuOpen ? "x" : "="}
+        </button>
+
         <Link to="/" className="l4-header-brand" onClick={() => setMenuOpen(false)}>
           <img src={logoBranco} alt="L4ckos" />
           <span>LOJA ESCOTEIRA</span>
         </Link>
 
-        <button className="l4-header-menu-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
-          {menuOpen ? "x" : "="}
-        </button>
+        <Link
+          to="/carrinho"
+          className={`l4-header-cart-btn ${location.pathname === "/carrinho" ? "active" : ""}`}
+          onClick={() => setMenuOpen(false)}
+          aria-label="Carrinho"
+        >
+          Carrinho
+        </Link>
 
         <nav className={`l4-header-nav ${isMobile ? "mobile" : ""} ${menuOpen ? "open" : ""}`}>
           {navItems.map(item => (
@@ -56,9 +65,11 @@ export default function Header() {
           <Link to="/favoritos" className={`l4-header-link ${location.pathname === "/favoritos" ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
             Favoritos{favorites.length > 0 ? ` (${favorites.length})` : ""}
           </Link>
-          <Link to="/carrinho" className={`l4-header-link ${location.pathname === "/carrinho" ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
-            Carrinho
-          </Link>
+          {!isMobile ? (
+            <Link to="/carrinho" className={`l4-header-link ${location.pathname === "/carrinho" ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
+              Carrinho
+            </Link>
+          ) : null}
 
           {isAuthenticated ? (
             <div className="l4-header-user">
@@ -95,4 +106,3 @@ export default function Header() {
     </header>
   );
 }
-
