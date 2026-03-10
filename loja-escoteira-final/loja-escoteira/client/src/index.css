@@ -1361,16 +1361,18 @@ small {
 }
 
 .l4-coming-v2-splash-word-l4 {
-  clip-path: inset(0 72% 0 0);
+  /* Show the left block (L4) first */
+  clip-path: inset(0 54% 0 0);
   opacity: 0;
   filter: drop-shadow(0 8px 24px rgba(232, 0, 42, 0.25));
   animation: l4v2L4First 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .l4-coming-v2-splash-word-rest {
-  clip-path: inset(0 0 0 28%);
+  /* Then reveal the remainder of the word */
+  clip-path: inset(0 0 0 46%);
   opacity: 0;
-  animation: l4v2WordRest 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) 0.62s both;
+  animation: l4v2WordRest 0.82s cubic-bezier(0.2, 0.7, 0.2, 1) 0.55s both;
 }
 
 .l4-coming-v2-splash.is-out {
@@ -1861,7 +1863,7 @@ small {
 @keyframes l4v2WordRest {
   0% {
     opacity: 0;
-    transform: translate(-47%, -50%) scale(0.96);
+    transform: translate(-48.5%, -50%) scale(0.98);
   }
   100% {
     opacity: 1;
