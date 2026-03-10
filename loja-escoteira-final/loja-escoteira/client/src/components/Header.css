@@ -64,6 +64,10 @@
   font-family: "Space Mono", monospace;
 }
 
+.l4-header-cart-btn svg {
+  display: block;
+}
+
 .l4-header-cart-btn.active {
   border-color: #4a4a4a;
   background: #1b1b1b;

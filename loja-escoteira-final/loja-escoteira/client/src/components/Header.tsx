@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { ShoppingCart } from "lucide-react";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import logoBranco from "../images/logo_branco.png";
+import logoPretaSemFundo from "../images/logo_preta-sem-fundo.png";
 import "./Header.css";
 
 function firstName(name?: string, email?: string) {
@@ -20,6 +22,7 @@ export default function Header() {
   const { user, logout } = useUser();
   const isMobile = useIsMobile(980);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoSrc, setLogoSrc] = useState(logoBranco);
   const isAuthenticated = Boolean(user?.isAuthenticated);
   const displayName = firstName(user?.name, user?.email);
 
@@ -43,7 +46,17 @@ export default function Header() {
         </button>
 
         <Link to="/" className="l4-header-brand" onClick={() => setMenuOpen(false)}>
-          <img src={logoBranco} alt="L4ckos" />
+          <img
+            src={logoSrc}
+            alt="L4ckos"
+            onError={(event) => {
+              if (logoSrc !== logoPretaSemFundo) {
+                setLogoSrc(logoPretaSemFundo);
+              } else {
+                (event.currentTarget as HTMLImageElement).style.display = "none";
+              }
+            }}
+          />
           <span>LOJA ESCOTEIRA</span>
         </Link>
 
@@ -52,8 +65,9 @@ export default function Header() {
           className={`l4-header-cart-btn ${location.pathname === "/carrinho" ? "active" : ""}`}
           onClick={() => setMenuOpen(false)}
           aria-label="Carrinho"
+          title="Carrinho"
         >
-          Carrinho
+          <ShoppingCart size={16} strokeWidth={2} />
         </Link>
 
         <nav className={`l4-header-nav ${isMobile ? "mobile" : ""} ${menuOpen ? "open" : ""}`}>
