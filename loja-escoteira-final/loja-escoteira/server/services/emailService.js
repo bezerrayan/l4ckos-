@@ -54,6 +54,14 @@ function brDateTime() {
   return new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
+function getAppBaseUrl() {
+  const baseUrl =
+    sanitizeText(process.env.APP_BASE_URL) ||
+    sanitizeText(process.env.FRONTEND_URL) ||
+    "https://l4ckos.com.br";
+  return baseUrl.replace(/\/$/, "");
+}
+
 function getUniqueSenderCandidates() {
   const candidates = [
     getOptionalEnv("EMAIL_FROM_CONTACT"),
@@ -426,4 +434,55 @@ export async function sendWaitlistAutoReply({ email }) {
   }
 
   throw lastError || new Error("Waitlist auto-reply failed for all sender candidates");
+}
+
+export async function sendWaitlistLaunchEmail({
+  email,
+  couponCode,
+  discountPercent = 15,
+  launchUrl,
+}) {
+  const cleanEmail = sanitizeEmail(email);
+  const cleanCouponCode = sanitizeText(couponCode).toUpperCase();
+  const cleanDiscountPercent = Number(discountPercent) > 0 ? Number(discountPercent) : 15;
+  const cleanLaunchUrl = sanitizeText(launchUrl) || getAppBaseUrl();
+  const from = requireEnv("EMAIL_FROM_NOREPLY", ["EMAIL_FROM_CONTACT", "EMAIL_FROM"]);
+  const replyTo = sanitizeText(getOptionalEnv("EMAIL_FROM_CONTACT")) || from;
+
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.7;max-width:680px">
+      <h2 style="margin:0 0 14px">Parabens, a hora chegou.</h2>
+      <p>A loja da L4CKOS esta oficialmente no ar.</p>
+      <p>
+        Como recompensa por ter garantido sua vaga com antecedencia, voce recebeu um
+        <strong>cupom exclusivo de ${escapeHtml(String(cleanDiscountPercent))}% OFF</strong>.
+      </p>
+      <p>
+        Use o codigo <strong style="letter-spacing:1px">${escapeHtml(cleanCouponCode)}</strong>
+        para aproveitar enquanto ele estiver disponivel.
+      </p>
+      <p style="margin:18px 0 22px">
+        <a
+          href="${escapeHtml(cleanLaunchUrl)}"
+          target="_blank"
+          style="display:inline-block;background:#e8002a;color:#ffffff;text-decoration:none;padding:12px 18px;font-weight:700"
+        >
+          Entrar na loja agora
+        </a>
+      </p>
+      <p style="font-size:12px;color:#666;margin-top:18px">
+        Este e um e-mail automatico da L4CKOS. Se voce nao quiser mais receber avisos,
+        basta nos responder solicitando a remocao da lista.
+      </p>
+      ${buildEmailSignatureHtml()}
+    </div>
+  `;
+
+  return sendWithResend({
+    from,
+    to: cleanEmail,
+    subject: `A loja abriu: seu cupom de ${cleanDiscountPercent}% OFF esta liberado`,
+    replyTo,
+    html,
+  });
 }

@@ -88,6 +88,19 @@ export default function Admin() {
   const [reportTo, setReportTo] = useState("");
   const [restoreFileName, setRestoreFileName] = useState("");
   const [newCoupon, setNewCoupon] = useState({ code: "", type: "percent", value: "10", maxUses: "" });
+  const [launchEmailForm, setLaunchEmailForm] = useState({
+    couponCode: "LANCAMENTO15",
+    discountPercent: "15",
+    launchUrl: "https://l4ckos.com.br",
+    batchSize: "25",
+  });
+  const [launchEmailResult, setLaunchEmailResult] = useState<null | {
+    total: number;
+    sent: number;
+    failed: number;
+    message: string;
+    failures: Array<{ email: string; message: string }>;
+  }>(null);
   const [newProduct, setNewProduct] = useState({ ...emptyProductForm });
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editProduct, setEditProduct] = useState({ ...emptyProductForm });
@@ -188,6 +201,20 @@ export default function Admin() {
       void couponsQuery.refetch();
     },
     onError: error => showToast({ message: error.message, duration: 2600 }),
+  });
+
+  const waitlistLaunchSendMutation = trpc.admin.waitlistLaunchSend.useMutation({
+    onSuccess: data => {
+      setLaunchEmailResult({
+        total: data.total,
+        sent: data.sent,
+        failed: data.failed,
+        message: data.message,
+        failures: data.failures,
+      });
+      showToast({ message: data.message, duration: 3200 });
+    },
+    onError: error => showToast({ message: error.message, duration: 3200 }),
   });
 
   const createPromoBannerMutation = trpc.admin.promoBannerCreate.useMutation({
@@ -898,6 +925,95 @@ export default function Admin() {
               </tbody>
             </table>
           </div>
+          <div style={styles.launchCard}>
+            <h3 style={styles.sectionTitle}>Avisar lista de espera sobre a abertura</h3>
+            <p style={styles.muted}>
+              Use esta acao para disparar o e-mail de lancamento para todos os cadastrados, com o cupom exclusivo de abertura.
+            </p>
+            <div style={styles.formGrid}>
+              <input
+                style={styles.input}
+                placeholder="Codigo do cupom"
+                value={launchEmailForm.couponCode}
+                onChange={e => setLaunchEmailForm(prev => ({ ...prev, couponCode: e.target.value }))}
+              />
+              <input
+                style={styles.input}
+                placeholder="Percentual"
+                value={launchEmailForm.discountPercent}
+                onChange={e => setLaunchEmailForm(prev => ({ ...prev, discountPercent: e.target.value }))}
+              />
+              <input
+                style={styles.input}
+                placeholder="URL da loja"
+                value={launchEmailForm.launchUrl}
+                onChange={e => setLaunchEmailForm(prev => ({ ...prev, launchUrl: e.target.value }))}
+              />
+              <input
+                style={styles.input}
+                placeholder="Lote"
+                value={launchEmailForm.batchSize}
+                onChange={e => setLaunchEmailForm(prev => ({ ...prev, batchSize: e.target.value }))}
+              />
+            </div>
+            <div style={styles.inlineRow}>
+              <button
+                style={styles.primaryBtn}
+                onClick={() => {
+                  const discountPercent = Number(launchEmailForm.discountPercent);
+                  const batchSize = Number(launchEmailForm.batchSize);
+                  if (!launchEmailForm.couponCode.trim()) {
+                    showToast({ message: "Informe o codigo do cupom", duration: 2400 });
+                    return;
+                  }
+                  if (!Number.isFinite(discountPercent) || discountPercent <= 0 || discountPercent > 100) {
+                    showToast({ message: "Informe um percentual valido entre 1 e 100", duration: 2400 });
+                    return;
+                  }
+                  if (!Number.isFinite(batchSize) || batchSize <= 0 || batchSize > 100) {
+                    showToast({ message: "Informe um lote valido entre 1 e 100", duration: 2400 });
+                    return;
+                  }
+                  if (!window.confirm("Confirma o envio para toda a lista de espera?")) return;
+
+                  setLaunchEmailResult(null);
+                  waitlistLaunchSendMutation.mutate({
+                    couponCode: launchEmailForm.couponCode.trim().toUpperCase(),
+                    discountPercent,
+                    launchUrl: launchEmailForm.launchUrl.trim(),
+                    batchSize,
+                  });
+                }}
+              >
+                {waitlistLaunchSendMutation.isPending ? "Enviando..." : "Disparar e-mail de lancamento"}
+              </button>
+            </div>
+
+            {launchEmailResult ? (
+              <div style={styles.launchResult}>
+                <strong>{launchEmailResult.message}</strong>
+                <span>Total: {launchEmailResult.total}</span>
+                <span>Enviados: {launchEmailResult.sent}</span>
+                <span>Falhas: {launchEmailResult.failed}</span>
+
+                {launchEmailResult.failures.length > 0 ? (
+                  <div style={styles.tableWrap}>
+                    <table style={{ ...styles.table, minWidth: 640 }}>
+                      <thead><tr><th>Email</th><th>Erro</th></tr></thead>
+                      <tbody>
+                        {launchEmailResult.failures.map(item => (
+                          <tr key={`${item.email}-${item.message}`}>
+                            <td>{item.email}</td>
+                            <td>{item.message}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -1062,6 +1178,27 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 12,
+    textAlign: "center",
+  },
+  launchCard: {
+    border: "1px solid #2f2f2f",
+    borderRadius: 10,
+    background: "#0d0d0d",
+    padding: 16,
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    textAlign: "center",
+  },
+  launchResult: {
+    border: "1px solid #2f2f2f",
+    borderRadius: 10,
+    background: "#111111",
+    padding: 12,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    alignItems: "center",
     textAlign: "center",
   },
   sectionTitle: {

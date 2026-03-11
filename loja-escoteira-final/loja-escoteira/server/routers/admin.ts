@@ -15,6 +15,7 @@ import {
   deletePromoBanner,
   getDashboardKpis,
   getAllOrders,
+  getAllWaitlistEmails,
   getUserById,
   getOrdersByFilters,
   getProductsAdmin,
@@ -33,6 +34,7 @@ import { ENV } from "../_core/env";
 import { TRPCError } from "@trpc/server";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { sendWaitlistLaunchEmail } from "../services/emailService.js";
 
 const orderStatusSchema = z.enum([
   "pending",
@@ -497,5 +499,86 @@ export const adminRouter = router({
         entityId: input.fileName,
       });
       return { success: true } as const;
+    }),
+
+  waitlistLaunchSend: adminProcedure
+    .input(
+      z.object({
+        couponCode: z.string().min(3).max(64),
+        discountPercent: z.number().positive().max(100).default(15),
+        launchUrl: z.string().url().optional(),
+        batchSize: z.number().int().min(1).max(100).default(25),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const waitlist = await getAllWaitlistEmails();
+      const uniqueEmails = [...new Set(waitlist.map(item => String(item.email ?? "").trim().toLowerCase()).filter(Boolean))];
+
+      if (uniqueEmails.length === 0) {
+        return {
+          success: true,
+          total: 0,
+          sent: 0,
+          failed: 0,
+          failures: [],
+          message: "Nenhum email encontrado na lista de espera.",
+        } as const;
+      }
+
+      const failures: Array<{ email: string; message: string }> = [];
+      let sent = 0;
+
+      for (let index = 0; index < uniqueEmails.length; index += input.batchSize) {
+        const batch = uniqueEmails.slice(index, index + input.batchSize);
+        const results = await Promise.allSettled(
+          batch.map(email =>
+            sendWaitlistLaunchEmail({
+              email,
+              couponCode: input.couponCode,
+              discountPercent: input.discountPercent,
+              launchUrl: input.launchUrl,
+            }),
+          ),
+        );
+
+        results.forEach((result, batchIndex) => {
+          const email = batch[batchIndex];
+          if (result.status === "fulfilled") {
+            sent += 1;
+            return;
+          }
+
+          failures.push({
+            email,
+            message: result.reason instanceof Error ? result.reason.message : "Falha desconhecida",
+          });
+        });
+      }
+
+      await createAuditLog({
+        actorUserId: ctx.user.id,
+        action: "waitlist.launch.send",
+        entity: "waitlist",
+        entityId: input.couponCode.toUpperCase(),
+        metadata: {
+          total: uniqueEmails.length,
+          sent,
+          failed: failures.length,
+          discountPercent: input.discountPercent,
+          launchUrl: input.launchUrl ?? ENV.frontendUrl ?? process.env.APP_BASE_URL ?? "https://l4ckos.com.br",
+        },
+      });
+
+      return {
+        success: failures.length === 0,
+        total: uniqueEmails.length,
+        sent,
+        failed: failures.length,
+        failures,
+        message:
+          failures.length === 0
+            ? "Disparo para a lista de espera concluido com sucesso."
+            : "Disparo concluido com falhas parciais.",
+      } as const;
     }),
 });

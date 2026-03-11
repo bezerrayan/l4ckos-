@@ -162,6 +162,16 @@ export async function createWaitlistEmail(email: string) {
   await db.insert(waitlistEmails).values({ email: normalizedEmail });
 }
 
+export async function getAllWaitlistEmails() {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({ email: waitlistEmails.email, createdAt: waitlistEmails.createdAt })
+    .from(waitlistEmails)
+    .orderBy(desc(waitlistEmails.id));
+  return rows;
+}
+
 export async function setOrderAsaasCheckoutId(orderId: number, asaasCheckoutId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
