@@ -65,6 +65,52 @@ function getUniqueSenderCandidates() {
   return [...new Set(candidates)];
 }
 
+function getEmailSignatureConfig() {
+  return {
+    logoUrl: sanitizeText(process.env.EMAIL_SIGNATURE_LOGO_URL),
+    name: sanitizeText(process.env.EMAIL_SIGNATURE_NAME) || "Yan Bezerra",
+    role: sanitizeText(process.env.EMAIL_SIGNATURE_ROLE) || "FOUNDER | L4CKOS",
+    website: sanitizeText(process.env.EMAIL_SIGNATURE_WEBSITE) || "https://l4ckos.com.br",
+    instagramUrl:
+      sanitizeText(process.env.EMAIL_SIGNATURE_INSTAGRAM_URL) || "https://instagram.com/l4ckosstore",
+    instagramLabel: sanitizeText(process.env.EMAIL_SIGNATURE_INSTAGRAM_LABEL) || "@l4ckosstore",
+    contactEmail: sanitizeText(process.env.EMAIL_SIGNATURE_CONTACT_EMAIL) || "yandev@l4ckos.com.br",
+  };
+}
+
+function buildEmailSignatureHtml() {
+  const cfg = getEmailSignatureConfig();
+  const safeWebsiteHref = cfg.website.startsWith("http") ? cfg.website : `https://${cfg.website}`;
+  const safeWebsiteLabel = cfg.website.replace(/^https?:\/\//, "");
+
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:20px;border:1px solid #ece6dd;border-radius:8px;background:#ffffff;padding:14px">
+      <tr>
+        <td style="width:180px;vertical-align:top;padding-right:10px">
+          ${
+            cfg.logoUrl
+              ? `<img src="${escapeHtml(cfg.logoUrl)}" alt="L4CKOS" width="160" style="display:block;width:160px;height:auto" />`
+              : `<div style="font-size:26px;font-weight:700;letter-spacing:2px;color:#101010">L4CKOS</div>`
+          }
+        </td>
+        <td style="vertical-align:top">
+          <p style="margin:0;color:#101010;font-size:24px;line-height:1.2;font-weight:700">${escapeHtml(cfg.name)}</p>
+          <p style="margin:4px 0 12px;color:#e8002a;font-size:12px;letter-spacing:3px;font-weight:700">${escapeHtml(cfg.role)}</p>
+          <p style="margin:0 0 6px;color:#3b4552;font-size:14px"><strong style="color:#e8002a">W:</strong> <a href="${escapeHtml(safeWebsiteHref)}" style="color:#3b4552;text-decoration:none">${escapeHtml(safeWebsiteLabel)}</a></p>
+          <p style="margin:0 0 6px;color:#3b4552;font-size:14px"><strong style="color:#e8002a">IG:</strong> <a href="${escapeHtml(cfg.instagramUrl)}" style="color:#3b4552;text-decoration:none">${escapeHtml(cfg.instagramLabel)}</a></p>
+          <p style="margin:0;color:#3b4552;font-size:14px"><strong style="color:#e8002a">@:</strong> <a href="mailto:${escapeHtml(cfg.contactEmail)}" style="color:#3b4552;text-decoration:none">${escapeHtml(cfg.contactEmail)}</a></p>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="padding-top:10px">
+          <div style="border-top:1px solid #ece6dd;height:1px;line-height:1px"></div>
+          <p style="margin:8px 0 0;text-align:center;color:#8a8a8a;font-size:11px;letter-spacing:4px">STREETWEAR • OUTDOOR • LIFESTYLE</p>
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
 function buildContactAutoReplyHtml(name) {
   const safeName = escapeHtml(name || "Cliente");
   return `
@@ -76,8 +122,8 @@ function buildContactAutoReplyHtml(name) {
       <p style="font-size:12px;color:#666;margin-top:18px">
         Por seguranca, nao compartilhe senhas, codigos ou dados sensiveis por e-mail.
       </p>
-      <hr style="border:none;border-top:1px solid #ececec;margin:20px 0" />
       <p style="font-size:12px;color:#666;margin:0">Este e um e-mail automatico da L4CKOS.</p>
+      ${buildEmailSignatureHtml()}
     </div>
   `;
 }
@@ -122,8 +168,8 @@ export async function sendContactNotificationToStore({ name, email, subject, mes
       <p><strong>Assunto:</strong> ${escapeHtml(cleanSubject)}</p>
       <p><strong>Mensagem:</strong><br/>${escapeHtml(cleanMessage).replaceAll("\n", "<br/>")}</p>
       <p><strong>Data/hora:</strong> ${escapeHtml(brDateTime())}</p>
-      <hr style="border:none;border-top:1px solid #ececec;margin:20px 0" />
-      <p style="font-size:12px;color:#666;margin:0">Notificação interna automática da L4CKOS.</p>
+      <p style="font-size:12px;color:#666;margin:0">Notificacao interna automatica da L4CKOS.</p>
+      ${buildEmailSignatureHtml()}
     </div>
   `;
 
@@ -299,6 +345,7 @@ export async function sendWaitlistEmail({ email }) {
       <p><strong>E-mail:</strong> ${escapeHtml(cleanEmail)}</p>
       <p><strong>Data/hora:</strong> ${escapeHtml(brDateTime())}</p>
       <p>Origem: seção Em Breve (waitlist).</p>
+      ${buildEmailSignatureHtml()}
     </div>
   `;
 
@@ -327,8 +374,8 @@ export async function sendWaitlistAutoReply({ email }) {
       <p style="font-size:12px;color:#666;margin-top:18px">
         Este e um e-mail automatico. Nao e necessario responder.
       </p>
-      <hr style="border:none;border-top:1px solid #ececec;margin:20px 0" />
       <p style="font-size:12px;color:#666;margin:0">L4CKOS - Lista de espera</p>
+      ${buildEmailSignatureHtml()}
     </div>
   `;
 
