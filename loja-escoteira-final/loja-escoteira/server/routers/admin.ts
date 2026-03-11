@@ -45,6 +45,10 @@ const orderStatusSchema = z.enum([
   "cancelled",
 ]);
 
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export const adminRouter = router({
   dashboard: adminProcedure.query(async () => {
     const [kpis, users, products, orders] = await Promise.all([
@@ -508,6 +512,7 @@ export const adminRouter = router({
         discountPercent: z.number().positive().max(100).default(15),
         launchUrl: z.string().url().optional(),
         batchSize: z.number().int().min(1).max(100).default(25),
+        delayMs: z.number().int().min(300).max(5000).default(700),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -530,29 +535,24 @@ export const adminRouter = router({
 
       for (let index = 0; index < uniqueEmails.length; index += input.batchSize) {
         const batch = uniqueEmails.slice(index, index + input.batchSize);
-        const results = await Promise.allSettled(
-          batch.map(email =>
-            sendWaitlistLaunchEmail({
+        for (const email of batch) {
+          try {
+            await sendWaitlistLaunchEmail({
               email,
               couponCode: input.couponCode,
               discountPercent: input.discountPercent,
               launchUrl: input.launchUrl,
-            }),
-          ),
-        );
-
-        results.forEach((result, batchIndex) => {
-          const email = batch[batchIndex];
-          if (result.status === "fulfilled") {
+            });
             sent += 1;
-            return;
+          } catch (error) {
+            failures.push({
+              email,
+              message: error instanceof Error ? error.message : "Falha desconhecida",
+            });
           }
 
-          failures.push({
-            email,
-            message: result.reason instanceof Error ? result.reason.message : "Falha desconhecida",
-          });
-        });
+          await sleep(input.delayMs);
+        }
       }
 
       await createAuditLog({
