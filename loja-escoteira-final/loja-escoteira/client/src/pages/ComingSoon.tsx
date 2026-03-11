@@ -4,7 +4,7 @@ import { apiUrl } from "../const";
 import logoBrancaSemFundo from "../images/logo-branca-sem-fundo.png";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
-const WAITLIST_TARGET_KEY = "l4ckos_coming_soon_target_v1";
+const STORE_OPENING_TARGET = new Date("2026-05-11T00:00:00-03:00").getTime();
 
 function pad(value: number) {
   return String(Math.max(0, value)).padStart(2, "0");
@@ -25,19 +25,7 @@ function getCountdown(targetDate: number, now = Date.now()): Countdown {
 }
 
 export default function ComingSoon() {
-  const targetDate = useMemo(() => {
-    const fallback = Date.now() + 120 * 24 * 60 * 60 * 1000;
-    if (typeof window === "undefined") return fallback;
-
-    const saved = window.localStorage.getItem(WAITLIST_TARGET_KEY);
-    const parsed = saved ? Number(saved) : NaN;
-    if (Number.isFinite(parsed) && parsed > Date.now()) {
-      return parsed;
-    }
-
-    window.localStorage.setItem(WAITLIST_TARGET_KEY, String(fallback));
-    return fallback;
-  }, []);
+  const targetDate = useMemo(() => STORE_OPENING_TARGET, []);
   const [countdown, setCountdown] = useState<Countdown>(() => getCountdown(targetDate));
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -141,6 +129,9 @@ export default function ComingSoon() {
           </h1>
 
           <div className="l4-coming-v2-divider" />
+          <p className="l4-coming-v2-form-note" style={{ marginBottom: 12 }}>
+            Lancamento oficial em <strong>11 de maio de 2026</strong>.
+          </p>
           <p className="l4-coming-v2-desc">
             O próximo drop está quase pronto.
             <br />
