@@ -130,7 +130,7 @@ export default function ComingSoon() {
 
           <div className="l4-coming-v2-divider" />
           <p className="l4-coming-v2-form-note" style={{ marginBottom: 12 }}>
-            Lancamento oficial em <strong>11 de maio de 2026</strong>.
+            <strong>Abertura oficial:</strong> 11 de maio de 2026.
           </p>
           <p className="l4-coming-v2-desc">
             O próximo drop está quase pronto.
