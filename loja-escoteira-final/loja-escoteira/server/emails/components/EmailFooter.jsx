@@ -113,7 +113,7 @@ const styles = {
     border: "0",
     borderRadius: "0",
     backgroundColor: "#080808",
-    padding: "24px 18px 20px",
+    padding: "24px 8px 20px",
   },
   table: {
     width: "100%",
@@ -122,13 +122,13 @@ const styles = {
     margin: "0 auto",
   },
   logoCol: {
-    width: "200px",
+    width: "250px",
     verticalAlign: "middle",
-    paddingRight: "18px",
+    paddingRight: "12px",
   },
   logo: {
     display: "block",
-    width: "190px",
+    width: "240px",
     height: "auto",
     border: "0",
     outline: "none",
@@ -143,8 +143,9 @@ const styles = {
     letterSpacing: "2px",
   },
   infoCol: {
-    verticalAlign: "middle",
-    paddingLeft: "0",
+    verticalAlign: "top",
+    paddingLeft: "22px",
+    paddingTop: "2px",
   },
   name: {
     margin: "0 0 4px",
