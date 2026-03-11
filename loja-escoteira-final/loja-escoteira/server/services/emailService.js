@@ -84,56 +84,51 @@ function buildEmailSignatureHtml() {
   const safeWebsiteLabel = cfg.website.replace(/^https?:\/\//, "");
 
   return `
-    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:20px;border:1px solid #dddddd;border-radius:8px;background:#f0f0f0;padding:20px">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:20px;border:0;border-radius:0;background:#080808;padding:24px 18px 20px;max-width:520px;margin-left:auto;margin-right:auto;">
       <tr>
-        <td style="width:170px;vertical-align:middle;padding-right:0">
+        <td style="width:200px;vertical-align:middle;padding-right:18px">
           ${
             cfg.logoUrl
-              ? `<img src="${escapeHtml(cfg.logoUrl)}" alt="L4CKOS" width="160" style="display:block;border:0;outline:none;text-decoration:none;width:160px;height:auto" />`
-              : `<div style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:#101010;letter-spacing:2px;">L4CKOS</div>`
+              ? `<img src="${escapeHtml(cfg.logoUrl)}" alt="L4CKOS" width="190" style="display:block;border:0;outline:none;text-decoration:none;width:190px;height:auto" />`
+              : `<div style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:#f0ede8;letter-spacing:2px;">L4CKOS</div>`
           }
         </td>
-        <td style="width:1px;vertical-align:middle;padding:0 18px">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-            <tr><td style="width:1px;height:88px;background-color:#e8002a;font-size:0;line-height:0;">&nbsp;</td></tr>
-          </table>
-        </td>
-        <td style="vertical-align:middle;padding-left:2px">
-          <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:700;color:#0d0d0d;letter-spacing:0.3px;line-height:1.2;">${escapeHtml(cfg.name)}</p>
+        <td style="vertical-align:middle;padding-left:0">
+          <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:700;color:#f0ede8;letter-spacing:0.3px;line-height:1.2;">${escapeHtml(cfg.name)}</p>
           <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:400;color:#e8002a;letter-spacing:2.4px;text-transform:uppercase;line-height:1;">${escapeHtml(cfg.role)}</p>
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
             <tr><td style="padding-bottom:5px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
                 <td style="width:18px;height:18px;min-width:18px;background-color:#e8002a;font-family:Arial,Helvetica,sans-serif;font-size:8px;font-weight:700;color:#ffffff;text-align:center;vertical-align:middle;line-height:18px;">W</td>
-                <td style="padding-left:9px;vertical-align:middle;"><a href="${escapeHtml(safeWebsiteHref)}" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#555555;text-decoration:none;letter-spacing:0.1px;">${escapeHtml(safeWebsiteLabel)}</a></td>
+                <td style="padding-left:9px;vertical-align:middle;"><a href="${escapeHtml(safeWebsiteHref)}" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8f98a3;text-decoration:none;letter-spacing:0.1px;">${escapeHtml(safeWebsiteLabel)}</a></td>
               </tr></table>
             </td></tr>
             <tr><td style="padding-bottom:5px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
                 <td style="width:18px;height:18px;min-width:18px;background-color:#e8002a;font-family:Arial,Helvetica,sans-serif;font-size:7px;font-weight:700;color:#ffffff;text-align:center;vertical-align:middle;line-height:18px;">IG</td>
-                <td style="padding-left:9px;vertical-align:middle;"><a href="${escapeHtml(cfg.instagramUrl)}" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#555555;text-decoration:none;letter-spacing:0.1px;">${escapeHtml(cfg.instagramLabel)}</a></td>
+                <td style="padding-left:9px;vertical-align:middle;"><a href="${escapeHtml(cfg.instagramUrl)}" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8f98a3;text-decoration:none;letter-spacing:0.1px;">${escapeHtml(cfg.instagramLabel)}</a></td>
               </tr></table>
             </td></tr>
             <tr><td>
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
                 <td style="width:18px;height:18px;min-width:18px;background-color:#e8002a;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;color:#ffffff;text-align:center;vertical-align:middle;line-height:18px;">@</td>
-                <td style="padding-left:9px;vertical-align:middle;"><a href="mailto:${escapeHtml(cfg.contactEmail)}" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#555555;text-decoration:none;letter-spacing:0.1px;">${escapeHtml(cfg.contactEmail)}</a></td>
+                <td style="padding-left:9px;vertical-align:middle;"><a href="mailto:${escapeHtml(cfg.contactEmail)}" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#8f98a3;text-decoration:none;letter-spacing:0.1px;">${escapeHtml(cfg.contactEmail)}</a></td>
               </tr></table>
             </td></tr>
           </table>
         </td>
       </tr>
     </table>
-    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;margin-top:20px">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;margin-top:20px;max-width:520px;margin-left:auto;margin-right:auto;">
       <tr>
         <td style="width:28px;height:1px;background-color:#e8002a;font-size:0;line-height:0;">&nbsp;</td>
-        <td style="height:1px;background-color:#dddddd;font-size:0;line-height:0;">&nbsp;</td>
+        <td style="height:1px;background-color:#232833;font-size:0;line-height:0;">&nbsp;</td>
       </tr>
     </table>
-    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;margin-top:10px">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;margin-top:10px;max-width:520px;margin-left:auto;margin-right:auto;">
       <tr>
-        <td style="font-family:Arial,Helvetica,sans-serif;font-size:8px;color:#aaaaaa;letter-spacing:3.5px;text-transform:uppercase;text-align:center;line-height:1;padding:0;">
-          STREETWEAR&nbsp;&nbsp;|&nbsp;&nbsp;OUTDOOR&nbsp;&nbsp;|&nbsp;&nbsp;LIFESTYLE
+        <td style="font-family:Arial,Helvetica,sans-serif;font-size:8px;color:#2f3540;letter-spacing:3.5px;text-transform:uppercase;text-align:center;line-height:1;padding:0;">
+          STREETWEAR&nbsp;&nbsp;&bull;&nbsp;&nbsp;OUTDOOR&nbsp;&nbsp;&bull;&nbsp;&nbsp;LIFESTYLE
         </td>
       </tr>
     </table>

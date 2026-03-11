@@ -22,15 +22,6 @@ export function EmailFooter({ note }) {
                   <Text style={styles.logoFallback}>L4CKOS</Text>
                 )}
               </td>
-              <td style={styles.dividerCol}>
-                <table role="presentation" cellPadding="0" cellSpacing="0" style={styles.dividerTable}>
-                  <tbody>
-                    <tr>
-                      <td style={styles.divider}>&nbsp;</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
               <td style={styles.infoCol}>
                 <Text style={styles.name}>Yan Bezerra</Text>
                 <Text style={styles.role}>FOUNDER | L4CKOS</Text>
@@ -101,7 +92,7 @@ export function EmailFooter({ note }) {
           </tbody>
         </table>
 
-        <Text style={styles.tagline}>STREETWEAR | OUTDOOR | LIFESTYLE</Text>
+        <Text style={styles.tagline}>STREETWEAR • OUTDOOR • LIFESTYLE</Text>
       </Section>
     </Section>
   );
@@ -109,33 +100,35 @@ export function EmailFooter({ note }) {
 
 const styles = {
   wrap: {
-    borderTop: "1px solid #ece6dd",
-    backgroundColor: "#faf8f4",
+    borderTop: "1px solid #1a1a1a",
+    backgroundColor: "#080808",
     padding: "14px 24px 18px",
   },
   note: {
     margin: "0 0 8px",
-    color: "#666666",
+    color: "#9aa0aa",
     fontSize: "12px",
   },
   card: {
-    border: "1px solid #dddddd",
-    borderRadius: "8px",
-    backgroundColor: "#f0f0f0",
-    padding: "20px",
+    border: "0",
+    borderRadius: "0",
+    backgroundColor: "#080808",
+    padding: "24px 18px 20px",
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
+    maxWidth: "520px",
+    margin: "0 auto",
   },
   logoCol: {
-    width: "170px",
+    width: "200px",
     verticalAlign: "middle",
-    paddingRight: "0",
+    paddingRight: "18px",
   },
   logo: {
     display: "block",
-    width: "160px",
+    width: "190px",
     height: "auto",
     border: "0",
     outline: "none",
@@ -146,34 +139,19 @@ const styles = {
     fontFamily: "Arial,Helvetica,sans-serif",
     fontSize: "38px",
     fontWeight: "700",
-    color: "#101010",
+    color: "#f0ede8",
     letterSpacing: "2px",
-  },
-  dividerCol: {
-    width: "1px",
-    padding: "0 18px",
-    verticalAlign: "middle",
-  },
-  dividerTable: {
-    borderCollapse: "collapse",
-  },
-  divider: {
-    width: "1px",
-    height: "88px",
-    backgroundColor: "#e8002a",
-    fontSize: "0",
-    lineHeight: "0",
   },
   infoCol: {
     verticalAlign: "middle",
-    paddingLeft: "2px",
+    paddingLeft: "0",
   },
   name: {
     margin: "0 0 4px",
     fontFamily: "Arial,Helvetica,sans-serif",
     fontSize: "26px",
     fontWeight: "700",
-    color: "#0d0d0d",
+    color: "#f0ede8",
     letterSpacing: "0.3px",
     lineHeight: "1.2",
   },
@@ -213,7 +191,7 @@ const styles = {
   link: {
     fontFamily: "Arial,Helvetica,sans-serif",
     fontSize: "12px",
-    color: "#555555",
+    color: "#8f98a3",
     textDecoration: "none",
     letterSpacing: "0.1px",
   },
@@ -221,6 +199,9 @@ const styles = {
     width: "100%",
     borderCollapse: "collapse",
     marginTop: "20px",
+    maxWidth: "520px",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   bottomLineAccent: {
     width: "28px",
@@ -231,7 +212,7 @@ const styles = {
   },
   bottomLine: {
     height: "1px",
-    backgroundColor: "#dddddd",
+    backgroundColor: "#232833",
     fontSize: "0",
     lineHeight: "0",
   },
@@ -239,11 +220,12 @@ const styles = {
     margin: "10px 0 0",
     fontFamily: "Arial,Helvetica,sans-serif",
     fontSize: "8px",
-    color: "#aaaaaa",
+    color: "#2f3540",
     letterSpacing: "3.5px",
     textTransform: "uppercase",
     textAlign: "center",
     lineHeight: "1",
     padding: 0,
+    maxWidth: "520px",
   },
 };
