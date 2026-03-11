@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { apiUrl } from "../const";
 import logoBrancaSemFundo from "../images/logo-branca-sem-fundo.png";
@@ -114,12 +114,12 @@ export default function ComingSoon() {
           </a>
           <div className="l4-coming-v2-live-pill">
             <span className="dot" />
-            Drop 05
+            Drop 01
           </div>
         </header>
 
         <section className="l4-coming-v2-hero">
-          <div className="l4-coming-v2-drop-tag">// Acesso antecipado</div>
+          <div className="l4-coming-v2-drop-tag">// Lancamento oficial</div>
           <h1 className="l4-coming-v2-title">
             <span className="t1" data-t="ALGO">
               ALGO
@@ -133,7 +133,7 @@ export default function ComingSoon() {
             <strong>Abertura oficial:</strong> 11 de maio de 2026.
           </p>
           <p className="l4-coming-v2-desc">
-            O próximo drop está quase pronto.
+            O primeiro drop da L4CKOS esta quase pronto.
             <br />
             Entre na lista e garanta <strong>acesso 24h antes</strong> de todo mundo.
           </p>
@@ -179,7 +179,7 @@ export default function ComingSoon() {
                 autoComplete="email"
               />
               <button className="l4-coming-v2-cta-btn" type="button" onClick={() => void handleSubmit()} disabled={loading}>
-                {loading ? "ENVIANDO..." : "GARANTIR ACESSO →"}
+                {loading ? "ENVIANDO..." : "GARANTIR ACESSO â†’"}
               </button>
             </div>
             {error ? <div className="l4-coming-v2-form-error">{error}</div> : null}
@@ -234,3 +234,4 @@ export default function ComingSoon() {
     </div>
   );
 }
+
