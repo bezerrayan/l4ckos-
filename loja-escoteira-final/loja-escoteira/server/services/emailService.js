@@ -310,3 +310,49 @@ export async function sendWaitlistEmail({ email }) {
     html,
   });
 }
+
+export async function sendWaitlistAutoReply({ email }) {
+  const cleanEmail = sanitizeEmail(email);
+  const fromCandidates = getUniqueSenderCandidates();
+  if (fromCandidates.length === 0) {
+    throw new Error("Missing env var: EMAIL_FROM_NOREPLY");
+  }
+
+  const replyTo = sanitizeText(getOptionalEnv("EMAIL_FROM_CONTACT")) || fromCandidates[0];
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.6;max-width:680px">
+      <h2 style="margin:0 0 12px">Cadastro confirmado na lista de espera</h2>
+      <p>Recebemos seu cadastro na lista de espera da L4CKOS.</p>
+      <p>Voce sera avisado em primeira mao quando a loja abrir oficialmente.</p>
+      <p style="font-size:12px;color:#666;margin-top:18px">
+        Este e um e-mail automatico. Nao e necessario responder.
+      </p>
+      <hr style="border:none;border-top:1px solid #ececec;margin:20px 0" />
+      <p style="font-size:12px;color:#666;margin:0">L4CKOS - Lista de espera</p>
+    </div>
+  `;
+
+  let lastError = null;
+  for (const from of fromCandidates) {
+    try {
+      return await sendWithResend({
+        from,
+        to: cleanEmail,
+        subject: "Voce entrou na lista de espera - L4CKOS",
+        replyTo,
+        html,
+      });
+    } catch (error) {
+      lastError = error;
+      console.error("[Email] Waitlist auto-reply failed, trying next sender", {
+        from,
+        to: cleanEmail,
+        name: error instanceof Error ? error.name : "UnknownError",
+        message: error instanceof Error ? error.message : "Unknown error",
+        cause: error instanceof Error ? error.cause : undefined,
+      });
+    }
+  }
+
+  throw lastError || new Error("Waitlist auto-reply failed for all sender candidates");
+}

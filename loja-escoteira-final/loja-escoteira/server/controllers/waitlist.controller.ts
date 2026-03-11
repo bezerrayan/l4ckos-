@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { createWaitlistEmail, getWaitlistEmailByEmail } from "../db";
-import { sendWaitlistEmail } from "../services/emailService.js";
+import { sendWaitlistAutoReply, sendWaitlistEmail } from "../services/emailService.js";
 
 export function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -31,6 +31,16 @@ export async function createWaitlistEntry(req: Request, res: Response) {
       console.error("[Waitlist] Failed to send notification email", {
         name: mailError instanceof Error ? mailError.name : "UnknownError",
         message: mailError instanceof Error ? mailError.message : "Unknown error",
+      });
+    }
+
+    try {
+      await sendWaitlistAutoReply({ email });
+    } catch (autoReplyError) {
+      // Nao bloqueia cadastro na waitlist por falha de auto resposta.
+      console.error("[Waitlist] Failed to send auto-reply email", {
+        name: autoReplyError instanceof Error ? autoReplyError.name : "UnknownError",
+        message: autoReplyError instanceof Error ? autoReplyError.message : "Unknown error",
       });
     }
 
