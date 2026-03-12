@@ -79,21 +79,21 @@
 .l4-home-hero-carousel {
   position: relative;
   z-index: 2;
-  width: min(38vw, 420px);
-  min-width: 260px;
+  width: min(42vw, 520px);
+  min-width: 320px;
 }
 
 .l4-home-hero-carousel-card {
   position: relative;
   border: 1px solid #2a2a2a;
   background-color: #131313;
-  padding: 18px;
+  padding: 16px;
   box-shadow: 0 22px 46px rgba(0, 0, 0, 0.35);
 }
 
 .l4-home-hero-carousel-frame {
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 5 / 4;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(10, 10, 10, 0.96) 0%, rgba(40, 4, 12, 0.92) 100%);
 }
@@ -134,7 +134,7 @@
 }
 
 .l4-home-hero-carousel-top {
-  top: 20px;
+  top: 18px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -161,32 +161,33 @@
 }
 
 .l4-home-hero-carousel-bottom {
-  bottom: 24px;
+  bottom: 18px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
 }
 
 .l4-home-hero-carousel-copy h3 {
   margin: 0;
   font-family: "Bebas Neue", sans-serif;
   letter-spacing: 2px;
-  font-size: clamp(28px, 4vw, 46px);
-  line-height: 0.95;
+  font-size: clamp(24px, 2.8vw, 42px);
+  line-height: 0.92;
+  max-width: 270px;
 }
 
 .l4-home-hero-carousel-copy p {
-  margin: 12px 0 0;
-  max-width: 250px;
+  margin: 10px 0 0;
+  max-width: 240px;
   color: rgba(240, 237, 232, 0.78);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .l4-home-hero-carousel-discount {
-  min-width: 92px;
-  padding: 14px 16px;
+  min-width: 84px;
+  padding: 10px 12px;
   text-align: center;
   background: rgba(8, 8, 8, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -200,7 +201,7 @@
 
 .l4-home-hero-carousel-discount strong {
   font-family: "Bebas Neue", sans-serif;
-  font-size: clamp(30px, 4vw, 42px);
+  font-size: clamp(26px, 3vw, 36px);
   line-height: 1;
 }
 
@@ -215,8 +216,8 @@
 
 .l4-home-hero-carousel-link {
   position: absolute;
-  right: 20px;
-  bottom: 20px;
+  right: 18px;
+  bottom: 18px;
   z-index: 3;
   text-decoration: none;
   font-family: "Space Mono", monospace;
@@ -226,7 +227,7 @@
   color: #fff;
   background: rgba(232, 0, 42, 0.94);
   border: 1px solid #ff3156;
-  padding: 13px 16px;
+  padding: 11px 14px;
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
@@ -767,6 +768,10 @@
 
   .l4-home-hero-carousel-card {
     padding: 14px;
+  }
+
+  .l4-home-hero-carousel-frame {
+    aspect-ratio: 1 / 1.05;
   }
 
   .l4-home-hero-carousel-top,
