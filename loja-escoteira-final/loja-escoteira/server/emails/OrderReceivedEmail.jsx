@@ -16,10 +16,10 @@ export function OrderReceivedEmail({ customerName, orderNumber, items, total }) 
       title="Pedido recebido com sucesso"
       subtitle={`Pedido #${safeOrder}`}
     >
-      <Text>Ola, {safeName}.</Text>
+      <Text>Olá, {safeName}.</Text>
       <Text>Recebemos seu pedido e ja estamos iniciando a preparacao.</Text>
 
-      <EmailInfoRow label="Numero do pedido" value={`#${safeOrder}`} />
+      <EmailInfoRow label="Número do pedido" value={`#${safeOrder}`} />
       <EmailInfoRow label="Total" value={safeTotal} />
 
       <Section style={styles.tableWrap}>

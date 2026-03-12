@@ -7,12 +7,12 @@ export function ResetPasswordEmail({ name, resetUrl }) {
   const safeResetUrl = String(resetUrl || "");
 
   return (
-    <EmailLayout preview="Redefinir senha - L4CKOS" title="Redefinicao de senha" subtitle="Solicitacao de seguranca da conta">
-      <Text>Ola, {safeName}.</Text>
-      <Text>Recebemos uma solicitacao para redefinir a senha da sua conta L4CKOS.</Text>
+    <EmailLayout preview="Redefinir senha - L4CKOS" title="RedefiniÃ§Ã£o de senha" subtitle="SolicitaÃ§Ã£o de seguranÃ§a da conta">
+      <Text>OlÃ¡, {safeName}.</Text>
+      <Text>Recebemos uma solicitaÃ§Ã£o para redefinir a senha da sua conta L4CKOS.</Text>
       {safeResetUrl ? <EmailButton href={safeResetUrl}>Redefinir senha</EmailButton> : null}
       <Text style={{ color: "#6d6d6d", fontSize: "12px" }}>
-        Se voce nao solicitou essa alteracao, ignore este email. Sua conta continuara segura.
+        Se você não solicitou esta alteração, ignore este e-mail. Sua conta continuará segura.
       </Text>
     </EmailLayout>
   );

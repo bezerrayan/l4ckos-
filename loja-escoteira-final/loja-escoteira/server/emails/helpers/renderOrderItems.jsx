@@ -3,7 +3,7 @@ export function renderOrderItems(items = []) {
     return (
       <tr>
         <td colSpan="3" style={styles.empty}>
-          Nenhum item disponivel.
+          Nenhum item disponível.
         </td>
       </tr>
     );

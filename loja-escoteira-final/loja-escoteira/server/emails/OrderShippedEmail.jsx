@@ -11,10 +11,10 @@ export function OrderShippedEmail({ customerName, orderNumber, trackingCode, tra
 
   return (
     <EmailLayout preview={`Seu pedido foi enviado #${safeOrder}`} title="Seu pedido foi enviado" subtitle={`Pedido #${safeOrder}`}>
-      <Text>Ola, {safeName}.</Text>
+      <Text>Olá, {safeName}.</Text>
       <Text>Seu pedido foi despachado e ja esta em rota de entrega.</Text>
-      <EmailInfoRow label="Numero do pedido" value={`#${safeOrder}`} />
-      <EmailInfoRow label="Codigo de rastreio" value={safeTrackingCode} />
+      <EmailInfoRow label="Número do pedido" value={`#${safeOrder}`} />
+      <EmailInfoRow label="Código de rastreio" value={safeTrackingCode} />
       {safeTrackingUrl ? <EmailButton href={safeTrackingUrl}>Rastrear pedido</EmailButton> : null}
     </EmailLayout>
   );

@@ -8,7 +8,7 @@ export function WelcomeEmail({ name }) {
 
   return (
     <EmailLayout preview="Bem-vindo a L4CKOS" title="Bem-vindo a L4CKOS" subtitle="Sua conta ja esta pronta">
-      <Text>Ola, {safeName}.</Text>
+      <Text>Olá, {safeName}.</Text>
       <Text>
         Seja bem-vindo a L4CKOS, a loja focada em produtos escoteiros e outdoor com curadoria real de campo.
       </Text>

@@ -13,9 +13,9 @@ export function PaymentApprovedEmail({ customerName, orderNumber, total }) {
       title="Pagamento aprovado"
       subtitle={`Pedido #${safeOrder}`}
     >
-      <Text>Ola, {safeName}.</Text>
+      <Text>Olá, {safeName}.</Text>
       <Text>Seu pagamento foi aprovado com sucesso. Agora vamos preparar seu pedido para envio.</Text>
-      <EmailInfoRow label="Numero do pedido" value={`#${safeOrder}`} />
+      <EmailInfoRow label="Número do pedido" value={`#${safeOrder}`} />
       <EmailInfoRow label="Total pago" value={safeTotal} />
       <Text>Assim que seu pedido for despachado, voce recebera um novo email com rastreio.</Text>
     </EmailLayout>

@@ -148,13 +148,13 @@ function buildContactAutoReplyHtml(name) {
   return `
     <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.6;max-width:680px">
       <h2 style="margin:0 0 12px">Recebemos sua mensagem</h2>
-      <p>Ola, ${safeName}.</p>
+      <p>Olá, ${safeName}.</p>
       <p>Obrigado por entrar em contato com a L4CKOS. Sua mensagem foi recebida com sucesso.</p>
       <p>Nosso time vai responder em breve.</p>
       <p style="font-size:12px;color:#666;margin-top:18px">
-        Por seguranca, nao compartilhe senhas, codigos ou dados sensiveis por e-mail.
+        Por segurança, não compartilhe senhas, códigos ou dados sensíveis por e-mail.
       </p>
-      <p style="font-size:12px;color:#666;margin:0">Este e um e-mail automatico da L4CKOS.</p>
+      <p style="font-size:12px;color:#666;margin:0">Este é um e-mail automático da L4CKOS.</p>
       ${buildEmailSignatureHtml()}
     </div>
   `;
@@ -402,9 +402,9 @@ export async function sendWaitlistAutoReply({ email }) {
     <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.6;max-width:680px">
       <h2 style="margin:0 0 12px">Cadastro confirmado na lista de espera</h2>
       <p>Recebemos seu cadastro na lista de espera da L4CKOS.</p>
-      <p>Voce sera avisado em primeira mao quando a loja abrir oficialmente.</p>
+      <p>Você será avisado em primeira mão quando a loja abrir oficialmente.</p>
       <p style="font-size:12px;color:#666;margin-top:18px">
-        Este e um e-mail automatico. Nao e necessario responder.
+        Este é um e-mail automático. Não é necessário responder.
       </p>
       <p style="font-size:12px;color:#666;margin:0">L4CKOS - Lista de espera</p>
       ${buildEmailSignatureHtml()}
@@ -417,7 +417,7 @@ export async function sendWaitlistAutoReply({ email }) {
       return await sendWithResend({
         from,
         to: cleanEmail,
-        subject: "Voce entrou na lista de espera - L4CKOS",
+        subject: "Você entrou na lista de espera - L4CKOS",
         replyTo,
         html,
       });
@@ -451,15 +451,15 @@ export async function sendWaitlistLaunchEmail({
 
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.7;max-width:680px">
-      <h2 style="margin:0 0 14px">Parabens, a hora chegou.</h2>
-      <p>A loja da L4CKOS esta oficialmente no ar.</p>
+      <h2 style="margin:0 0 14px">Parabéns, a hora chegou.</h2>
+      <p>A loja da L4CKOS está oficialmente no ar.</p>
       <p>
-        Como recompensa por ter garantido sua vaga com antecedencia, voce recebeu um
+        Como recompensa por ter garantido sua vaga com antecedência, você recebeu um
         <strong>cupom exclusivo de ${escapeHtml(String(cleanDiscountPercent))}% OFF</strong>.
       </p>
       <p>
-        Use o codigo <strong style="letter-spacing:1px">${escapeHtml(cleanCouponCode)}</strong>
-        para aproveitar enquanto ele estiver disponivel.
+        Use o código <strong style="letter-spacing:1px">${escapeHtml(cleanCouponCode)}</strong>
+        para aproveitar enquanto ele estiver disponível.
       </p>
       <p style="margin:18px 0 22px">
         <a
@@ -471,8 +471,8 @@ export async function sendWaitlistLaunchEmail({
         </a>
       </p>
       <p style="font-size:12px;color:#666;margin-top:18px">
-        Este e um e-mail automatico da L4CKOS. Se voce nao quiser mais receber avisos,
-        basta nos responder solicitando a remocao da lista.
+        Este é um e-mail automático da L4CKOS. Se você não quiser mais receber avisos,
+        basta nos responder solicitando a remoção da lista.
       </p>
       ${buildEmailSignatureHtml()}
     </div>
@@ -481,7 +481,7 @@ export async function sendWaitlistLaunchEmail({
   return sendWithResend({
     from,
     to: cleanEmail,
-    subject: `A loja abriu: seu cupom de ${cleanDiscountPercent}% OFF esta liberado`,
+    subject: `A loja abriu: seu cupom de ${cleanDiscountPercent}% OFF está liberado`,
     replyTo,
     html,
   });
