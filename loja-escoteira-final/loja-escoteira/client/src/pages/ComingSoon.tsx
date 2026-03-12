@@ -4,7 +4,8 @@ import { apiUrl } from "../const";
 import logoBrancaSemFundo from "../images/logo-branca-sem-fundo.png";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
-const STORE_OPENING_TARGET = new Date("2026-05-11T00:00:00-03:00").getTime();
+const STORE_OPENING_TARGET = new Date("2026-06-11T00:00:00-03:00").getTime();
+const COUNTDOWN_REVEAL_DAYS = 21;
 
 function pad(value: number) {
   return String(Math.max(0, value)).padStart(2, "0");
@@ -61,6 +62,13 @@ export default function ComingSoon() {
     for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)];
     return out;
   }
+
+  const daysRemaining = useMemo(() => {
+    const diff = Math.max(0, targetDate - Date.now());
+    return Math.ceil(diff / 86_400_000);
+  }, [targetDate, countdown.days, countdown.hours, countdown.minutes, countdown.seconds]);
+
+  const shouldShowCountdown = daysRemaining <= COUNTDOWN_REVEAL_DAYS;
 
   async function handleSubmit() {
     const normalizedEmail = email.trim().toLowerCase();
@@ -130,35 +138,48 @@ export default function ComingSoon() {
 
           <div className="l4-coming-v2-divider" />
           <p className="l4-coming-v2-form-note" style={{ marginBottom: 12 }}>
-            <strong>Abertura oficial:</strong> 11 de maio de 2026.
+            <strong>Abertura oficial:</strong> Em breve.
           </p>
           <p className="l4-coming-v2-desc">
             O primeiro drop da L4CKOS esta quase pronto.
             <br />
             Entre na lista e garanta <strong>acesso 24h antes</strong> de todo mundo.
           </p>
-
-          <div className="l4-coming-v2-countdown">
-            <div className="cu">
-              <div className="cn">{countdown.days}</div>
-              <div className="cl">Dias</div>
+          {shouldShowCountdown ? (
+            <div className="l4-coming-v2-countdown-wrap">
+              <div className="l4-coming-v2-countdown-label">Contagem oficial iniciada</div>
+              <div className="l4-coming-v2-countdown">
+                <div className="cu">
+                  <div className="cn">{countdown.days}</div>
+                  <div className="cl">Dias</div>
+                </div>
+                <div className="csep">:</div>
+                <div className="cu">
+                  <div className="cn">{countdown.hours}</div>
+                  <div className="cl">Hr</div>
+                </div>
+                <div className="csep">:</div>
+                <div className="cu">
+                  <div className="cn">{countdown.minutes}</div>
+                  <div className="cl">Min</div>
+                </div>
+                <div className="csep">:</div>
+                <div className="cu">
+                  <div className={`cn ${secondsFlash ? "is-flash" : ""}`}>{countdown.seconds}</div>
+                  <div className="cl">Seg</div>
+                </div>
+              </div>
             </div>
-            <div className="csep">:</div>
-            <div className="cu">
-              <div className="cn">{countdown.hours}</div>
-              <div className="cl">Hr</div>
+          ) : (
+            <div className="l4-coming-v2-soon-panel">
+              <div className="l4-coming-v2-soon-badge">EM BREVE</div>
+              <p>
+                Estamos preparando a abertura com calma para entregar um lancamento forte, confiavel e com beneficios reais
+                para quem entrou primeiro.
+              </p>
+              <span>O contador aparece automaticamente quando estivermos na reta final.</span>
             </div>
-            <div className="csep">:</div>
-            <div className="cu">
-              <div className="cn">{countdown.minutes}</div>
-              <div className="cl">Min</div>
-            </div>
-            <div className="csep">:</div>
-            <div className="cu">
-              <div className={`cn ${secondsFlash ? "is-flash" : ""}`}>{countdown.seconds}</div>
-              <div className="cl">Seg</div>
-            </div>
-          </div>
+          )}
         </section>
 
         {!success ? (
@@ -234,4 +255,3 @@ export default function ComingSoon() {
     </div>
   );
 }
-

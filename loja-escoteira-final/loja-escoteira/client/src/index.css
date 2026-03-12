@@ -1539,6 +1539,20 @@ small {
   animation: l4v2Up 0.6s 0.35s ease both;
 }
 
+.l4-coming-v2-countdown-wrap {
+  width: 100%;
+}
+
+.l4-coming-v2-countdown-label {
+  margin-top: 28px;
+  text-align: center;
+  color: #e5e7eb;
+  text-transform: uppercase;
+  font-family: "Space Mono", Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+}
+
 .l4-coming-v2-countdown .cu {
   display: flex;
   flex-direction: column;
@@ -1715,6 +1729,47 @@ small {
   margin-top: 10px;
   color: #9ca3af;
   font-size: 11px;
+}
+
+.l4-coming-v2-soon-panel {
+  width: 100%;
+  max-width: 520px;
+  margin-top: 32px;
+  padding: 24px 22px;
+  border: 1px solid #181818;
+  background:
+    linear-gradient(135deg, rgba(15, 15, 15, 0.92) 0%, rgba(28, 12, 16, 0.9) 100%);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.28);
+  animation: l4v2Up 0.6s 0.35s ease both;
+}
+
+.l4-coming-v2-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 128px;
+  padding: 9px 14px;
+  border: 1px solid rgba(232, 0, 42, 0.5);
+  background: rgba(232, 0, 42, 0.08);
+  color: #f0ede8;
+  font-family: "Space Mono", Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.l4-coming-v2-soon-panel p {
+  margin: 16px 0 10px;
+  color: #d1d5db;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.l4-coming-v2-soon-panel span {
+  display: block;
+  color: #6b7280;
+  font-size: 11px;
+  letter-spacing: 0.04em;
 }
 
 .l4-coming-v2-ok {
