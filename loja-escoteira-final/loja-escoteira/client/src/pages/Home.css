@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: clamp(36px, 5vw, 84px);
+  gap: clamp(28px, 4vw, 64px);
   padding: 70px 64px;
   overflow: hidden;
 }
@@ -73,17 +73,17 @@
 .l4-home-hero-content {
   position: relative;
   z-index: 2;
-  flex: 1 1 54%;
-  max-width: 680px;
+  flex: 1 1 48%;
+  max-width: 620px;
 }
 
 .l4-home-hero-carousel {
   position: relative;
   z-index: 2;
-  flex: 0 1 46%;
+  flex: 1 1 52%;
   width: 100%;
-  max-width: 560px;
-  min-width: 360px;
+  max-width: 680px;
+  min-width: 420px;
   margin-left: auto;
 }
 
@@ -91,13 +91,13 @@
   position: relative;
   border: 1px solid #2a2a2a;
   background-color: #131313;
-  padding: 16px;
+  padding: 18px;
   box-shadow: 0 22px 46px rgba(0, 0, 0, 0.35);
 }
 
 .l4-home-hero-carousel-frame {
   position: relative;
-  aspect-ratio: 5 / 4;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(10, 10, 10, 0.96) 0%, rgba(40, 4, 12, 0.92) 100%);
 }
@@ -178,12 +178,12 @@
   letter-spacing: 2px;
   font-size: clamp(24px, 2.8vw, 42px);
   line-height: 0.92;
-  max-width: 270px;
+  max-width: 320px;
 }
 
 .l4-home-hero-carousel-copy p {
   margin: 10px 0 0;
-  max-width: 240px;
+  max-width: 320px;
   color: rgba(240, 237, 232, 0.78);
   font-size: 13px;
   line-height: 1.45;
