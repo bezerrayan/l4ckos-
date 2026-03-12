@@ -174,7 +174,7 @@ export default function ComingSoon() {
             <div className="l4-coming-v2-soon-panel">
               <div className="l4-coming-v2-soon-badge">EM BREVE</div>
               <p>
-                Estamos preparando a abertura com calma para entregar um lancamento forte, confiavel e com beneficios reais
+                Estamos preparando a abertura com calma para entregar um lançamento forte, confiável e com benefícios reais
                 para quem entrou primeiro.
               </p>
               <span>O contador aparece automaticamente quando estivermos na reta final.</span>
@@ -200,7 +200,7 @@ export default function ComingSoon() {
                 autoComplete="email"
               />
               <button className="l4-coming-v2-cta-btn" type="button" onClick={() => void handleSubmit()} disabled={loading}>
-                {loading ? "ENVIANDO..." : "GARANTIR ACESSO â†’"}
+                {loading ? "ENVIANDO..." : "GARANTIR ACESSO →"}
               </button>
             </div>
             {error ? <div className="l4-coming-v2-form-error">{error}</div> : null}
@@ -216,19 +216,19 @@ export default function ComingSoon() {
               </div>
               <div className="perk">
                 <div className="pk">FRETE</div>
-                <div className="pd">Gratis no 1o pedido</div>
+                <div className="pd">Grátis no 1° pedido</div>
               </div>
             </div>
-            <div className="l4-coming-v2-form-note">Sem spam. So avisamos quando abrir.</div>
+            <div className="l4-coming-v2-form-note">Sem spam. Só avisamos quando abrir.</div>
           </section>
         ) : (
           <section className="l4-coming-v2-ok on">
             <div className="ok-box">
               <div className="ok-icon">OK</div>
-              <div className="ok-txt">Vaga reservada - voce esta na lista</div>
+              <div className="ok-txt">Vaga reservada - você está na lista</div>
             </div>
             <div className="ok-num">{reservationCode}</div>
-            <div className="ok-sub">{successMessage || "Voce sera avisado primeiro quando abrir."}</div>
+            <div className="ok-sub">{successMessage || "Você será avisado primeiro quando abrir."}</div>
           </section>
         )}
 
