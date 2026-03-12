@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
-import { useIsMobile } from "../hooks/useIsMobile";
+import { apiUrl } from "../const";
 import { trpc } from "../lib/trpc";
 
 interface Promo {
@@ -9,6 +8,9 @@ interface Promo {
   title: string;
   description: string;
   ctaLabel: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  linkUrl?: string;
   discount: string;
   discountLabel: string;
   color: string;
@@ -21,6 +23,7 @@ const PROMOS_FALLBACK: Promo[] = [
     title: "Desconto em camisas escoteiras",
     description: "Ate 30% OFF em modelos dry fit, regatas e oversized.",
     ctaLabel: "Aproveitar oferta",
+    linkUrl: "/produtos",
     discount: "30%",
     discountLabel: "OFF",
     color: "linear-gradient(135deg, #151515 0%, #2a0a12 100%)",
@@ -31,14 +34,22 @@ const PROMOS_FALLBACK: Promo[] = [
     title: "Promocao de roupas",
     description: "Compre 2 e ganhe desconto progressivo em camisetas e jaquetas.",
     ctaLabel: "Ver promocao",
+    linkUrl: "/produtos",
     discount: "50%",
     discountLabel: "OFF",
     color: "linear-gradient(135deg, #1a1a1a 0%, #32111a 100%)",
   },
 ];
 
+function resolvePromoImageUrl(raw?: string | null) {
+  const value = (raw || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value) || value.startsWith("data:")) return value;
+  if (value.startsWith("/")) return apiUrl(value);
+  return apiUrl(`/${value}`);
+}
+
 export default function PromoCarousel() {
-  const isMobile = useIsMobile(980);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const promotionsQuery = trpc.products.promotions.useQuery();
@@ -50,6 +61,9 @@ export default function PromoCarousel() {
       title: String(item.title ?? "").trim() || "Oferta especial",
       description: String(item.description ?? "").trim() || "Confira condicoes exclusivas por tempo limitado.",
       ctaLabel: String(item.ctaLabel ?? "").trim() || "Aproveitar oferta",
+      imageUrl: resolvePromoImageUrl(item.imageUrl),
+      imageAlt: String(item.imageAlt ?? "").trim() || String(item.title ?? "").trim() || "Banner promocional",
+      linkUrl: String(item.linkUrl ?? "").trim() || "/produtos",
       discount: String(item.discountText ?? "").trim() || "30%",
       discountLabel: String(item.discountLabel ?? "").trim() || "OFF",
       color: String(item.bgStyle ?? "").trim() || "linear-gradient(135deg, #151515 0%, #2a0a12 100%)",
@@ -76,167 +90,85 @@ export default function PromoCarousel() {
   if (!promo) return null;
 
   return (
-    <div
-      style={{ ...styles.carousel, marginBottom: isMobile ? 32 : styles.carousel.marginBottom }}
+    <section
+      className="l4-home-hero-carousel"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
       <div
+        className="l4-home-hero-carousel-card"
         style={{
-          ...styles.slide,
-          backgroundImage: `${promo.color}, linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 40%, #2a0a12 100%)`,
-          backgroundBlendMode: "overlay, normal",
-          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: isMobile ? 16 : styles.slide.gap,
-          padding: isMobile ? 20 : styles.slide.padding,
-          minHeight: isMobile ? 0 : styles.slide.minHeight,
+          backgroundImage: `${promo.color}, linear-gradient(180deg, rgba(8,8,8,0.05) 0%, rgba(8,8,8,0.78) 100%)`,
         }}
       >
-        <div style={styles.content}>
-          <p style={styles.badge}>{promo.badge}</p>
-          <h2 style={{ ...styles.title, fontSize: isMobile ? 24 : styles.title.fontSize }}>{promo.title}</h2>
-          <p style={{ ...styles.description, fontSize: isMobile ? 14 : styles.description.fontSize }}>{promo.description}</p>
-          <button style={{ ...styles.cta, width: isMobile ? "100%" : undefined }}>{promo.ctaLabel}</button>
-        </div>
-
-        <div style={{ ...styles.discount, padding: isMobile ? 16 : styles.discount.padding, width: isMobile ? "100%" : undefined }}>
-          <p style={{ ...styles.discountValue, fontSize: isMobile ? 34 : styles.discountValue.fontSize }}>{promo.discount}</p>
-          <p style={styles.discountLabel}>{promo.discountLabel}</p>
+        <div className="l4-home-hero-carousel-frame">
+          {promo.imageUrl ? (
+            <img
+              src={promo.imageUrl}
+              alt={promo.imageAlt || promo.title}
+              className="l4-home-hero-carousel-image"
+              loading="lazy"
+            />
+          ) : (
+            <div className="l4-home-hero-carousel-fallback">
+              <span>L4CKOS</span>
+            </div>
+          )}
+          <div className="l4-home-hero-carousel-overlay" />
+          <div className="l4-home-hero-carousel-top">
+            <span className="l4-home-hero-carousel-badge">{promo.badge}</span>
+            <span className="l4-home-hero-carousel-count">
+              {String(current + 1).padStart(2, "0")} / {String(promos.length).padStart(2, "0")}
+            </span>
+          </div>
+          <div className="l4-home-hero-carousel-bottom">
+            <div className="l4-home-hero-carousel-copy">
+              <h3>{promo.title}</h3>
+              <p>{promo.description}</p>
+            </div>
+            <div className="l4-home-hero-carousel-discount">
+              <strong>{promo.discount}</strong>
+              <span>{promo.discountLabel}</span>
+            </div>
+          </div>
+          <a
+            href={(promo.linkUrl || "/produtos").trim() || "/produtos"}
+            className="l4-home-hero-carousel-link"
+            aria-label={promo.ctaLabel}
+          >
+            {promo.ctaLabel}
+          </a>
         </div>
       </div>
-
-      <div style={styles.controls}>
-        <button style={styles.navBtn} onClick={() => setCurrent((prev) => (prev - 1 + promos.length) % promos.length)} aria-label="Banner anterior">
+      <div className="l4-home-hero-carousel-controls">
+        <button
+          type="button"
+          className="l4-home-hero-carousel-nav"
+          onClick={() => setCurrent((prev) => (prev - 1 + promos.length) % promos.length)}
+          aria-label="Banner anterior"
+        >
           {"<"}
         </button>
-
-        <div style={styles.dots}>
+        <div className="l4-home-hero-carousel-dots">
           {promos.map((_, idx) => (
             <button
+              type="button"
               key={idx}
-              style={{ ...styles.dot, ...(idx === current ? styles.dotActive : {}) }}
+              className={`l4-home-hero-carousel-dot${idx === current ? " is-active" : ""}`}
               onClick={() => setCurrent(idx)}
               aria-label={`Ir para banner ${idx + 1}`}
             />
           ))}
         </div>
-
-        <button style={styles.navBtn} onClick={() => setCurrent((prev) => (prev + 1) % promos.length)} aria-label="Proximo banner">
+        <button
+          type="button"
+          className="l4-home-hero-carousel-nav"
+          onClick={() => setCurrent((prev) => (prev + 1) % promos.length)}
+          aria-label="Proximo banner"
+        >
           {">"}
         </button>
       </div>
-    </div>
+    </section>
   );
 }
-
-const styles: Record<string, CSSProperties> = {
-  carousel: {
-    position: "relative",
-    marginBottom: 60,
-  },
-  slide: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 40,
-    alignItems: "center",
-    padding: 48,
-    borderRadius: 16,
-    color: "rgba(255,255,255,0.95)",
-    minHeight: 280,
-    boxShadow: "0 12px 34px rgba(0,0,0,0.35)",
-    border: "1px solid #2f2f2f",
-    transition: "all 0.5s ease",
-    animation: "fadeInUp 0.6s ease-out",
-  },
-  content: {},
-  badge: {
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: "2px",
-    color: "#f7c8d1",
-    margin: "0 0 12px 0",
-    textTransform: "uppercase",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 900,
-    margin: "0 0 12px 0",
-    lineHeight: 1.2,
-    color: "#f0ede8",
-  },
-  description: {
-    fontSize: 16,
-    color: "rgba(240,237,232,0.88)",
-    margin: "0 0 24px 0",
-    lineHeight: 1.5,
-  },
-  cta: {
-    padding: "12px 32px",
-    background: "linear-gradient(135deg, #e8002a 0%, #a4001c 100%)",
-    color: "#ffffff",
-    border: "1px solid #ff3156",
-    borderRadius: 8,
-    fontWeight: 700,
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontSize: 14,
-    boxShadow: "0 8px 20px rgba(232,0,42,0.35)",
-  },
-  discount: {
-    textAlign: "center",
-    padding: 24,
-    background: "rgba(12,12,12,0.55)",
-    borderRadius: 12,
-    backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255,255,255,0.14)",
-  },
-  discountValue: {
-    fontSize: 48,
-    fontWeight: 900,
-    margin: "0 0 4px 0",
-    color: "#ffffff",
-  },
-  discountLabel: {
-    fontSize: 14,
-    fontWeight: 700,
-    margin: 0,
-    opacity: 0.95,
-    color: "rgba(255,255,255,0.95)",
-  },
-  controls: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 24,
-    marginTop: 24,
-  },
-  navBtn: {
-    background: "#141414",
-    border: "1px solid #2f2f2f",
-    width: 40,
-    height: 40,
-    borderRadius: 50,
-    cursor: "pointer",
-    fontSize: 16,
-    fontWeight: 700,
-    transition: "all 0.3s ease",
-    color: "#f0ede8",
-  },
-  dots: {
-    display: "flex",
-    gap: 8,
-  },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 50,
-    background: "#343434",
-    border: "none",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-  },
-  dotActive: {
-    background: "#e8002a",
-    width: 28,
-  },
-};

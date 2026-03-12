@@ -1005,6 +1005,9 @@ export async function createPromoBanner(payload: {
   title: string;
   description: string;
   ctaLabel: string;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  linkUrl?: string | null;
   discountText: string;
   discountLabel: string;
   bgStyle: string;
@@ -1018,6 +1021,9 @@ export async function createPromoBanner(payload: {
     title: payload.title,
     description: payload.description,
     ctaLabel: payload.ctaLabel,
+    imageUrl: payload.imageUrl ?? null,
+    imageAlt: payload.imageAlt ?? null,
+    linkUrl: payload.linkUrl ?? null,
     discountText: payload.discountText,
     discountLabel: payload.discountLabel,
     bgStyle: payload.bgStyle,
@@ -1033,6 +1039,9 @@ export async function updatePromoBanner(
     title: string;
     description: string;
     ctaLabel: string;
+    imageUrl: string | null;
+    imageAlt: string | null;
+    linkUrl: string | null;
     discountText: string;
     discountLabel: string;
     bgStyle: string;
@@ -1049,6 +1058,9 @@ export async function updatePromoBanner(
       ...(payload.title !== undefined ? { title: payload.title } : {}),
       ...(payload.description !== undefined ? { description: payload.description } : {}),
       ...(payload.ctaLabel !== undefined ? { ctaLabel: payload.ctaLabel } : {}),
+      ...(payload.imageUrl !== undefined ? { imageUrl: payload.imageUrl } : {}),
+      ...(payload.imageAlt !== undefined ? { imageAlt: payload.imageAlt } : {}),
+      ...(payload.linkUrl !== undefined ? { linkUrl: payload.linkUrl } : {}),
       ...(payload.discountText !== undefined ? { discountText: payload.discountText } : {}),
       ...(payload.discountLabel !== undefined ? { discountLabel: payload.discountLabel } : {}),
       ...(payload.bgStyle !== undefined ? { bgStyle: payload.bgStyle } : {}),

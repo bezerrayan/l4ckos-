@@ -48,6 +48,9 @@ const emptyPromoForm = {
   title: "",
   description: "",
   ctaLabel: "Aproveitar oferta",
+  imageUrl: "",
+  imageAlt: "",
+  linkUrl: "",
   discountText: "30%",
   discountLabel: "OFF",
   bgStyle: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
@@ -783,11 +786,17 @@ export default function Admin() {
       {section === "promos" && (
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Banners promocionais da Home</h2>
+          <p style={styles.muted}>
+            Esses banners alimentam o carrossel principal da home. A quantidade de cards exibida depende da quantidade de banners ativos que voce cadastrar aqui.
+          </p>
           <div style={styles.formGrid}>
             <input style={styles.input} placeholder="Badge" value={newPromo.badge} onChange={e => setNewPromo(prev => ({ ...prev, badge: e.target.value }))} />
             <input style={styles.input} placeholder="Titulo" value={newPromo.title} onChange={e => setNewPromo(prev => ({ ...prev, title: e.target.value }))} />
             <input style={styles.input} placeholder="Descricao" value={newPromo.description} onChange={e => setNewPromo(prev => ({ ...prev, description: e.target.value }))} />
             <input style={styles.input} placeholder="CTA" value={newPromo.ctaLabel} onChange={e => setNewPromo(prev => ({ ...prev, ctaLabel: e.target.value }))} />
+            <input style={styles.input} placeholder="URL da imagem" value={newPromo.imageUrl} onChange={e => setNewPromo(prev => ({ ...prev, imageUrl: e.target.value }))} />
+            <input style={styles.input} placeholder="Texto alternativo da imagem" value={newPromo.imageAlt} onChange={e => setNewPromo(prev => ({ ...prev, imageAlt: e.target.value }))} />
+            <input style={styles.input} placeholder="Link do banner (ex: /produtos)" value={newPromo.linkUrl} onChange={e => setNewPromo(prev => ({ ...prev, linkUrl: e.target.value }))} />
             <input style={styles.input} placeholder="Desconto (ex: 30%)" value={newPromo.discountText} onChange={e => setNewPromo(prev => ({ ...prev, discountText: e.target.value }))} />
             <input style={styles.input} placeholder="Label desconto" value={newPromo.discountLabel} onChange={e => setNewPromo(prev => ({ ...prev, discountLabel: e.target.value }))} />
             <input style={styles.input} placeholder="Background CSS" value={newPromo.bgStyle} onChange={e => setNewPromo(prev => ({ ...prev, bgStyle: e.target.value }))} />
@@ -811,6 +820,9 @@ export default function Admin() {
                   title: newPromo.title.trim(),
                   description: newPromo.description.trim(),
                   ctaLabel: newPromo.ctaLabel.trim() || "Aproveitar oferta",
+                  imageUrl: newPromo.imageUrl.trim(),
+                  imageAlt: newPromo.imageAlt.trim(),
+                  linkUrl: newPromo.linkUrl.trim(),
                   discountText: newPromo.discountText.trim(),
                   discountLabel: newPromo.discountLabel.trim() || "OFF",
                   bgStyle: newPromo.bgStyle.trim() || "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
@@ -842,12 +854,13 @@ export default function Admin() {
 
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Titulo</th><th>Desconto</th><th>Ordem</th><th>Ativo</th><th>Acoes</th></tr></thead>
+              <thead><tr><th>ID</th><th>Titulo</th><th>Imagem</th><th>Desconto</th><th>Ordem</th><th>Ativo</th><th>Acoes</th></tr></thead>
               <tbody>
                 {(promoBannersQuery.data ?? []).map((row: any) => (
                   <tr key={row.id}>
                     <td>{row.id}</td>
                     <td>{row.title}</td>
+                    <td>{row.imageUrl ? "Sim" : "Nao"}</td>
                     <td>{row.discountText}</td>
                     <td>{row.sortOrder}</td>
                     <td>{row.isActive ? "Sim" : "Nao"}</td>
@@ -861,6 +874,9 @@ export default function Admin() {
                             title: row.title ?? "",
                             description: row.description ?? "",
                             ctaLabel: row.ctaLabel ?? "Aproveitar oferta",
+                            imageUrl: row.imageUrl ?? "",
+                            imageAlt: row.imageAlt ?? "",
+                            linkUrl: row.linkUrl ?? "",
                             discountText: row.discountText ?? "",
                             discountLabel: row.discountLabel ?? "OFF",
                             bgStyle: row.bgStyle ?? "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",

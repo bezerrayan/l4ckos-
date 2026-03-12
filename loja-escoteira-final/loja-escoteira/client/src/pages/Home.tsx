@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
 import "./Home.css";
-import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 import camisaFallback from "../images/camisa.png";
 import PromoCarousel from "../components/PromoCarousel";
 
@@ -108,9 +107,7 @@ export default function Home() {
             </a>
           </div>
         </div>
-        <div className="l4-home-hero-logo-wrap">
-          <img src={logoPrincipalPreta} alt="Logo L4CKOS" className="l4-home-hero-logo" />
-        </div>
+        <PromoCarousel />
       </section>
 
       <div className="l4-home-marquee">
@@ -209,10 +206,6 @@ export default function Home() {
             </article>
           ))}
         </div>
-      </section>
-
-      <section className="l4-home-section" style={{ paddingTop: 0 }}>
-        <PromoCarousel />
       </section>
 
       <section className="l4-home-section">
