@@ -87,7 +87,7 @@ export default function Home() {
         <div className="l4-home-hero-grid" />
         <div className="l4-home-hero-bg" />
         <div className="l4-home-hero-content">
-          <div className="l4-home-tag">Drop 04 - Disponivel Agora</div>
+          <div className="l4-home-tag">Drop 01 - Disponivel Agora</div>
           <h1 className="l4-home-title">
             <span>BEM-VINDO</span>
             <br />
@@ -96,7 +96,7 @@ export default function Home() {
             <span className="accent">LOJA</span>
           </h1>
           <p className="l4-home-subtitle">
-            Descubra uma selecao variada de produtos de qualidade para esportes, aventura e movimento escoteiro.
+            Descubra uma seleção variada de produtos de qualidade para esportes, aventura e movimento escoteiro.
           </p>
           <div className="l4-home-hero-cta">
             <Link to="/produtos" className="l4-btn-primary">
