@@ -1,4 +1,4 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+﻿import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { parse as parseCookieHeader } from "cookie";
 import type { Express, Request, Response } from "express";
 import { randomBytes } from "node:crypto";
@@ -105,7 +105,7 @@ export function registerOAuthRoutes(app: Express) {
     if (!hasConfiguredGoogleCredentials()) {
       const status = getGoogleCredentialStatus();
       res.status(500).json({
-        error: "Google OAuth não configurado. Preencha GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env",
+        error: "Google OAuth nÃ£o configurado. Preencha GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env",
         status,
       });
       return;
@@ -161,7 +161,7 @@ export function registerOAuthRoutes(app: Express) {
       if (!hasConfiguredGoogleCredentials()) {
         const status = getGoogleCredentialStatus();
         res.status(500).json({
-          error: "Google OAuth não configurado no servidor. Verifique GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET",
+          error: "Google OAuth nÃ£o configurado no servidor. Verifique GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET",
           status,
         });
         return;
@@ -225,11 +225,19 @@ export function registerOAuthRoutes(app: Express) {
       }
 
       callbackStage = "upsert_user";
+      callbackStage = "upsert_user";
+      const normalizedEmail = String(userInfo.email ?? "").trim().toLowerCase();
+      const googleRole =
+        openId === ENV.ownerOpenId || (normalizedEmail && ENV.adminEmails.includes(normalizedEmail))
+          ? "admin"
+          : "user";
+
       await db.upsertUser({
         openId,
         name: userInfo.name || null,
         email: userInfo.email ?? null,
         loginMethod: "google",
+        role: googleRole,
         lastSignedIn: new Date(),
       });
 
