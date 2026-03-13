@@ -1,12 +1,21 @@
-export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+﻿export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 const isDev = Boolean((import.meta as any).env?.DEV);
-const defaultApiUrl = isDev ? "http://localhost:3010" : "https://api.l4ckos.com.br";
+
+function getDefaultApiUrl() {
+  if (isDev) return "http://localhost:3010";
+
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin;
+  }
+
+  return "https://api.l4ckos.com.br";
+}
 
 const envApiUrl =
   (import.meta as any).env?.VITE_API_URL ||
   (import.meta as any).env?.VITE_BACKEND_URL ||
-  defaultApiUrl;
+  getDefaultApiUrl();
 
 function resolveApiUrl() {
   try {
