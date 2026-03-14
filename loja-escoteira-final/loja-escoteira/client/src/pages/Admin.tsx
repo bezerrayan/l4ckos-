@@ -1036,12 +1036,12 @@ export default function Admin() {
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Banners promocionais da Home</h2>
           <p style={styles.muted}>
-            Esses banners alimentam o carrossel principal da home. A quantidade de cards exibida depende da quantidade de banners ativos que voce cadastrar aqui.
+            Esses banners alimentam o carrossel principal da home. A quantidade de cards exibida depende da quantidade de banners ativos que você cadastrar aqui.
           </p>
           <div style={styles.formGrid}>
             <input style={styles.input} placeholder="Badge" value={newPromo.badge} onChange={e => setNewPromo(prev => ({ ...prev, badge: e.target.value }))} />
-            <input style={styles.input} placeholder="título" value={newPromo.title} onChange={e => setNewPromo(prev => ({ ...prev, title: e.target.value }))} />
-            <input style={styles.input} placeholder="descrição" value={newPromo.description} onChange={e => setNewPromo(prev => ({ ...prev, description: e.target.value }))} />
+            <input style={styles.input} placeholder="Título" value={newPromo.title} onChange={e => setNewPromo(prev => ({ ...prev, title: e.target.value }))} />
+            <input style={styles.input} placeholder="Descrição" value={newPromo.description} onChange={e => setNewPromo(prev => ({ ...prev, description: e.target.value }))} />
             <input style={styles.input} placeholder="CTA" value={newPromo.ctaLabel} onChange={e => setNewPromo(prev => ({ ...prev, ctaLabel: e.target.value }))} />
             <div style={styles.mediaField}>
               <input style={styles.input} placeholder="URL da imagem" value={newPromo.imageUrl} onChange={e => setNewPromo(prev => ({ ...prev, imageUrl: e.target.value }))} />
@@ -1053,6 +1053,24 @@ export default function Admin() {
                 >
                   {uploadingField === "promo-image" ? "Enviando banner..." : "Upload do banner"}
                 </button>
+                {resolveAdminImageUrl(newPromo.imageUrl) ? (
+                  <>
+                    <a
+                      href={resolveAdminImageUrl(newPromo.imageUrl) as string}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={styles.secondaryBtn}
+                    >
+                      Abrir imagem
+                    </a>
+                    <button
+                      style={styles.smallBtn}
+                      onClick={() => setNewPromo(prev => ({ ...prev, imageUrl: "" }))}
+                    >
+                      Limpar imagem
+                    </button>
+                  </>
+                ) : null}
                 <span style={styles.mediaHint}>Você também pode colar uma URL manualmente.</span>
               </div>
               <input
@@ -1075,7 +1093,7 @@ export default function Admin() {
               {resolveAdminImageUrl(newPromo.imageUrl) ? (
                 <div style={styles.mediaPreviewRow}>
                   <img src={resolveAdminImageUrl(newPromo.imageUrl)} alt="Prévia do banner" style={styles.mediaPreviewImage} />
-                  <span style={styles.mediaHint}>Essa imagem será exibida no carrossel principal da home.</span>
+                  <span style={styles.mediaHint}>Essa imagem será exibida no carrossel principal da home. Prefira artes horizontais com boa leitura no centro do card.</span>
                 </div>
               ) : null}
             </div>
@@ -1085,6 +1103,35 @@ export default function Admin() {
             <input style={styles.input} placeholder="Label desconto" value={newPromo.discountLabel} onChange={e => setNewPromo(prev => ({ ...prev, discountLabel: e.target.value }))} />
             <input style={styles.input} placeholder="Background CSS" value={newPromo.bgStyle} onChange={e => setNewPromo(prev => ({ ...prev, bgStyle: e.target.value }))} />
             <input style={styles.input} placeholder="Ordem" value={newPromo.sortOrder} onChange={e => setNewPromo(prev => ({ ...prev, sortOrder: e.target.value }))} />
+          </div>
+          <div style={styles.promoPreviewCard}>
+            <div style={{ ...styles.promoPreviewMedia, background: newPromo.bgStyle.trim() || "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)" }}>
+              {resolveAdminImageUrl(newPromo.imageUrl) ? (
+                <img
+                  src={resolveAdminImageUrl(newPromo.imageUrl) as string}
+                  alt={newPromo.imageAlt.trim() || newPromo.title.trim() || "Banner promocional"}
+                  style={styles.promoPreviewImage}
+                />
+              ) : (
+                <div style={styles.promoPreviewPlaceholder}>Sem imagem</div>
+              )}
+            </div>
+            <div style={styles.promoPreviewContent}>
+              <span style={styles.promoPreviewEyebrow}>Prévia do banner</span>
+              <span style={styles.promoPreviewBadge}>{newPromo.badge.trim() || "PROMOÇÃO"}</span>
+              <strong style={styles.promoPreviewTitle}>{newPromo.title.trim() || "Título do banner"}</strong>
+              <span style={styles.promoPreviewDescription}>
+                {newPromo.description.trim() || "A descrição aparece logo abaixo do título no carrossel da home."}
+              </span>
+              <div style={styles.promoPreviewMetaRow}>
+                <span style={styles.promoPreviewDiscount}>{newPromo.discountText.trim() || "30%"}</span>
+                <span style={styles.promoPreviewDiscountLabel}>{newPromo.discountLabel.trim() || "OFF"}</span>
+              </div>
+              <div style={styles.promoPreviewFooter}>
+                <span style={styles.promoPreviewCta}>{newPromo.ctaLabel.trim() || "Aproveitar oferta"}</span>
+                <span style={styles.promoPreviewLink}>{newPromo.linkUrl.trim() || "/produtos"}</span>
+              </div>
+            </div>
           </div>
           <div style={styles.inlineRow}>
             <label>
@@ -1138,12 +1185,17 @@ export default function Admin() {
 
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>título</th><th>Imagem</th><th>Desconto</th><th>Ordem</th><th>Ativo</th><th>Acoes</th></tr></thead>
+              <thead><tr><th>ID</th><th>Título</th><th>Imagem</th><th>Desconto</th><th>Ordem</th><th>Ativo</th><th>Ações</th></tr></thead>
               <tbody>
                 {(promoBannersQuery.data ?? []).map((row: any) => (
                   <tr key={row.id}>
                     <td>{row.id}</td>
-                    <td>{row.title}</td>
+                    <td>
+                      <div style={styles.productTableCell}>
+                        <span style={styles.productTableName}>{row.title}</span>
+                        <span style={styles.productTableMeta}>{row.ctaLabel || "Sem CTA"} • {row.linkUrl || "Sem link"}</span>
+                      </div>
+                    </td>
                     <td>
                       {resolveAdminImageUrl(row.imageUrl) ? (
                         <div style={styles.productVisualCell}>
@@ -1638,6 +1690,121 @@ const styles: Record<string, CSSProperties> = {
   },
   hiddenFileInput: {
     display: "none",
+  },
+  promoPreviewCard: {
+    display: "grid",
+    gridTemplateColumns: "minmax(220px, 320px) minmax(280px, 1fr)",
+    gap: 18,
+    marginTop: 18,
+    padding: 18,
+    borderRadius: 14,
+    border: "1px solid #2f2f2f",
+    background: "linear-gradient(135deg, #101010 0%, #171717 100%)",
+    alignItems: "stretch",
+  },
+  promoPreviewMedia: {
+    minHeight: 220,
+    borderRadius: 14,
+    border: "1px solid rgba(255,255,255,0.06)",
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#121212",
+  },
+  promoPreviewImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+  },
+  promoPreviewPlaceholder: {
+    color: "#d1d5db",
+    fontSize: 14,
+    fontWeight: 700,
+    letterSpacing: 0.3,
+  },
+  promoPreviewContent: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    textAlign: "left",
+    justifyContent: "center",
+  },
+  promoPreviewEyebrow: {
+    color: "#9ca3af",
+    fontSize: 11,
+    letterSpacing: 1.6,
+    textTransform: "uppercase",
+  },
+  promoPreviewBadge: {
+    alignSelf: "flex-start",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 28,
+    padding: "0 12px",
+    borderRadius: 999,
+    background: "#f0ede8",
+    color: "#111111",
+    fontSize: 12,
+    fontWeight: 800,
+    letterSpacing: 0.3,
+  },
+  promoPreviewTitle: {
+    color: "#f9fafb",
+    fontSize: 28,
+    lineHeight: 1.05,
+    fontWeight: 900,
+  },
+  promoPreviewDescription: {
+    color: "#d1d5db",
+    fontSize: 14,
+    lineHeight: 1.65,
+    maxWidth: 560,
+  },
+  promoPreviewMetaRow: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: 10,
+    flexWrap: "wrap",
+  },
+  promoPreviewDiscount: {
+    color: "#f9fafb",
+    fontSize: 30,
+    fontWeight: 900,
+    lineHeight: 1,
+  },
+  promoPreviewDiscountLabel: {
+    color: "#facc15",
+    fontSize: 13,
+    fontWeight: 800,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+  promoPreviewFooter: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    flexWrap: "wrap",
+    marginTop: 4,
+  },
+  promoPreviewCta: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 40,
+    padding: "0 16px",
+    borderRadius: 999,
+    background: "#f0ede8",
+    color: "#101010",
+    fontSize: 13,
+    fontWeight: 800,
+  },
+  promoPreviewLink: {
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 1.5,
   },
   input: {
     border: "1px solid #2f2f2f",
