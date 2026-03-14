@@ -1,4 +1,4 @@
-﻿import { Router } from "express";
+﻿import { Request, Router } from "express";
 import multer from "multer";
 import path from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -28,6 +28,14 @@ async function saveLocally(filename: string, buffer: Buffer) {
   return `/uploads/${filename}`;
 }
 
+function buildAbsoluteUploadUrl(req: Request, relativePath: string) {
+  const protocol = String(req.headers["x-forwarded-proto"] || req.protocol || "https").split(",")[0].trim();
+  const host = String(req.headers["x-forwarded-host"] || req.get("host") || "").split(",")[0].trim();
+
+  if (!host) return relativePath;
+  return `${protocol}://${host}${relativePath}`;
+}
+
 router.post("/", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
@@ -44,7 +52,12 @@ router.post("/", upload.single("file"), async (req, res) => {
     } catch (storageError) {
       console.warn("[Upload] Remote storage unavailable, falling back to local file system", storageError);
       const localUrl = await saveLocally(filename, buffer);
-      return res.json({ success: true, url: localUrl, filename, storage: "local" });
+      return res.json({
+        success: true,
+        url: buildAbsoluteUploadUrl(req, localUrl),
+        filename,
+        storage: "local",
+      });
     }
   } catch (error) {
     console.error("Upload error:", error);
@@ -53,3 +66,4 @@ router.post("/", upload.single("file"), async (req, res) => {
 });
 
 export default router;
+
