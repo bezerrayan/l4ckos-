@@ -358,6 +358,11 @@ export default function Admin() {
                 <option key={cat.value} value={cat.value}>{cat.label}</option>
               ))}
             </select>
+            <div style={styles.categoryPreviewBox}>
+              <span style={styles.categoryPreviewLabel}>Prévia da categoria</span>
+              <strong style={styles.categoryPreviewValue}>{newProduct.category ? getCategoryLabel(newProduct.category) : "Selecione uma categoria"}</strong>
+              <span style={styles.categoryPreviewHint}>Essa categoria define onde o produto aparece para o cliente na vitrine e nas páginas dedicadas.</span>
+            </div>
             <input style={styles.input} placeholder="PreÃ§o (R$)" value={newProduct.price} onChange={e => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
             <input style={styles.input} placeholder="Estoque" value={newProduct.stock} onChange={e => setNewProduct(prev => ({ ...prev, stock: e.target.value }))} />
             <input style={styles.input} placeholder="Cores (CSV: preto,branco,verde)" value={newProduct.colorsCsv} onChange={e => setNewProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
@@ -513,6 +518,11 @@ export default function Admin() {
                     <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
                 </select>
+                <div style={styles.categoryPreviewBox}>
+                  <span style={styles.categoryPreviewLabel}>Prévia da categoria</span>
+                  <strong style={styles.categoryPreviewValue}>{editProduct.category ? getCategoryLabel(editProduct.category) : "Selecione uma categoria"}</strong>
+                  <span style={styles.categoryPreviewHint}>Essa categoria será usada na navegação da loja e no filtro que o cliente vê.</span>
+                </div>
                 <input style={styles.input} placeholder="PreÃ§o (R$)" value={editProduct.price} onChange={e => setEditProduct(prev => ({ ...prev, price: e.target.value }))} />
                 <input style={styles.input} placeholder="Estoque" value={editProduct.stock} onChange={e => setEditProduct(prev => ({ ...prev, stock: e.target.value }))} />
                 <input style={styles.input} placeholder="Cores (CSV: preto,branco,verde)" value={editProduct.colorsCsv} onChange={e => setEditProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
@@ -1224,6 +1234,33 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     justifyContent: "center",
   },
+  categoryPreviewBox: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    gap: 6,
+    padding: 14,
+    border: "1px solid #2f2f2f",
+    borderRadius: 10,
+    background: "#121212",
+    minHeight: 88,
+  },
+  categoryPreviewLabel: {
+    fontSize: 11,
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+    color: "#9ca3af",
+  },
+  categoryPreviewValue: {
+    color: "#f0ede8",
+    fontSize: 16,
+    fontWeight: 800,
+  },
+  categoryPreviewHint: {
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 1.5,
+  },
   input: {
     border: "1px solid #2f2f2f",
     background: "#0f0f0f",
@@ -1287,4 +1324,5 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
 };
+
 

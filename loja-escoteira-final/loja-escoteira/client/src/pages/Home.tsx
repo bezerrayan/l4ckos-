@@ -140,7 +140,7 @@ export default function Home() {
         </div>
         <div className="l4-home-categories-grid">
           {homeCategories.map(category => (
-            <Link key={category.value} className={category.className} to={`/produtos?categoria=${category.value}`}>
+            <Link key={category.value} className={category.className} to={`/categorias/${category.value}`}>
               <span className="l4-home-cat-name">{category.label}</span>
             </Link>
           ))}

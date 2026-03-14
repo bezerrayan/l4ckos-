@@ -4,6 +4,7 @@ import { ShoppingCart } from "lucide-react";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { PRODUCT_CATEGORIES } from "../lib/productCategories";
 import logoBranco from "../images/logo_branco.png";
 import logoPretaSemFundo from "../images/logo_preta-sem-fundo.png";
 import "./Header.css";
@@ -25,6 +26,7 @@ export default function Header() {
   const [logoSrc, setLogoSrc] = useState(logoBranco);
   const isAuthenticated = Boolean(user?.isAuthenticated);
   const displayName = firstName(user?.name, user?.email);
+  const mobileCategoryLinks = PRODUCT_CATEGORIES.slice(0, 6);
 
   const navItems = [
     { to: "/", label: "Início", active: location.pathname === "/" },
@@ -42,7 +44,7 @@ export default function Header() {
     <header className="l4-header">
       <div className="l4-header-inner">
         <button className="l4-header-menu-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
-          {menuOpen ? "x" : "="}
+          {menuOpen ? "×" : "?"}
         </button>
 
         <Link to="/" className="l4-header-brand" onClick={() => setMenuOpen(false)}>
@@ -76,6 +78,23 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+          {isMobile ? (
+            <div className="l4-header-mobile-categories">
+              <span className="l4-header-mobile-title">Categorias</span>
+              <div className="l4-header-mobile-grid">
+                {mobileCategoryLinks.map(category => (
+                  <Link
+                    key={category.value}
+                    to={`/categorias/${category.value}`}
+                    className="l4-header-mobile-chip"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {category.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <Link to="/favoritos" className={`l4-header-link ${location.pathname === "/favoritos" ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
             Favoritos{favorites.length > 0 ? ` (${favorites.length})` : ""}
           </Link>
@@ -120,4 +139,6 @@ export default function Header() {
     </header>
   );
 }
+
+
 

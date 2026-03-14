@@ -46,6 +46,7 @@
   width: 36px;
   height: 36px;
   font-size: 18px;
+  border-radius: 8px;
 }
 
 .l4-header-cart-btn {
@@ -192,6 +193,44 @@
 
   .l4-header-nav.mobile.open {
     display: flex;
+  }
+
+  .l4-header-mobile-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0 4px;
+    border-top: 1px solid #202020;
+    margin-top: 4px;
+  }
+
+  .l4-header-mobile-title {
+    color: #9ca3af;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: "Space Mono", monospace;
+  }
+
+  .l4-header-mobile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .l4-header-mobile-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 10px 12px;
+    border: 1px solid #303030;
+    background: #121212;
+    color: #f0ede8;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
   }
 
   .l4-header-user,

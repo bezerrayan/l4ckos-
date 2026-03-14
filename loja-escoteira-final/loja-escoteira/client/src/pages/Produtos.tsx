@@ -3,14 +3,14 @@
  */
 
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import type { Product } from "../types/product";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
-import { PRODUCT_CATEGORIES, getCategoryLabel, normalizeCategoryValue } from "../lib/productCategories";
+import { PRODUCT_CATEGORIES, getCategoryLabel, getCategoryMeta, normalizeCategoryValue } from "../lib/productCategories";
 import camisaFallback from "../images/camisa.png";
 
 function normalizePrice(value: number) {
@@ -30,9 +30,11 @@ function resolveProductImageUrl(imageUrl?: string | null) {
 
 export default function Produtos() {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { categorySlug } = useParams<{ categorySlug?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const selectedCategory = normalizeCategoryValue(searchParams.get("categoria"));
+  const selectedCategory = normalizeCategoryValue(categorySlug || searchParams.get("categoria"));
 
   const productsQuery = trpc.products.list.useQuery({
     search: searchTerm.trim() || undefined,
@@ -75,6 +77,7 @@ export default function Produtos() {
   }, [produtosBrutos]);
 
   const activeCategoryLabel = selectedCategory ? getCategoryLabel(selectedCategory) : "";
+  const activeCategoryMeta = getCategoryMeta(selectedCategory);
 
   return (
     <div>
@@ -89,6 +92,16 @@ export default function Produtos() {
         </div>
       </div>
 
+      {activeCategoryLabel ? (
+        <section style={styles.categoryHero}>
+          <div style={styles.categoryHeroTag}>Categoria em destaque</div>
+          <h2 style={styles.categoryHeroTitle}>{activeCategoryMeta?.headline || activeCategoryLabel}</h2>
+          <p style={styles.categoryHeroText}>
+            {activeCategoryMeta?.description || `Veja os produtos publicados em ${activeCategoryLabel} e encontre opções relacionadas a essa linha.`}
+          </p>
+        </section>
+      ) : null}
+
       <div style={{ ...styles.categoryBar, gap: isMobile ? 8 : styles.categoryBar.gap }}>
         <button
           type="button"
@@ -96,7 +109,7 @@ export default function Produtos() {
             ...styles.categoryChip,
             ...(!selectedCategory ? styles.categoryChipActive : {}),
           }}
-          onClick={() => setSearchParams({})}
+          onClick={() => navigate("/produtos")}
         >
           Todas
         </button>
@@ -108,7 +121,7 @@ export default function Produtos() {
               ...styles.categoryChip,
               ...(selectedCategory === category.value ? styles.categoryChipActive : {}),
             }}
-            onClick={() => setSearchParams({ categoria: category.value })}
+            onClick={() => navigate(`/categorias/${category.value}`)}
           >
             {category.label}
           </button>
@@ -181,7 +194,7 @@ export default function Produtos() {
             </button>
             {selectedCategory ? (
               <button
-                onClick={() => setSearchParams({})}
+                onClick={() => navigate("/produtos")}
                 style={styles.emptyButtonSecondary as CSSProperties}
               >
                 Ver todas as categorias
@@ -216,6 +229,38 @@ const styles: Record<string, CSSProperties> = {
     gap: 10,
     flexWrap: "wrap",
     marginBottom: 28,
+  },
+  categoryHero: {
+    border: "1px solid #252525",
+    background: "linear-gradient(135deg, rgba(24,24,24,0.98) 0%, rgba(53,5,15,0.92) 100%)",
+    borderRadius: 18,
+    padding: "26px 24px",
+    marginBottom: 28,
+  },
+  categoryHeroTag: {
+    display: "inline-flex",
+    padding: "6px 10px",
+    border: "1px solid #6b1d2a",
+    color: "#f0ede8",
+    fontSize: 10,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    fontFamily: "\"Space Mono\", monospace",
+    marginBottom: 14,
+  },
+  categoryHeroTitle: {
+    margin: "0 0 10px 0",
+    color: "#f0ede8",
+    fontSize: 32,
+    lineHeight: 1.05,
+    fontWeight: 900,
+  },
+  categoryHeroText: {
+    margin: 0,
+    color: "#d1d5db",
+    maxWidth: 760,
+    fontSize: 15,
+    lineHeight: 1.7,
   },
   categoryChip: {
     border: "1px solid #2f2f2f",
