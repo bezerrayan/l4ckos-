@@ -154,7 +154,7 @@ export default function ProductDetail() {
     );
   }
 
-  const galleryImages = Array.from(new Set([product.image, ...(product.images || []), ...EXTRA_IMAGES].filter(Boolean)));
+  const galleryImages = Array.from(new Set([product.image, ...(product.images || [])].filter(Boolean)));
   const colorOptions = (product.optionColors?.length ? product.optionColors : DEFAULT_COLORS).map(name => ({
     name,
     hex: COLOR_HEX_BY_NAME[name.toLowerCase()] ?? "#d1d5db",
@@ -821,6 +821,7 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
   },
 };
+
 
 
 
