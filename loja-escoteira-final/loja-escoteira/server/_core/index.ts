@@ -275,7 +275,15 @@ async function startServer() {
   app.post("/webhook/asaas", asaasWebhookHandler);
   // REST API (upload)
   app.use("/api/upload", uploadRouter);
-  app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
+  app.use(
+    "/uploads",
+    (req, res, next) => {
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      next();
+    },
+    express.static(path.resolve(process.cwd(), "uploads"))
+  );
   app.use("/api/payments", paymentRoutes);
   app.use("/api/webhooks", webhookRoutes);
   app.use("/api/shipping", shippingRoutes);
