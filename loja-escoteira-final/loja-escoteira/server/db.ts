@@ -193,7 +193,19 @@ export async function getOrderByAsaasCheckoutId(asaasCheckoutId: string) {
 export async function getProducts() {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(products);
+  const productRows = await db.select().from(products);
+  const imageRows = await db.select().from(productImages);
+
+  const firstImageByProduct = new Map<number, string>();
+  for (const item of imageRows) {
+    if (!item.imageUrl || firstImageByProduct.has(item.productId)) continue;
+    firstImageByProduct.set(item.productId, item.imageUrl);
+  }
+
+  return productRows.map(product => ({
+    ...product,
+    imageUrl: product.imageUrl || firstImageByProduct.get(product.id) || null,
+  }));
 }
 
 export async function getProductById(id: number) {
@@ -223,6 +235,7 @@ export async function getProductByIdWithDetails(id: number) {
 
   return {
     ...productRows[0],
+    imageUrl: productRows[0].imageUrl || imageRows[0]?.imageUrl || null,
     images: imageRows.map(item => item.imageUrl).filter(Boolean),
     variants: variantRows,
   };
@@ -879,6 +892,7 @@ export async function getProductsAdmin() {
 
   return productRows.map(product => ({
     ...product,
+    imageUrl: product.imageUrl || imagesMap.get(product.id)?.[0]?.imageUrl || null,
     images: imagesMap.get(product.id) ?? [],
     variants: variantsMap.get(product.id) ?? [],
   }));
