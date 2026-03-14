@@ -134,6 +134,7 @@ export default function Admin() {
   const createGalleryImageInputRef = useRef<HTMLInputElement | null>(null);
   const editMainImageInputRef = useRef<HTMLInputElement | null>(null);
   const editGalleryImageInputRef = useRef<HTMLInputElement | null>(null);
+  const promoImageInputRef = useRef<HTMLInputElement | null>(null);
   const isAdmin = user?.role === "admin";
 
   async function uploadAdminImages(files: FileList | null, mode: "single" | "multiple", target: string) {
@@ -1042,7 +1043,42 @@ export default function Admin() {
             <input style={styles.input} placeholder="título" value={newPromo.title} onChange={e => setNewPromo(prev => ({ ...prev, title: e.target.value }))} />
             <input style={styles.input} placeholder="descrição" value={newPromo.description} onChange={e => setNewPromo(prev => ({ ...prev, description: e.target.value }))} />
             <input style={styles.input} placeholder="CTA" value={newPromo.ctaLabel} onChange={e => setNewPromo(prev => ({ ...prev, ctaLabel: e.target.value }))} />
-            <input style={styles.input} placeholder="URL da imagem" value={newPromo.imageUrl} onChange={e => setNewPromo(prev => ({ ...prev, imageUrl: e.target.value }))} />
+            <div style={styles.mediaField}>
+              <input style={styles.input} placeholder="URL da imagem" value={newPromo.imageUrl} onChange={e => setNewPromo(prev => ({ ...prev, imageUrl: e.target.value }))} />
+              <div style={styles.mediaActions}>
+                <button
+                  style={styles.secondaryBtn}
+                  onClick={() => promoImageInputRef.current?.click()}
+                  disabled={uploadingField === "promo-image"}
+                >
+                  {uploadingField === "promo-image" ? "Enviando banner..." : "Upload do banner"}
+                </button>
+                <span style={styles.mediaHint}>Você também pode colar uma URL manualmente.</span>
+              </div>
+              <input
+                ref={promoImageInputRef}
+                type="file"
+                accept="image/*"
+                style={styles.hiddenFileInput}
+                onChange={async e => {
+                  const urls = await uploadAdminImages(e.target.files, "single", "promo-image");
+                  if (urls[0]) {
+                    setNewPromo(prev => ({
+                      ...prev,
+                      imageUrl: urls[0],
+                      imageAlt: prev.imageAlt.trim() || prev.title.trim() || "Banner promocional",
+                    }));
+                  }
+                  e.currentTarget.value = "";
+                }}
+              />
+              {resolveAdminImageUrl(newPromo.imageUrl) ? (
+                <div style={styles.mediaPreviewRow}>
+                  <img src={resolveAdminImageUrl(newPromo.imageUrl)} alt="Prévia do banner" style={styles.mediaPreviewImage} />
+                  <span style={styles.mediaHint}>Essa imagem será exibida no carrossel principal da home.</span>
+                </div>
+              ) : null}
+            </div>
             <input style={styles.input} placeholder="Texto alternativo da imagem" value={newPromo.imageAlt} onChange={e => setNewPromo(prev => ({ ...prev, imageAlt: e.target.value }))} />
             <input style={styles.input} placeholder="Link do banner (ex: /produtos)" value={newPromo.linkUrl} onChange={e => setNewPromo(prev => ({ ...prev, linkUrl: e.target.value }))} />
             <input style={styles.input} placeholder="Desconto (ex: 30%)" value={newPromo.discountText} onChange={e => setNewPromo(prev => ({ ...prev, discountText: e.target.value }))} />
@@ -1068,7 +1104,7 @@ export default function Admin() {
                   title: newPromo.title.trim(),
                   description: newPromo.description.trim(),
                   ctaLabel: newPromo.ctaLabel.trim() || "Aproveitar oferta",
-                  imageUrl: newPromo.imageUrl.trim(),
+                  imageUrl: normalizeAdminImageValue(newPromo.imageUrl),
                   imageAlt: newPromo.imageAlt.trim(),
                   linkUrl: newPromo.linkUrl.trim(),
                   discountText: newPromo.discountText.trim(),
@@ -1108,7 +1144,20 @@ export default function Admin() {
                   <tr key={row.id}>
                     <td>{row.id}</td>
                     <td>{row.title}</td>
-                    <td>{row.imageUrl ? "Sim" : "Não"}</td>
+                    <td>
+                      {resolveAdminImageUrl(row.imageUrl) ? (
+                        <div style={styles.productVisualCell}>
+                          <img
+                            src={resolveAdminImageUrl(row.imageUrl) as string}
+                            alt={row.title || "Banner"}
+                            style={styles.productThumb as CSSProperties}
+                          />
+                          <span style={styles.productVisualMeta}>Imagem ativa</span>
+                        </div>
+                      ) : (
+                        "Não"
+                      )}
+                    </td>
                     <td>{row.discountText}</td>
                     <td>{row.sortOrder}</td>
                     <td>{row.isActive ? "Sim" : "Não"}</td>
@@ -1755,6 +1804,10 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
 };
+
+
+
+
 
 
 
