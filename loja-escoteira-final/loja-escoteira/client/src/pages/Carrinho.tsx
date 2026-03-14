@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { formatPrice } from "../lib/utils";
 import type { CSSProperties } from "react";
@@ -38,14 +38,14 @@ export default function Carrinho() {
         <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Seu Carrinho</h1>
         <p style={styles.subtitle}>
           {cart.items.length === 0
-            ? "Seu carrinho esta vazio"
+            ? "Seu carrinho está vazio"
             : `${cart.items.length} item${cart.items.length > 1 ? "ns" : ""} no carrinho`}
         </p>
       </div>
 
       {cart.items.length === 0 ? (
         <div style={styles.emptyState}>
-          <h2 style={styles.emptyTitle}>Seu carrinho esta vazio</h2>
+          <h2 style={styles.emptyTitle}>Seu carrinho está vazio</h2>
           <p style={styles.emptyText}>Adicione produtos para continuar.</p>
           <Link to="/produtos" style={styles.emptyButton}>Explorar Produtos</Link>
         </div>
@@ -132,7 +132,7 @@ export default function Carrinho() {
               <h2 style={styles.summaryTitle}>Resumo do Pedido</h2>
               <div style={styles.summaryRow}><span>Itens</span><strong>{cart.itemCount}</strong></div>
               <div style={styles.summaryRow}><span>Subtotal</span><strong>{formatPrice(cart.total)}</strong></div>
-              <p style={styles.summaryHint}>Frete, cupom e pagamento na proxima etapa.</p>
+              <p style={styles.summaryHint}>Frete, cupom e pagamento na próxima etapa.</p>
               <Link to="/checkout" style={styles.checkoutButton}>Ir para Pagamento</Link>
               <Link to="/produtos" style={styles.continueLink}>Continuar comprando</Link>
             </aside>
@@ -384,3 +384,4 @@ const styles: Record<string, CSSProperties> = {
     background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
   },
 };
+

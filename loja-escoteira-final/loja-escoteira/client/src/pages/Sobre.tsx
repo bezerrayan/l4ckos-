@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -16,7 +16,7 @@ export default function Sobre() {
       <div style={{ ...styles.hero, padding: isMobile ? "42px 14px" : styles.hero.padding, marginBottom: isMobile ? 34 : styles.hero.marginBottom } as CSSProperties}>
         <h1 style={{ ...styles.title, fontSize: isMobile ? 34 : styles.title.fontSize }}>Sobre a L4ckos</h1>
         <p style={{ ...styles.subtitle, fontSize: isMobile ? 16 : styles.subtitle.fontSize }}>
-          Sua parceira de confianca no movimento escoteiro
+          Sua parceira de confiança no movimento escoteiro
         </p>
       </div>
 
@@ -30,11 +30,12 @@ export default function Sobre() {
         } as CSSProperties}
       >
         <div style={styles.sectionContent as CSSProperties}>
-          <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 28 : styles.sectionTitle.fontSize }}>Nossa historia</h2>
+          <h2 style={{ ...styles.sectionTitle, fontSize: isMobile ? 28 : styles.sectionTitle.fontSize }}>Nossa história</h2>
           <p style={styles.text}>
-            A L4CKOS nasceu com a ideia de criar uma identidade unica para o publico em geral,
-            onde as pessoas possam se identificar facilmente. O nome surgiu de vivencias dos criadores,
-            com proposta forte, memoravel e autentica para a cultura de aventura.
+            A L4CKOS nasceu com a proposta de construir uma identidade forte,
+            memorável e autêntica. A marca foi pensada para reunir estilo,
+            utilidade e presença em produtos ligados à aventura, ao cotidiano e ao
+            movimento escoteiro.
           </p>
         </div>
         <div style={styles.sectionImage as CSSProperties}>
@@ -47,28 +48,28 @@ export default function Sobre() {
         <div style={styles.valuesGrid as CSSProperties}>
           <div style={styles.valueCard as CSSProperties}>
             <h3 style={styles.valueTitle}>Qualidade</h3>
-            <p style={styles.valueText}>Produtos selecionados com rigor para garantir durabilidade e excelencia.</p>
+            <p style={styles.valueText}>Produtos selecionados com rigor para garantir durabilidade e excelência.</p>
           </div>
           <div style={styles.valueCard as CSSProperties}>
             <h3 style={styles.valueTitle}>Compromisso</h3>
-            <p style={styles.valueText}>Dedicacao para apoiar crescimento e desenvolvimento da comunidade escoteira.</p>
+            <p style={styles.valueText}>Dedicação para apoiar crescimento, organização e experiência de compra.</p>
           </div>
           <div style={styles.valueCard as CSSProperties}>
-            <h3 style={styles.valueTitle}>Confianca</h3>
-            <p style={styles.valueText}>Relacionamento transparente e atendimento que voce pode confiar.</p>
+            <h3 style={styles.valueTitle}>Confiança</h3>
+            <p style={styles.valueText}>Relacionamento transparente e atendimento em que você pode confiar.</p>
           </div>
           <div style={styles.valueCard as CSSProperties}>
-            <h3 style={styles.valueTitle}>Inovacao</h3>
-            <p style={styles.valueText}>Busca constante por novos produtos e melhorias da experiencia.</p>
+            <h3 style={styles.valueTitle}>Inovação</h3>
+            <p style={styles.valueText}>Busca constante por novos produtos e melhorias na experiência de compra.</p>
           </div>
         </div>
       </section>
 
       <section style={{ ...styles.ctaSection, padding: isMobile ? "34px 14px" : styles.ctaSection.padding } as CSSProperties}>
-        <h2 style={{ ...styles.ctaTitle, fontSize: isMobile ? 28 : styles.ctaTitle.fontSize }}>Pronto para sua proxima aventura?</h2>
-        <p style={styles.ctaText}>Explore nossa colecao completa de produtos para o movimento escoteiro.</p>
+        <h2 style={{ ...styles.ctaTitle, fontSize: isMobile ? 28 : styles.ctaTitle.fontSize }}>Pronto para sua próxima aventura?</h2>
+        <p style={styles.ctaText}>Explore nossa coleção de produtos para o movimento escoteiro e o estilo outdoor.</p>
         <Link to="/produtos" style={styles.ctaButton as CSSProperties}>
-          Ver Produtos Agora
+          Ver produtos agora
         </Link>
       </section>
     </div>

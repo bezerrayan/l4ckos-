@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
 import ProductCard from "../components/ProductCard";
 import { useFavorites } from "../contexts/FavoritesContext";
@@ -16,8 +16,8 @@ export default function Favoritos() {
         </h1>
         <p style={{ ...styles.pageSubtitle, fontSize: isMobile ? 15 : styles.pageSubtitle.fontSize } as CSSProperties}>
           {favorites.length === 0
-            ? "Voce ainda nao tem produtos favoritos"
-            : `Voce tem ${favorites.length} produto${favorites.length !== 1 ? "s" : ""} salvo${favorites.length !== 1 ? "s" : ""}`}
+            ? "Você ainda não tem produtos favoritos"
+            : `Você tem ${favorites.length} produto${favorites.length !== 1 ? "s" : ""} salvo${favorites.length !== 1 ? "s" : ""}`}
         </p>
       </div>
 
@@ -26,7 +26,7 @@ export default function Favoritos() {
           <div style={styles.emptyIcon as CSSProperties}>F</div>
           <h2 style={styles.emptyTitle as CSSProperties}>Nenhum favorito ainda</h2>
           <p style={styles.emptyText as CSSProperties}>
-            Explore nossos produtos e adicione seus favoritos para acessa-los rapidamente
+            Explore nossos produtos e adicione seus favoritos para acessá-los rapidamente
           </p>
           <Link to="/produtos" style={styles.emptyButton as CSSProperties}>
             Explorar Produtos
@@ -173,4 +173,5 @@ const styles: Record<string, CSSProperties> = {
     transition: "all 0.3s ease",
   },
 };
+
 

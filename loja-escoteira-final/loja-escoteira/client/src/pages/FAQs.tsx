@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -11,19 +11,19 @@ interface FAQ {
 }
 
 const FAQS: FAQ[] = [
-  { id: 1, categoria: "Pedidos", pergunta: "Como faco um pedido?", resposta: "Navegue pela loja, adicione ao carrinho e finalize no checkout." },
-  { id: 2, categoria: "Pedidos", pergunta: "Qual e o prazo de entrega?", resposta: "O prazo varia por regiao e transportadora, com rastreio enviado por email." },
-  { id: 3, categoria: "Pedidos", pergunta: "Qual e o valor minimo para compra?", resposta: "Nao ha valor minimo para compra." },
-  { id: 4, categoria: "Pagamento", pergunta: "Quais formas de pagamento aceitas?", resposta: "PIX, boleto e cartao de credito." },
-  { id: 5, categoria: "Pagamento", pergunta: "Posso parcelar o pedido?", resposta: "Sim, no cartao de credito, conforme condicoes da operadora." },
-  { id: 6, categoria: "Devolucao", pergunta: "Qual e a politica de devolucao?", resposta: "Voce pode solicitar devolucao dentro do prazo legal e conforme condicoes do produto." },
-  { id: 7, categoria: "Devolucao", pergunta: "E se o produto chegar com defeito?", resposta: "Entre em contato com fotos para avaliacao e tratativa sem custo indevido." },
-  { id: 8, categoria: "Conta", pergunta: "Como criar uma conta?", resposta: "Use a tela de cadastro e conclua os dados obrigatorios." },
-  { id: 9, categoria: "Conta", pergunta: "Esqueci minha senha. O que faco?", resposta: "Use a opcao de redefinicao de senha na tela de login." },
-  { id: 10, categoria: "Produtos", pergunta: "Os produtos vem com garantia?", resposta: "Sim, conforme regras do fabricante e tipo de item." },
+  { id: 1, categoria: "Pedidos", pergunta: "Como faço um pedido?", resposta: "Navegue pela loja, adicione os produtos ao carrinho e conclua a compra no checkout." },
+  { id: 2, categoria: "Pedidos", pergunta: "Qual é o prazo de entrega?", resposta: "O prazo varia conforme o CEP, a transportadora e a modalidade escolhida no fechamento do pedido." },
+  { id: 3, categoria: "Pedidos", pergunta: "Existe valor mínimo para compra?", resposta: "Não há valor mínimo para comprar no site." },
+  { id: 4, categoria: "Pagamento", pergunta: "Quais formas de pagamento são aceitas?", resposta: "Aceitamos PIX, boleto e cartão, conforme as opções exibidas no checkout." },
+  { id: 5, categoria: "Pagamento", pergunta: "Posso parcelar o pedido?", resposta: "Sim. O parcelamento disponível aparece no checkout, de acordo com as condições do meio de pagamento." },
+  { id: 6, categoria: "Devolução", pergunta: "Qual é a política de devolução?", resposta: "Você pode solicitar devolução dentro do prazo legal e conforme as condições informadas na página de trocas e devoluções." },
+  { id: 7, categoria: "Devolução", pergunta: "E se o produto chegar com defeito?", resposta: "Entre em contato com o número do pedido e, se possível, envie fotos para análise e orientação do atendimento." },
+  { id: 8, categoria: "Conta", pergunta: "Como criar uma conta?", resposta: "Use a tela de cadastro e preencha os dados obrigatórios para finalizar o registro." },
+  { id: 9, categoria: "Conta", pergunta: "Esqueci minha senha. O que faço?", resposta: "Use a opção de redefinição de senha na tela de login." },
+  { id: 10, categoria: "Produtos", pergunta: "Os produtos têm garantia?", resposta: "Sim. A garantia legal e as regras aplicáveis variam conforme o tipo de produto e a legislação." },
 ];
 
-const CATEGORIAS = ["Todos", "Pedidos", "Pagamento", "Devolucao", "Conta", "Produtos"];
+const CATEGORIAS = ["Todos", "Pedidos", "Pagamento", "Devolução", "Conta", "Produtos"];
 
 export default function FAQs() {
   const isMobile = useIsMobile();
@@ -44,7 +44,7 @@ export default function FAQs() {
       <div style={{ ...styles.hero, padding: isMobile ? "42px 14px" : styles.hero.padding, marginBottom: isMobile ? 30 : styles.hero.marginBottom } as CSSProperties}>
         <h1 style={{ ...styles.title, fontSize: isMobile ? 34 : styles.title.fontSize }}>Perguntas Frequentes</h1>
         <p style={{ ...styles.subtitle, fontSize: isMobile ? 16 : styles.subtitle.fontSize }}>
-          Encontre respostas para as duvidas mais comuns
+          Encontre respostas para as dúvidas mais comuns
         </p>
       </div>
 
@@ -92,21 +92,21 @@ export default function FAQs() {
 
         <div style={styles.sidebar as CSSProperties}>
           <div style={styles.sidebarCard as CSSProperties}>
-            <h3 style={styles.sidebarTitle as CSSProperties}>Nao encontrou o que procura?</h3>
-            <p style={styles.sidebarText as CSSProperties}>Entre em contato pelo formulario de contato ou pelos canais abaixo.</p>
-            <Link to="/contato" style={styles.sidebarButton as CSSProperties}>Ir para Contato</Link>
+            <h3 style={styles.sidebarTitle as CSSProperties}>Não encontrou o que procura?</h3>
+            <p style={styles.sidebarText as CSSProperties}>Entre em contato pelo formulário da loja e fale com nosso atendimento.</p>
+            <Link to="/contato" style={styles.sidebarButton as CSSProperties}>Ir para contato</Link>
           </div>
 
           <div style={styles.sidebarCard as CSSProperties}>
-            <h3 style={styles.sidebarTitle as CSSProperties}>Chat ao vivo</h3>
-            <p style={styles.sidebarText as CSSProperties}>Disponivel de segunda a sexta das 9h as 18h</p>
-            <button style={styles.sidebarButton as CSSProperties}>Iniciar Chat</button>
+            <h3 style={styles.sidebarTitle as CSSProperties}>WhatsApp</h3>
+            <p style={styles.sidebarText as CSSProperties}>Atendimento em dias úteis, com retorno rápido para dúvidas e pós-venda.</p>
+            <a href="https://wa.me/5561998030913" target="_blank" rel="noreferrer" style={styles.sidebarButton as CSSProperties}>Abrir WhatsApp</a>
           </div>
 
           <div style={styles.sidebarCard as CSSProperties}>
-            <h3 style={styles.sidebarTitle as CSSProperties}>Email de suporte</h3>
-            <p style={styles.sidebarText as CSSProperties}>suporte@l4ckos.com</p>
-            <p style={styles.sidebarSubtext as CSSProperties}>Responderemos em ate 24 horas</p>
+            <h3 style={styles.sidebarTitle as CSSProperties}>E-mail de atendimento</h3>
+            <p style={styles.sidebarText as CSSProperties}>contato@l4ckos.com.br</p>
+            <p style={styles.sidebarSubtext as CSSProperties}>Buscamos responder em até 1 dia útil.</p>
           </div>
         </div>
       </div>
@@ -174,10 +174,8 @@ const styles: Record<string, CSSProperties> = {
     border: "1px solid #2f2f2f",
     borderRadius: 6,
     fontSize: 14,
-    fontWeight: 600,
-    cursor: "pointer",
-    textDecoration: "none",
+    fontWeight: 700,
     textAlign: "center",
-    transition: "all 0.3s ease",
+    textDecoration: "none",
   },
 };

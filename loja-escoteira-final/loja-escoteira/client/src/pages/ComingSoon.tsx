@@ -92,7 +92,7 @@ export default function ComingSoon() {
       }
       setSuccess(true);
       setReservationCode(generateReservationCode());
-      setSuccessMessage(data?.message || "Voce esta na lista. Avisaremos quando abrir.");
+      setSuccessMessage(data?.message || "Você está na lista. Avisaremos quando a loja abrir.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Algo deu errado. Tente novamente.");
     } finally {
@@ -255,3 +255,4 @@ export default function ComingSoon() {
     </div>
   );
 }
+

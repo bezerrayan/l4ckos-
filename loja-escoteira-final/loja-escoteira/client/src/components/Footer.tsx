@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import logoBranco from "../images/logo_branco.png";
 import "./Footer.css";
@@ -12,7 +12,7 @@ export default function Footer() {
         <div>
           <img src={logoBranco} alt="L4ckos" className="l4-footer-logo" />
           <p className="l4-footer-text">
-            Sua loja premium de qualidade e confianca. Produtos para aventura, trilha e movimento escoteiro.
+            Sua loja premium de qualidade e confiança. Produtos para aventura, trilha e movimento escoteiro.
           </p>
           <div className="l4-footer-socials" aria-label="Redes sociais">
             <a href="https://instagram.com/l4ckos" target="_blank" rel="noreferrer" aria-label="Instagram L4ckos">
@@ -33,18 +33,18 @@ export default function Footer() {
         <div>
           <h4>Loja</h4>
           <ul>
-            <li><Link to="/">Inicio</Link></li>
+            <li><Link to="/">Início</Link></li>
             <li><Link to="/produtos">Produtos</Link></li>
             <li><Link to="/carrinho">Carrinho</Link></li>
-            <li><Link to="/meus-pedidos">Meus Pedidos</Link></li>
+            <li><Link to="/meus-pedidos">Meus pedidos</Link></li>
           </ul>
         </div>
 
         <div>
           <h4>Suporte</h4>
           <ul>
-            <li><Link to="/acompanhar-pedido">Acompanhar Pedido</Link></li>
-            <li><Link to="/trocas-e-devolucoes">Trocas e Devolucoes</Link></li>
+            <li><Link to="/acompanhar-pedido">Acompanhar pedido</Link></li>
+            <li><Link to="/trocas-e-devolucoes">Trocas e devoluções</Link></li>
             <li><Link to="/faqs">FAQ</Link></li>
             <li><Link to="/contato">Contato</Link></li>
           </ul>
@@ -62,7 +62,7 @@ export default function Footer() {
 
       <div className="l4-footer-bottom">
         <span>© {year} L4ckos. Todos os direitos reservados.</span>
-        <span>PIX • Cartao • Boleto</span>
+        <span>PIX • Cartão • Boleto</span>
       </div>
     </footer>
   );
