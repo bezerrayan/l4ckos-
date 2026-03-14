@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Pagina do checkout - envio e pagamento
  * 
  */
@@ -194,7 +194,7 @@ export default function Pagamento() {
     if (normalizedCep.length !== 8) {
       setShippingOptions([]);
       setSelectedShippingId(null);
-      setShippingError("Informe um CEP valido com 8 digitos.");
+      setShippingError("Informe um CEP válido com 8 dígitos.");
       return;
     }
 
@@ -231,7 +231,7 @@ export default function Pagamento() {
         .trim();
       const publicWarning =
         data.warning && data.warning.includes("Melhor Envio nao retornou cotacoes")
-          ? "No momento, so ha entrega local disponivel para este CEP."
+          ? "No momento, há apenas entrega local disponível para este CEP."
           : data.warning || "";
       const detailedWarning = data.warning
         ? sanitizedProviderError && canShowTechnicalShippingError
@@ -243,7 +243,7 @@ export default function Pagamento() {
       const fallbackOptions = buildShippingOptions(normalizedCep, cart.total, cart.itemCount);
       setShippingOptions(fallbackOptions);
       setSelectedShippingId(fallbackOptions[0]?.id ?? null);
-      setShippingError("Nao foi possivel consultar o frete externo. Usando entrega local.");
+      setShippingError("Não foi possível consultar o frete externo. Estamos exibindo a opção de entrega local.");
     }
   };
 
@@ -251,7 +251,7 @@ export default function Pagamento() {
     setShippingError("");
     const normalizedCep = sanitizeCep(cep);
     if (normalizedCep.length !== 8) {
-      setShippingError("Informe um CEP valido com 8 digitos.");
+      setShippingError("Informe um CEP válido com 8 dígitos.");
       return;
     }
 
@@ -273,7 +273,7 @@ export default function Pagamento() {
       };
 
       if (data.erro) {
-        setShippingError("CEP nao encontrado.");
+        setShippingError("CEP não encontrado.");
         return;
       }
 
@@ -283,8 +283,8 @@ export default function Pagamento() {
       setAddressState(data.uf || "");
       await handleCalculateShipping();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Nao foi possivel consultar o CEP.";
-      setShippingError(message.includes("Load failed") ? "Nao foi possivel consultar o CEP agora." : message);
+      const message = error instanceof Error ? error.message : "Não foi possível consultar o CEP.";
+      setShippingError(message.includes("Load failed") ? "Não foi possível consultar o CEP agora." : message);
     } finally {
       setAddressLoading(false);
     }
@@ -309,7 +309,7 @@ export default function Pagamento() {
     } catch (error) {
       setCouponDiscount(0);
       setAppliedCouponCode(null);
-      setCouponError(error instanceof Error ? error.message : "Cupom invalido ou expirado.");
+      setCouponError(error instanceof Error ? error.message : "Cupom inválido ou expirado.");
     }
   };
 
@@ -317,17 +317,17 @@ export default function Pagamento() {
     setPaymentError("");
 
     if (!isAuthenticated) {
-      setPaymentError("Faca login para finalizar a compra.");
+      setPaymentError("Faça login para finalizar a compra.");
       return;
     }
 
     if (!customerName.trim() || !customerEmail.trim() || !cpfCnpj.trim()) {
-      setPaymentError("Preencha nome, e-mail e CPF/CNPJ para gerar a cobranca.");
+      setPaymentError("Preencha nome, e-mail e CPF/CNPJ para gerar a cobrança.");
       return;
     }
 
     if (!sanitizeCep(cep) || !addressStreet.trim() || !addressCity.trim() || !addressState.trim()) {
-      setPaymentError("Preencha o CEP e o endereco para continuar.");
+      setPaymentError("Preencha o CEP e o endereço para continuar.");
       return;
     }
 
@@ -360,7 +360,7 @@ export default function Pagamento() {
 
       setPaymentData(result);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Nao foi possivel gerar a cobranca.";
+      const message = error instanceof Error ? error.message : "Não foi possível gerar a cobrança.";
       setPaymentError(message);
     }
   };
@@ -381,8 +381,8 @@ export default function Pagamento() {
         </h1>
         <p style={styles.subtitle}>
           {cart.items.length === 0
-            ? "Seu carrinho esta vazio."
-            : `${cart.items.length} item${cart.items.length !== 1 ? "ns" : ""} para finalizar`}
+            ? "Seu carrinho está vazio."
+            : `${cart.items.length} item${cart.items.length !== 1 ? "s" : ""} para finalizar`}
         </p>
       </div>
 
@@ -440,7 +440,7 @@ export default function Pagamento() {
                             )
                           }
                         >
-                          âˆ’
+                          -
                         </button>
                         <span style={styles.mobileQtyValue}>{item.quantity}</span>
                         <button
@@ -511,7 +511,7 @@ export default function Pagamento() {
                               )
                             }
                           >
-                            âˆ’
+                            -
                           </button>
                           <input
                             type="number"
@@ -609,7 +609,7 @@ export default function Pagamento() {
                 <div style={styles.shippingInputRow}>
                   <input
                     style={styles.checkoutInput}
-                    placeholder="CEP (somente numeros)"
+                    placeholder="CEP (somente números)"
                     value={formatCep(cep)}
                     onChange={event => setCep(event.target.value)}
                   />
@@ -637,7 +637,7 @@ export default function Pagamento() {
                         </div>
                         <p style={styles.shippingOptionText}>{option.description}</p>
                         <p style={styles.shippingOptionText}>
-                          Prazo: {option.minDays} a {option.maxDays} dias uteis
+                          Prazo estimado: {option.minDays} a {option.maxDays} dias úteis
                         </p>
                       </button>
                     ))}
@@ -646,7 +646,7 @@ export default function Pagamento() {
 
                 {selectedShipping ? (
                   <p style={styles.shippingEstimate}>
-                    Previsao de entrega: <strong>{estimatedDateRange}</strong>
+                    Previsão estimada de entrega: <strong>{estimatedDateRange}</strong>, contada após a aprovação do pagamento.
                   </p>
                 ) : null}
               </div>
@@ -707,7 +707,7 @@ export default function Pagamento() {
                   }}
                   onClick={() => setCheckoutMethod("CARD")}
                 >
-                  Cartao
+                  Cartão
                 </button>
               </div>
 
@@ -720,7 +720,7 @@ export default function Pagamento() {
                 />
                 <input
                   style={styles.checkoutInput}
-                  placeholder="Email"
+                    placeholder="E-mail"
                   type="email"
                   value={customerEmail}
                   onChange={event => setCustomerEmail(event.target.value)}
@@ -739,7 +739,7 @@ export default function Pagamento() {
                 />
                 <input
                   style={styles.checkoutInput}
-                  placeholder="Numero"
+                    placeholder="Número"
                   value={addressNumber}
                   onChange={event => setAddressNumber(event.target.value)}
                 />
@@ -770,7 +770,7 @@ export default function Pagamento() {
                 }}
                 disabled={createAsaasCharge.isPending}
               >
-                {createAsaasCharge.isPending ? "Gerando cobranca..." : "Finalizar Compra"}
+                {createAsaasCharge.isPending ? "Gerando cobrança..." : "Finalizar compra"}
               </button>
 
               {paymentError ? <p style={styles.checkoutError}>{paymentError}</p> : null}
@@ -778,7 +778,7 @@ export default function Pagamento() {
               {paymentData ? (
                 <div style={styles.pixBox}>
                   <p style={styles.pixTitle}>
-                    Cobranca {paymentData.method} gerada para o pedido #{paymentData.orderId}
+                    Cobrança {paymentData.method} gerada para o pedido #{paymentData.orderId}
                   </p>
                   <p style={styles.shippingOptionText}>
                     Status atual do pedido: <strong>{(paymentOrderQuery.data as any)?.status ?? "pending"}</strong>
@@ -805,7 +805,7 @@ export default function Pagamento() {
                           void handleCopyText(paymentData.pixCopyPaste);
                         }}
                       >
-                        Copiar codigo PIX
+                        Copiar código PIX
                       </button>
                     </>
                   ) : null}
@@ -823,14 +823,14 @@ export default function Pagamento() {
                           void handleCopyText(paymentData.digitableLine);
                         }}
                       >
-                        Copiar linha digitavel
+                        Copiar linha digitável
                       </button>
                     </>
                   ) : null}
 
                   {paymentData.method === "CARD" ? (
                     <p style={styles.pixTitle}>
-                      Para pagar no cartao, abra o link da fatura e escolha cartao na tela do Asaas.
+                      Para pagar no cartão, abra o link da fatura e escolha cartão na tela do Asaas.
                     </p>
                   ) : null}
 
@@ -855,11 +855,11 @@ export default function Pagamento() {
 
             {/* Info extra */}
             <div style={styles.infoBox}>
-              <p style={styles.infoTitle}>Beneficios:</p>
+              <p style={styles.infoTitle}>Informações importantes:</p>
               <ul style={styles.infoBenefits}>
-                <li>- Frete calculado por CEP com prazo estimado</li>
-                <li>- Garantia do fabricante</li>
-                <li>- Suporte ao cliente 24/7</li>
+                <li>- Frete calculado conforme o CEP informado</li>
+                <li>- Prazo exibido antes da finalização e sujeito à aprovação do pagamento</li>
+                <li>- Trocas e devoluções conforme nossa política publicada no site</li>
               </ul>
             </div>
           </div>
@@ -873,9 +873,9 @@ export default function Pagamento() {
               <circle cx="19" cy="20" r="1"></circle>
             </svg>
           </div>
-          <h2 style={styles.emptyTitle}>Seu carrinho esta vazio</h2>
+          <h2 style={styles.emptyTitle}>Seu carrinho está vazio</h2>
           <p style={styles.emptyText}>
-            Adicione alguns produtos escoteiros para comecar suas compras
+            Adicione alguns produtos para começar suas compras.
           </p>
           <Link to="/produtos" style={styles.emptyButton}>
             Explorar Produtos
@@ -1434,6 +1434,8 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 16,
   },
 };
+
+
 
 
 

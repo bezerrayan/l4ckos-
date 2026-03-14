@@ -1,10 +1,10 @@
-/**
- * Página Login - Autenticação de usuários
- * Pronto para integração com Google OAuth
+﻿/**
+ * Página de login.
+
  */
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
@@ -90,7 +90,7 @@ export default function Login() {
         minHeight: isMobile ? "auto" : styles.container.minHeight,
       } as CSSProperties}
     >
-      {/* Lado Esquerdo - Logo e Informações */}
+      {/* Lado esquerdo */}
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
@@ -99,7 +99,7 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Lado Direito - Formulário */}
+      {/* Lado direito */}
       <div
         style={{
           ...styles.rightPanel,
@@ -110,11 +110,11 @@ export default function Login() {
         <div style={styles.header as CSSProperties}>
           <h1 style={{ ...styles.title, fontSize: isMobile ? 28 : styles.title.fontSize } as CSSProperties}>Bem-vindo</h1>
           <p style={styles.subtitle as CSSProperties}>
-            Faça login ou crie sua conta
+            Faça login para acompanhar seus pedidos e finalizar compras com mais rapidez.
           </p>
         </div>
 
-        {/* Formulário de Login */}
+        {/* Formulário de login */}
         <form onSubmit={handleEmailLogin} style={styles.form as CSSProperties}>
           <div style={styles.formGroup as CSSProperties}>
             <label style={styles.label as CSSProperties} htmlFor="email">
@@ -140,7 +140,7 @@ export default function Login() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Digite sua senha"
               style={styles.input as CSSProperties}
               disabled={isBusy}
             />
@@ -156,18 +156,15 @@ export default function Login() {
             </label>
           </div>
 
-          {/* Lembrar e Esqueceu Senha */}
+          {/* Ajuda */}
           <div style={styles.optionsRow as CSSProperties}>
-            <label style={styles.checkboxLabel as CSSProperties}>
-              <input type="checkbox" style={{marginRight: 8}} />
-              Lembrar-me
-            </label>
-            <a href="#" style={styles.forgotLink as CSSProperties}>
-              Esqueceu a senha?
-            </a>
+            <span style={styles.checkboxLabel as CSSProperties}>Acesso seguro pela sua conta.</span>
+            <Link to="/contato" style={styles.forgotLink as CSSProperties}>
+              Precisa de ajuda com a senha?
+            </Link>
           </div>
 
-          {/* Botão de Login */}
+          {/* Botão de login */}
           <button
             type="submit"
             style={{
@@ -221,11 +218,10 @@ export default function Login() {
           Continuar com Google
         </button>
 
-        {/* Link para Sign Up */}
+        {/* Link para cadastro */}
         <div style={styles.signupSection as CSSProperties}>
           <p style={styles.signupText as CSSProperties}>
-            Não tem conta? 
-            <a 
+            Não tem conta? <a 
               href="#" 
               style={styles.signupLink as CSSProperties}
               onClick={(e) => {
@@ -462,3 +458,6 @@ const styles: Record<string, CSSProperties> = {
     transition: "color 0.2s ease",
   },
 };
+
+
+

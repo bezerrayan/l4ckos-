@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Pagina ProductDetail - Detalhes completos do produto
- * Exibe informações completas, opções de customização e ações de compra
+ * Exibe informações completas, opções de customização e ações de compra.
  */
 
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -32,14 +32,6 @@ const COLOR_HEX_BY_NAME: Record<string, string> = {
   roxo: "#7c3aed",
   laranja: "#ea580c",
 };
-
-const RATINGS = [
-  { stars: 5, count: 45 },
-  { stars: 4, count: 12 },
-  { stars: 3, count: 3 },
-  { stars: 2, count: 0 },
-  { stars: 1, count: 0 },
-];
 
 const EXTRA_IMAGES = [
   camisaFallback,
@@ -148,27 +140,32 @@ export default function ProductDetail() {
           onClick={handleGoBack}
           style={styles.backButton as CSSProperties}
         >
-          ← Voltar
+          Voltar
         </button>
       </div>
     );
   }
 
   const galleryImages = Array.from(new Set([product.image, ...(product.images || []), ...EXTRA_IMAGES].filter(Boolean)));
-  const totalRatings = RATINGS.reduce((sum, r) => sum + r.count, 0);
-  const averageRating =
-    RATINGS.reduce((sum, r) => sum + r.stars * r.count, 0) / totalRatings;
   const colorOptions = (product.optionColors?.length ? product.optionColors : DEFAULT_COLORS).map(name => ({
     name,
     hex: COLOR_HEX_BY_NAME[name.toLowerCase()] ?? "#d1d5db",
   }));
   const sizeOptions = product.optionSizes?.length ? product.optionSizes : DEFAULT_SIZES;
-  const canAddToCart = Boolean(selectedColor && selectedSize);
+  const canAddToCart = Boolean(selectedColor && selectedSize && product.stock > 0);
   const missingSelections: string[] = [];
   if (!selectedColor) missingSelections.push("cor");
   if (!selectedSize) missingSelections.push("tamanho");
 
   const handleAddToCart = () => {
+    if (product.stock <= 0) {
+      showToast({
+        message: "Este produto está indisponível no momento.",
+        duration: 3500,
+      });
+      return;
+    }
+
     if (!selectedColor || !selectedSize) {
       setShowSelectionWarning(true);
       showToast({
@@ -183,7 +180,7 @@ export default function ProductDetail() {
       tamanho: selectedSize,
     });
     showToast({
-      message: `${product.name} adicionado ao carrinho! (${quantity}x)`,
+      message: `${product.name} adicionado ao carrinho (${quantity}x).`,
       actionLabel: "Ver carrinho",
       action: () => navigate("/carrinho"),
       duration: 4500,
@@ -216,7 +213,7 @@ export default function ProductDetail() {
         onClick={handleGoBack}
         style={{ ...styles.backButton, marginBottom: isMobile ? 18 : styles.backButton.marginBottom } as CSSProperties}
       >
-        ← Voltar
+        Voltar
       </button>
 
       <div
@@ -275,7 +272,7 @@ export default function ProductDetail() {
           <div style={styles.headerSection as CSSProperties}>
             <h1 style={{ ...styles.productTitle, fontSize: isMobile ? 24 : styles.productTitle.fontSize } as CSSProperties}>{product.name}</h1>
             <div style={styles.headerMetaRow as CSSProperties}>
-              <span style={styles.badge as CSSProperties}>⭐ BESTSELLER</span>
+              <span style={styles.badge as CSSProperties}>{product.category || "Produto oficial"}</span>
               <button
                 onClick={handleAddToFavorites}
                 style={{
@@ -285,39 +282,20 @@ export default function ProductDetail() {
                   borderColor: "#dc2626",
                 } as CSSProperties}
               >
-                {isFav ? "★ Nos Favoritos" : "★ Favoritar"}
+                {isFav ? "Nos favoritos" : "Favoritar"}
               </button>
-            </div>
-          </div>
-
-          <div style={styles.ratingSection as CSSProperties}>
-            <div style={styles.ratingStars as CSSProperties}>
-              {[...Array(5)].map((_, i) => (
-                <span
-                  key={i}
-                  style={{
-                    color: i < Math.floor(averageRating) ? "#fbbf24" : "#d1d5db",
-                    fontSize: 20,
-                  }}
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-            <div style={styles.ratingText as CSSProperties}>
-              <strong>{averageRating.toFixed(1)}</strong> ({totalRatings} avaliações)
             </div>
           </div>
 
           <div style={styles.priceSection as CSSProperties}>
             <h2 style={{ ...styles.price, fontSize: isMobile ? 30 : styles.price.fontSize } as CSSProperties}>R$ {product.price.toFixed(2)}</h2>
             <p style={styles.priceNote as CSSProperties}>
-              Frete gratis para compras acima de R$ 200
+              Frete e prazo calculados no checkout, conforme CEP e disponibilidade.
             </p>
           </div>
 
           <div style={styles.sectionBlock as CSSProperties}>
-            <h3 style={styles.sectionTitle as CSSProperties}>Cores Disponíveis</h3>
+            <h3 style={styles.sectionTitle as CSSProperties}>Cores disponíveis</h3>
             <div style={styles.colorGrid as CSSProperties}>
               {colorOptions.map((color) => (
                 <button
@@ -344,7 +322,7 @@ export default function ProductDetail() {
           </div>
 
           <div style={styles.sectionBlock as CSSProperties}>
-            <h3 style={styles.sectionTitle as CSSProperties}>{product.sizeType === "numeric" ? "Tamanho (numerico)" : "Tamanho"}</h3>
+            <h3 style={styles.sectionTitle as CSSProperties}>{product.sizeType === "numeric" ? "Tamanho (numérico)" : "Tamanho"}</h3>
             <div
               style={{
                 ...styles.sizeGrid,
@@ -377,18 +355,22 @@ export default function ProductDetail() {
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 style={styles.quantityBtn as CSSProperties}
               >
-                −
+                -
               </button>
               <input
                 type="number"
                 min="1"
-                max={product.stock || 999}
+                 max={product.stock > 0 ? product.stock : 1}
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                 onChange={(e) =>
+                   setQuantity(
+                     Math.min(product.stock > 0 ? product.stock : 1, Math.max(1, parseInt(e.target.value) || 1))
+                   )
+                 }
                 style={styles.quantityInput as CSSProperties}
               />
               <button
-                onClick={() => setQuantity(quantity + 1)}
+                onClick={() => setQuantity(Math.min(product.stock > 0 ? product.stock : 1, quantity + 1))}
                 style={styles.quantityBtn as CSSProperties}
               >
                 +
@@ -415,18 +397,21 @@ export default function ProductDetail() {
             <button
               onClick={handleAddToCart}
               style={styles.addToCartBtn as CSSProperties}
+              disabled={product.stock <= 0}
               onMouseEnter={(e) => {
+                if (product.stock <= 0) return;
                 const btn = e.currentTarget as HTMLElement;
                 btn.style.transform = "scale(1.02)";
                 btn.style.boxShadow = "0 12px 24px rgba(26,26,26,0.3)";
               }}
               onMouseLeave={(e) => {
+                if (product.stock <= 0) return;
                 const btn = e.currentTarget as HTMLElement;
                 btn.style.transform = "scale(1)";
                 btn.style.boxShadow = "0 4px 12px rgba(26,26,26,0.2)";
               }}
             >
-              🛒 Adicionar ao Carrinho
+              {product.stock > 0 ? "Adicionar ao carrinho" : "Indisponível"}
             </button>
           </div>
 
@@ -437,20 +422,22 @@ export default function ProductDetail() {
           )}
 
           <div style={styles.descriptionSection as CSSProperties}>
-            <h3 style={styles.sectionTitle as CSSProperties}>Descricao do Produto</h3>
+            <h3 style={styles.sectionTitle as CSSProperties}>Descrição do produto</h3>
             <p style={styles.description as CSSProperties}>
               {product.description}
             </p>
           </div>
 
-          {product.stock && (
+          {product.stock >= 0 && (
             <div style={styles.stockInfo as CSSProperties}>
               <span style={{
                 color: product.stock > 5 ? "#1a1a1a" : "#dc2626"
               }}>
-                {product.stock > 0
-                  ? `✓ ${product.stock} em estoque`
-                  : "Fora de estoque"}
+                {product.stock > 5
+                  ? "Disponível para compra"
+                  : product.stock > 0
+                    ? "Estoque reduzido"
+                    : "Indisponível no momento"}
               </span>
             </div>
           )}
@@ -737,3 +724,5 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
   },
 };
+
+

@@ -1,10 +1,10 @@
-/**
- * Página Cadastro - Registro de novos usuários
- * Mesmo design que o Login, com campos para cadastro
+﻿/**
+ * Página de cadastro.
+ 
  */
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
@@ -31,6 +31,7 @@ export default function Cadastro() {
     confirmPassword: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -60,7 +61,7 @@ export default function Cadastro() {
 
     if (!isValidEmail(normalizedEmail)) {
       showToast({
-        message: "Informe um email valido",
+        message: "Informe um email válido",
         duration: 3000,
       });
       return;
@@ -77,6 +78,14 @@ export default function Cadastro() {
     if (formData.password.length < 6) {
       showToast({
         message: "Senha deve ter no mínimo 6 caracteres",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!acceptedTerms) {
+      showToast({
+        message: "Você precisa aceitar os Termos e a Política de Privacidade para criar a conta.",
         duration: 3000,
       });
       return;
@@ -128,7 +137,7 @@ export default function Cadastro() {
         minHeight: isMobile ? "auto" : styles.container.minHeight,
       } as CSSProperties}
     >
-      {/* Lado Esquerdo - Logo e Informações */}
+      {/* Lado esquerdo */}
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
@@ -137,7 +146,7 @@ export default function Cadastro() {
         </div>
       </div>
 
-      {/* Lado Direito - Formulário */}
+      {/* Lado direito */}
       <div
         style={{
           ...styles.rightPanel,
@@ -148,11 +157,11 @@ export default function Cadastro() {
         <div style={styles.header as CSSProperties}>
           <h1 style={{ ...styles.title, fontSize: isMobile ? 28 : styles.title.fontSize } as CSSProperties}>Criar Conta</h1>
           <p style={styles.subtitle as CSSProperties}>
-            Preencha os dados para se registrar
+            Crie sua conta para comprar com mais agilidade e acompanhar seus pedidos.
           </p>
         </div>
 
-        {/* Formulário de Cadastro */}
+        {/* Formulário de cadastro */}
         <form onSubmit={handleSignUp} style={styles.form as CSSProperties}>
           <div
             style={{
@@ -219,7 +228,7 @@ export default function Cadastro() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo de 6 caracteres"
               style={styles.input as CSSProperties}
               disabled={isSubmitting || localSignupMutation.isPending}
             />
@@ -246,20 +255,24 @@ export default function Cadastro() {
 
           {/* Termos */}
           <div style={styles.termsBox as CSSProperties}>
-            <input type="checkbox" defaultChecked />
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(event) => setAcceptedTerms(event.target.checked)}
+            />
             <label style={styles.termsLabel as CSSProperties}>
               Concordo com os{" "}
-              <a href="#" style={{color: "#1a1a1a", textDecoration: "underline"}}>
+              <Link to="/termos" style={{color: "#1a1a1a", textDecoration: "underline"}}>
                 Termos de Serviço
-              </a>{" "}
+              </Link>{" "}
               e{" "}
-              <a href="#" style={{color: "#1a1a1a", textDecoration: "underline"}}>
+              <Link to="/privacidade" style={{color: "#1a1a1a", textDecoration: "underline"}}>
                 Política de Privacidade
-              </a>
+              </Link>
             </label>
           </div>
 
-          {/* Botão de Cadastro */}
+          {/* Botão de cadastro */}
           <button
             type="submit"
             style={{
@@ -316,7 +329,7 @@ export default function Cadastro() {
           Cadastrar com Google
         </button>
 
-        {/* Link para Login */}
+        {/* Link para login */}
         <div style={styles.loginSection as CSSProperties}>
           <p style={styles.loginText as CSSProperties}>
             Já tem conta?{" "}
@@ -562,3 +575,6 @@ const styles: Record<string, CSSProperties> = {
     transition: "color 0.2s ease",
   },
 };
+
+
+

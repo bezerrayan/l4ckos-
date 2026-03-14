@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
@@ -220,14 +220,14 @@ export default function Perfil() {
     }
 
     if (!isValidEmail(normalizedEmail)) {
-      showToast({ message: "Informe um email valido", duration: 2800 });
+      showToast({ message: "Informe um email válido", duration: 2800 });
       return;
     }
 
     try {
       await persistProfileData(profileName.trim(), normalizedEmail, phone, addresses, payments, true);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível salvar o perfil no banco";
+      const message = error instanceof Error ? error.message : "Não foi possível salvar o perfil no banco.";
       showToast({ message, duration: 3000 });
       return;
     }
@@ -289,7 +289,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, normalized, payments);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível salvar endereço no banco";
+      const message = error instanceof Error ? error.message : "Não foi possível salvar endereço no banco.";
       showToast({ message, duration: 3000 });
       return;
     }
@@ -312,7 +312,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, normalized, payments);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível remover endereço no banco";
+      const message = error instanceof Error ? error.message : "Não foi possível remover endereço no banco.";
       showToast({ message, duration: 3000 });
       return;
     }
@@ -327,7 +327,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, normalized, payments);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível definir endereço padrão";
+      const message = error instanceof Error ? error.message : "Não foi possível definir o endereço padrão.";
       showToast({ message, duration: 3000 });
       return;
     }
@@ -385,7 +385,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, addresses, normalized);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível salvar método no banco";
+      const message = error instanceof Error ? error.message : "Não foi possível salvar o método no banco.";
       showToast({ message, duration: 3000 });
       return;
     }
@@ -408,7 +408,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, addresses, normalized);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível remover método no banco";
+      const message = error instanceof Error ? error.message : "Não foi possível remover o método no banco.";
       showToast({ message, duration: 3000 });
       return;
     }
@@ -423,7 +423,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, addresses, normalized);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível definir método padrão";
+      const message = error instanceof Error ? error.message : "Não foi possível definir o método padrão.";
       showToast({ message, duration: 3000 });
       return;
     }
@@ -527,10 +527,10 @@ export default function Perfil() {
         </div>
 
         <div style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>Endereços Salvos</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>Endereços salvos</h2>
 
           {addresses.length === 0 ? (
-            <p style={styles.emptyText as CSSProperties}>Você ainda não tem endereços salvos</p>
+            <p style={styles.emptyText as CSSProperties}>Você ainda não tem endereços salvos.</p>
           ) : (
             <div style={styles.list as CSSProperties}>
               {addresses.map((address) => (
@@ -540,10 +540,10 @@ export default function Perfil() {
                     {address.isDefault ? <span style={styles.badge as CSSProperties}>Padrão</span> : null}
                   </div>
                   <p style={styles.listItemText as CSSProperties}>
-                    {address.recipient} • {address.street}, {address.number}
+                     {address.recipient} • {address.street}, {address.number}
                   </p>
                   <p style={styles.listItemText as CSSProperties}>
-                    {address.neighborhood} - {address.city}/{address.state} • CEP {address.zipCode}
+                     {address.neighborhood} - {address.city}/{address.state} • CEP {address.zipCode}
                   </p>
                   {address.complement ? (
                     <p style={styles.listItemText as CSSProperties}>Complemento: {address.complement}</p>
@@ -650,7 +650,7 @@ export default function Perfil() {
               </label>
               <div style={styles.actionsRow as CSSProperties}>
                 <button style={styles.editBtn as CSSProperties} onClick={handleSaveAddress}>
-                  Salvar Endereço
+                  Salvar endereço
                 </button>
                 <button
                   style={styles.addBtn as CSSProperties}
@@ -668,10 +668,13 @@ export default function Perfil() {
         </div>
 
         <div style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>Métodos de Pagamento</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>Métodos de pagamento</h2>
+          <p style={styles.emptyText as CSSProperties}>
+            Para sua segurança, armazenamos apenas dados resumidos de identificação do cartão.
+          </p>
 
           {payments.length === 0 ? (
-            <p style={styles.emptyText as CSSProperties}>Você ainda não tem métodos de pagamento salvos</p>
+            <p style={styles.emptyText as CSSProperties}>Você ainda não tem métodos de pagamento salvos.</p>
           ) : (
             <div style={styles.list as CSSProperties}>
               {payments.map((payment) => (
@@ -708,7 +711,7 @@ export default function Perfil() {
           )}
 
           <button style={styles.addBtn as CSSProperties} onClick={openAddPaymentForm}>
-            + Adicionar Cartão
+            + Adicionar cartão
           </button>
 
           {isPaymentFormOpen ? (
@@ -738,7 +741,7 @@ export default function Perfil() {
                   style={styles.input as CSSProperties}
                 />
                 <input
-                  placeholder="Últimos 4 dígitos"
+                    placeholder="Últimos 4 dígitos"
                   maxLength={4}
                   value={paymentDraft.last4}
                   onChange={(event) =>
@@ -765,7 +768,7 @@ export default function Perfil() {
               </label>
               <div style={styles.actionsRow as CSSProperties}>
                 <button style={styles.editBtn as CSSProperties} onClick={handleSavePayment}>
-                  Salvar Método
+                  Salvar método
                 </button>
                 <button
                   style={styles.addBtn as CSSProperties}
@@ -786,7 +789,7 @@ export default function Perfil() {
           <h2 style={styles.sectionTitle as CSSProperties}>Preferências</h2>
           <div style={styles.preferenceItem as CSSProperties}>
             <input type="checkbox" defaultChecked />
-            <label>Receber emails de promoções</label>
+            <label>Receber e-mails de promoções</label>
           </div>
           <div style={styles.preferenceItem as CSSProperties}>
             <input type="checkbox" defaultChecked />
@@ -800,9 +803,11 @@ export default function Perfil() {
 
         <div style={styles.section as CSSProperties}>
           <h2 style={styles.sectionTitle as CSSProperties}>Segurança</h2>
-          <button style={styles.changePasswordBtn as CSSProperties}>Alterar Senha</button>
-          <button style={styles.twoFactorBtn as CSSProperties}>
-            Ativar Autenticação de Dois Fatores
+          <p style={styles.emptyText as CSSProperties}>
+            Para trocar a senha ou atualizar dados sensíveis, fale com o suporte pelos canais oficiais.
+          </p>
+          <button style={styles.changePasswordBtn as CSSProperties} onClick={() => navigate("/contato")}>
+            Falar com o suporte
           </button>
         </div>
 
@@ -811,7 +816,9 @@ export default function Perfil() {
           <button onClick={handleLogout} style={styles.logoutBtnLarge as CSSProperties}>
             Fazer Logout
           </button>
-          <button style={styles.deleteBtnLarge as CSSProperties}>Deletar Conta</button>
+          <button style={styles.deleteBtnLarge as CSSProperties} onClick={() => navigate("/contato")}>
+            Solicitar encerramento da conta
+          </button>
         </div>
       </div>
     </div>
@@ -1119,3 +1126,5 @@ const styles: Record<string, CSSProperties> = {
     transition: "all 0.3s ease",
   },
 };
+
+
