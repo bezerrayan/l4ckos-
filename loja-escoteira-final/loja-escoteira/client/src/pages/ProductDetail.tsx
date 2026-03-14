@@ -4,6 +4,7 @@
  */
 
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useToast } from "../contexts/ToastContext";
@@ -37,6 +38,12 @@ const EXTRA_IMAGES = [
   camisaFallback,
   logoPrincipalPreta,
   logoPreta,
+];
+
+const purchaseHighlights = [
+  "Selecione cor e tamanho antes de concluir a compra.",
+  "Frete e prazo são calculados conforme CEP e disponibilidade.",
+  "Trocas e devoluções seguem a política publicada no site.",
 ];
 
 function normalizePrice(value: number) {
@@ -154,6 +161,10 @@ export default function ProductDetail() {
   const sizeOptions = product.optionSizes?.length ? product.optionSizes : DEFAULT_SIZES;
   const canAddToCart = Boolean(selectedColor && selectedSize && product.stock > 0);
   const missingSelections: string[] = [];
+  const formattedPrice = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(product.price);
   if (!selectedColor) missingSelections.push("cor");
   if (!selectedSize) missingSelections.push("tamanho");
 
@@ -288,10 +299,21 @@ export default function ProductDetail() {
           </div>
 
           <div style={styles.priceSection as CSSProperties}>
-            <h2 style={{ ...styles.price, fontSize: isMobile ? 30 : styles.price.fontSize } as CSSProperties}>R$ {product.price.toFixed(2)}</h2>
+            <h2 style={{ ...styles.price, fontSize: isMobile ? 30 : styles.price.fontSize } as CSSProperties}>{formattedPrice}</h2>
             <p style={styles.priceNote as CSSProperties}>
               Frete e prazo calculados no checkout, conforme CEP e disponibilidade.
             </p>
+          </div>
+
+          <div style={styles.trustPanel as CSSProperties}>
+            <strong style={styles.trustPanelTitle as CSSProperties}>Compra com informação clara</strong>
+            <ul style={styles.trustList as CSSProperties}>
+              {purchaseHighlights.map(item => (
+                <li key={item} style={styles.trustListItem as CSSProperties}>
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div style={styles.sectionBlock as CSSProperties}>
@@ -354,6 +376,7 @@ export default function ProductDetail() {
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 style={styles.quantityBtn as CSSProperties}
+                disabled={product.stock <= 0}
               >
                 -
               </button>
@@ -372,6 +395,7 @@ export default function ProductDetail() {
               <button
                 onClick={() => setQuantity(Math.min(product.stock > 0 ? product.stock : 1, quantity + 1))}
                 style={styles.quantityBtn as CSSProperties}
+                disabled={product.stock <= 0}
               >
                 +
               </button>
@@ -420,6 +444,16 @@ export default function ProductDetail() {
               Selecione {missingSelections.join(" e ")} antes de adicionar ao carrinho.
             </p>
           )}
+
+          <div style={styles.supportBox as CSSProperties}>
+            <strong style={styles.supportTitle as CSSProperties}>Ainda em dúvida?</strong>
+            <p style={styles.supportText as CSSProperties}>
+              Se quiser confirmar tamanho, disponibilidade ou detalhes do item antes de comprar, fale com a loja.
+            </p>
+            <Link to="/contato" style={styles.supportLink as CSSProperties}>
+              Tirar dúvida antes de comprar
+            </Link>
+          </div>
 
           <div style={styles.descriptionSection as CSSProperties}>
             <h3 style={styles.sectionTitle as CSSProperties}>Descrição do produto</h3>
@@ -578,6 +612,32 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
     fontWeight: 600,
   },
+  trustPanel: {
+    marginBottom: 28,
+    padding: "18px 18px 16px",
+    borderRadius: 10,
+    background: "#f7f7f7",
+    border: "1px solid #e5e7eb",
+  },
+  trustPanelTitle: {
+    display: "block",
+    fontSize: 14,
+    fontWeight: 800,
+    color: "#1a1a1a",
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: "0.4px",
+  },
+  trustList: {
+    margin: 0,
+    paddingLeft: 18,
+    color: "#4b5563",
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
+  trustListItem: {
+    marginBottom: 4,
+  },
   sectionBlock: {
     marginBottom: 28,
   },
@@ -699,6 +759,37 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 13,
     fontWeight: 600,
     color: "#dc2626",
+  },
+  supportBox: {
+    marginBottom: 28,
+    padding: "18px 18px 16px",
+    borderRadius: 10,
+    background: "#111111",
+    color: "#f3f4f6",
+  },
+  supportTitle: {
+    display: "block",
+    fontSize: 15,
+    fontWeight: 800,
+    marginBottom: 8,
+  },
+  supportText: {
+    margin: "0 0 12px 0",
+    color: "#d1d5db",
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
+  supportLink: {
+    display: "inline-flex",
+    alignItems: "center",
+    color: "#ffffff",
+    background: "#dc2626",
+    textDecoration: "none",
+    padding: "10px 14px",
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: "0.4px",
   },
   descriptionSection: {
     paddingTop: 24,
