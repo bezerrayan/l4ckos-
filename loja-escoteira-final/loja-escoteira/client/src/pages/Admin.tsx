@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { trpc } from "../lib/trpc";
@@ -80,6 +80,18 @@ function parseMoneyToCents(raw: string) {
   return Math.round(value * 100);
 }
 
+function joinCsvUrls(currentValue: string, urls: string[]) {
+  const merged = [
+    ...currentValue
+      .split(",")
+      .map(item => item.trim())
+      .filter(Boolean),
+    ...urls,
+  ];
+
+  return Array.from(new Set(merged)).join(", ");
+}
+
 export default function Admin() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useUser();
@@ -111,8 +123,59 @@ export default function Admin() {
   const [quickProductEdits, setQuickProductEdits] = useState<Record<number, { price: string; stock: string }>>({});
   const [newPromo, setNewPromo] = useState({ ...emptyPromoForm });
   const [editingPromoId, setEditingPromoId] = useState<number | null>(null);
-
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const createMainImageInputRef = useRef<HTMLInputElement | null>(null);
+  const createGalleryImageInputRef = useRef<HTMLInputElement | null>(null);
+  const editMainImageInputRef = useRef<HTMLInputElement | null>(null);
+  const editGalleryImageInputRef = useRef<HTMLInputElement | null>(null);
   const isAdmin = user?.role === "admin";
+
+  async function uploadAdminImages(files: FileList | null, mode: "single" | "multiple", target: string) {
+    if (!files || files.length === 0) return [];
+
+    const allowedFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
+    if (allowedFiles.length === 0) {
+      showToast({ message: "Selecione ao menos uma imagem válida", duration: 2400 });
+      return [];
+    }
+
+    setUploadingField(target);
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (const file of allowedFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch(apiUrl("/api/upload"), {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.url) {
+          throw new Error(payload?.error || "Falha ao enviar imagem");
+        }
+
+        uploadedUrls.push(payload.url);
+        if (mode === "single") break;
+      }
+
+      showToast({
+        message: uploadedUrls.length > 1 ? "Imagens enviadas com sucesso" : "Imagem enviada com sucesso",
+        duration: 2200,
+      });
+
+      return uploadedUrls;
+    } catch (error: any) {
+      showToast({ message: error?.message || "Não foi possível enviar a imagem", duration: 2800 });
+      return [];
+    } finally {
+      setUploadingField(null);
+    }
+  }
 
   const dashboardQuery = trpc.admin.dashboard.useQuery(undefined, { enabled: isAuthenticated && isAdmin });
   const customersQuery = trpc.admin.usersList.useQuery(undefined, { enabled: isAuthenticated && isAdmin });
@@ -283,7 +346,7 @@ export default function Admin() {
     return (
       <div style={styles.centerCard}>
         <h1 style={styles.title}>Acesso negado</h1>
-        <p style={styles.muted}>FaÃ§a login para acessar a Ã¡rea administrativa.</p>
+        <p style={styles.muted}>Faça login para acessar a área administrativa.</p>
         <button style={styles.primaryBtn} onClick={() => navigate("/login")}>Ir para login</button>
       </div>
     );
@@ -292,9 +355,9 @@ export default function Admin() {
   if (!isAdmin) {
     return (
       <div style={styles.centerCard}>
-        <h1 style={styles.title}>Sem permissÃ£o</h1>
-        <p style={styles.muted}>Esta Ã¡rea Ã© exclusiva para administradores.</p>
-        <button style={styles.primaryBtn} onClick={() => navigate("/")}>Voltar para inÃ­cio</button>
+        <h1 style={styles.title}>Sem permissão</h1>
+        <p style={styles.muted}>Esta área é exclusiva para administradores.</p>
+        <button style={styles.primaryBtn} onClick={() => navigate("/")}>Voltar para início</button>
       </div>
     );
   }
@@ -302,7 +365,7 @@ export default function Admin() {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Painel Administrativo Seguro</h1>
-      <p style={styles.muted}>GestÃ£o completa de catÃ¡logo, pedidos, clientes, cupons, relatÃ³rios, auditoria e backup.</p>
+      <p style={styles.muted}>Gestão completa de catálogo, pedidos, clientes, cupons, relatórios, auditoria e backup.</p>
 
       <div style={styles.tabs}>
         {[
@@ -312,7 +375,7 @@ export default function Admin() {
           { key: "promos", label: "Promocoes" },
           { key: "orders", label: "Pedidos" },
           { key: "coupons", label: "Cupons" },
-          { key: "reports", label: "RelatÃ³rios" },
+          { key: "reports", label: "Relatórios" },
           { key: "audit", label: "Auditoria" },
           { key: "backup", label: "Backup" },
         ].map(tab => (
@@ -337,7 +400,7 @@ export default function Admin() {
 
       {section === "customers" && (
         <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>GestÃ£o de Clientes</h2>
+          <h2 style={styles.sectionTitle}>Gestão de Clientes</h2>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
               <thead><tr><th>ID</th><th>Nome</th><th>Email</th><th>Role</th><th>Pedidos</th><th>VIP</th><th>Bloqueado</th><th>Ações</th></tr></thead>
@@ -390,8 +453,65 @@ export default function Admin() {
               <option value="custom">Tamanho customizado</option>
             </select>
             <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={newProduct.sizesCsv} onChange={e => setNewProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
-            <input style={styles.input} placeholder="Imagem principal" value={newProduct.imageUrl} onChange={e => setNewProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
-            <input style={styles.input} placeholder="Outras imagens (CSV)" value={newProduct.imagesCsv} onChange={e => setNewProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
+            <div style={styles.mediaField}>
+              <input style={styles.input} placeholder="Imagem principal" value={newProduct.imageUrl} onChange={e => setNewProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
+              <div style={styles.mediaActions}>
+                <button
+                  style={styles.secondaryBtn}
+                  onClick={() => createMainImageInputRef.current?.click()}
+                  disabled={uploadingField === "create-main"}
+                >
+                  {uploadingField === "create-main" ? "Enviando capa..." : "Upload da capa"}
+                </button>
+                <span style={styles.mediaHint}>Ou cole uma URL manualmente.</span>
+              </div>
+              <input
+                ref={createMainImageInputRef}
+                type="file"
+                accept="image/*"
+                style={styles.hiddenFileInput}
+                onChange={async e => {
+                  const urls = await uploadAdminImages(e.target.files, "single", "create-main");
+                  if (urls[0]) {
+                    setNewProduct(prev => ({ ...prev, imageUrl: urls[0] }));
+                  }
+                  e.currentTarget.value = "";
+                }}
+              />
+              {resolveAdminImageUrl(newProduct.imageUrl) ? (
+                <div style={styles.mediaPreviewRow}>
+                  <img src={resolveAdminImageUrl(newProduct.imageUrl)} alt="Prévia da capa" style={styles.mediaPreviewImage} />
+                  <span style={styles.mediaHint}>Capa pronta para o card e para a página do produto.</span>
+                </div>
+              ) : null}
+            </div>
+            <div style={styles.mediaField}>
+              <input style={styles.input} placeholder="Outras imagens (CSV)" value={newProduct.imagesCsv} onChange={e => setNewProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
+              <div style={styles.mediaActions}>
+                <button
+                  style={styles.secondaryBtn}
+                  onClick={() => createGalleryImageInputRef.current?.click()}
+                  disabled={uploadingField === "create-gallery"}
+                >
+                  {uploadingField === "create-gallery" ? "Enviando galeria..." : "Upload da galeria"}
+                </button>
+                <span style={styles.mediaHint}>Você pode selecionar várias imagens de uma vez.</span>
+              </div>
+              <input
+                ref={createGalleryImageInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                style={styles.hiddenFileInput}
+                onChange={async e => {
+                  const urls = await uploadAdminImages(e.target.files, "multiple", "create-gallery");
+                  if (urls.length > 0) {
+                    setNewProduct(prev => ({ ...prev, imagesCsv: joinCsvUrls(prev.imagesCsv, urls) }));
+                  }
+                  e.currentTarget.value = "";
+                }}
+              />
+            </div>
             <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
             <input style={styles.input} placeholder="Descrição curta" value={newProduct.description} onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))} />
           </div>
@@ -557,8 +677,65 @@ export default function Admin() {
                   <option value="custom">Tamanho customizado</option>
                 </select>
                 <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={editProduct.sizesCsv} onChange={e => setEditProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
-                <input style={styles.input} placeholder="Imagem principal" value={editProduct.imageUrl} onChange={e => setEditProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
-                <input style={styles.input} placeholder="Outras imagens (CSV)" value={editProduct.imagesCsv} onChange={e => setEditProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
+                <div style={styles.mediaField}>
+                  <input style={styles.input} placeholder="Imagem principal" value={editProduct.imageUrl} onChange={e => setEditProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
+                  <div style={styles.mediaActions}>
+                    <button
+                      style={styles.secondaryBtn}
+                      onClick={() => editMainImageInputRef.current?.click()}
+                      disabled={uploadingField === "edit-main"}
+                    >
+                      {uploadingField === "edit-main" ? "Enviando capa..." : "Trocar capa"}
+                    </button>
+                    <span style={styles.mediaHint}>Você também pode substituir a URL manualmente.</span>
+                  </div>
+                  <input
+                    ref={editMainImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={styles.hiddenFileInput}
+                    onChange={async e => {
+                      const urls = await uploadAdminImages(e.target.files, "single", "edit-main");
+                      if (urls[0]) {
+                        setEditProduct(prev => ({ ...prev, imageUrl: urls[0] }));
+                      }
+                      e.currentTarget.value = "";
+                    }}
+                  />
+                  {resolveAdminImageUrl(editProduct.imageUrl) ? (
+                    <div style={styles.mediaPreviewRow}>
+                      <img src={resolveAdminImageUrl(editProduct.imageUrl)} alt="Prévia da capa" style={styles.mediaPreviewImage} />
+                      <span style={styles.mediaHint}>Essa será a imagem principal exibida na vitrine.</span>
+                    </div>
+                  ) : null}
+                </div>
+                <div style={styles.mediaField}>
+                  <input style={styles.input} placeholder="Outras imagens (CSV)" value={editProduct.imagesCsv} onChange={e => setEditProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
+                  <div style={styles.mediaActions}>
+                    <button
+                      style={styles.secondaryBtn}
+                      onClick={() => editGalleryImageInputRef.current?.click()}
+                      disabled={uploadingField === "edit-gallery"}
+                    >
+                      {uploadingField === "edit-gallery" ? "Enviando galeria..." : "Adicionar na galeria"}
+                    </button>
+                    <span style={styles.mediaHint}>As novas imagens serão adicionadas ao CSV atual.</span>
+                  </div>
+                  <input
+                    ref={editGalleryImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={styles.hiddenFileInput}
+                    onChange={async e => {
+                      const urls = await uploadAdminImages(e.target.files, "multiple", "edit-gallery");
+                      if (urls.length > 0) {
+                        setEditProduct(prev => ({ ...prev, imagesCsv: joinCsvUrls(prev.imagesCsv, urls) }));
+                      }
+                      e.currentTarget.value = "";
+                    }}
+                  />
+                </div>
                 <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
                 <input style={styles.input} placeholder="Descrição curta" value={editProduct.description} onChange={e => setEditProduct(prev => ({ ...prev, description: e.target.value }))} />
               </div>
@@ -832,7 +1009,7 @@ export default function Admin() {
                       <button
                         style={styles.smallBtn}
                         onClick={() => {
-                          const tracking = window.prompt("NÃºmero de rastreio:", row.trackingCode || "");
+                          const tracking = window.prompt("Número de rastreio:", row.trackingCode || "");
                           if (tracking === null) return;
                           updateOrderMutation.mutate({ orderId: row.id, trackingCode: tracking || null });
                         }}
@@ -972,13 +1149,13 @@ export default function Admin() {
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Cupons e Descontos</h2>
           <div style={styles.inlineRow}>
-            <input style={styles.input} placeholder="CÃ³digo" value={newCoupon.code} onChange={e => setNewCoupon(prev => ({ ...prev, code: e.target.value }))} />
+            <input style={styles.input} placeholder="Código" value={newCoupon.code} onChange={e => setNewCoupon(prev => ({ ...prev, code: e.target.value }))} />
             <select style={styles.select} value={newCoupon.type} onChange={e => setNewCoupon(prev => ({ ...prev, type: e.target.value }))}>
               <option value="percent">percent</option>
               <option value="fixed">fixed</option>
             </select>
             <input style={styles.input} placeholder="Valor" value={newCoupon.value} onChange={e => setNewCoupon(prev => ({ ...prev, value: e.target.value }))} />
-            <input style={styles.input} placeholder="Max usos" value={newCoupon.maxUses} onChange={e => setNewCoupon(prev => ({ ...prev, maxUses: e.target.value }))} />
+            <input style={styles.input} placeholder="Máx. usos" value={newCoupon.maxUses} onChange={e => setNewCoupon(prev => ({ ...prev, maxUses: e.target.value }))} />
             <button
               style={styles.primaryBtn}
               onClick={() => {
@@ -995,11 +1172,11 @@ export default function Admin() {
           </div>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>CÃ³digo</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Ativo</th><th>Ação</th></tr></thead>
+              <thead><tr><th>ID</th><th>Código</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Ativo</th><th>Ação</th></tr></thead>
               <tbody>
                 {(couponsQuery.data ?? []).map(coupon => (
                   <tr key={coupon.id}>
-                    <td>{coupon.id}</td><td>{coupon.code}</td><td>{coupon.type}</td><td>{coupon.value}</td><td>{coupon.usedCount}/{coupon.maxUses ?? "âˆž"}</td><td>{coupon.isActive ? "Sim" : "Não"}</td>
+                    <td>{coupon.id}</td><td>{coupon.code}</td><td>{coupon.type}</td><td>{coupon.value}</td><td>{coupon.usedCount}/{coupon.maxUses ?? "∞"}</td><td>{coupon.isActive ? "Sim" : "Não"}</td>
                     <td><button style={styles.dangerBtn} onClick={() => couponDeleteMutation.mutate({ id: coupon.id })}>Excluir</button></td>
                   </tr>
                 ))}
@@ -1009,12 +1186,12 @@ export default function Admin() {
           <div style={styles.launchCard}>
             <h3 style={styles.sectionTitle}>Avisar lista de espera sobre a abertura</h3>
             <p style={styles.muted}>
-              Use esta acao para disparar o e-mail de lançamento para todos os cadastrados, com o cupom exclusivo de abertura.
+              Use esta ação para disparar o e-mail de lançamento para todos os cadastrados, com o cupom exclusivo de abertura.
             </p>
             <div style={styles.formGrid}>
               <input
                 style={styles.input}
-                placeholder="Codigo do cupom"
+                placeholder="Código do cupom"
                 value={launchEmailForm.couponCode}
                 onChange={e => setLaunchEmailForm(prev => ({ ...prev, couponCode: e.target.value }))}
               />
@@ -1044,15 +1221,15 @@ export default function Admin() {
                   const discountPercent = Number(launchEmailForm.discountPercent);
                   const batchSize = Number(launchEmailForm.batchSize);
                   if (!launchEmailForm.couponCode.trim()) {
-                    showToast({ message: "Informe o codigo do cupom", duration: 2400 });
+                    showToast({ message: "Informe o código do cupom", duration: 2400 });
                     return;
                   }
                   if (!Number.isFinite(discountPercent) || discountPercent <= 0 || discountPercent > 100) {
-                    showToast({ message: "Informe um percentual valido entre 1 e 100", duration: 2400 });
+                    showToast({ message: "Informe um percentual válido entre 1 e 100", duration: 2400 });
                     return;
                   }
                   if (!Number.isFinite(batchSize) || batchSize <= 0 || batchSize > 100) {
-                    showToast({ message: "Informe um lote valido entre 1 e 100", duration: 2400 });
+                    showToast({ message: "Informe um lote válido entre 1 e 100", duration: 2400 });
                     return;
                   }
                   if (!window.confirm("Confirma o envio para toda a lista de espera?")) return;
@@ -1100,7 +1277,7 @@ export default function Admin() {
 
       {section === "reports" && (
         <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>RelatÃ³rios</h2>
+          <h2 style={styles.sectionTitle}>Relatórios</h2>
           <div style={styles.inlineRow}>
             <input type="datetime-local" style={styles.input} value={reportFrom} onChange={e => setReportFrom(e.target.value)} />
             <input type="datetime-local" style={styles.input} value={reportTo} onChange={e => setReportTo(e.target.value)} />
@@ -1132,7 +1309,7 @@ export default function Admin() {
           <h2 style={styles.sectionTitle}>Logs de Auditoria</h2>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>Quando</th><th>UsuÃ¡rio</th><th>Ação</th><th>Entidade</th><th>ID</th><th>Meta</th></tr></thead>
+              <thead><tr><th>Quando</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>ID</th><th>Meta</th></tr></thead>
               <tbody>
                 {(auditQuery.data ?? []).map(log => (
                   <tr key={log.id}>
@@ -1152,7 +1329,7 @@ export default function Admin() {
 
       {section === "backup" && (
         <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Backup e RestaurAção</h2>
+          <h2 style={styles.sectionTitle}>Backup e Restauração</h2>
           <div style={styles.inlineRow}>
             <button style={styles.primaryBtn} onClick={() => backupManualMutation.mutate()}>Backup Manual</button>
             <input style={styles.input} placeholder="arquivo backup.json" value={restoreFileName} onChange={e => setRestoreFileName(e.target.value)} />
@@ -1172,7 +1349,7 @@ export default function Admin() {
           </div>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>Arquivos disponÃ­veis</th></tr></thead>
+              <thead><tr><th>Arquivos disponíveis</th></tr></thead>
               <tbody>
                 {(backupsQuery.data ?? []).map(file => (
                   <tr key={file}><td>{file}</td></tr>
@@ -1369,6 +1546,44 @@ const styles: Record<string, CSSProperties> = {
     lineHeight: 1.6,
     maxWidth: 640,
   },
+  mediaField: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  },
+  mediaActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+  },
+  mediaHint: {
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 1.5,
+    textAlign: "left",
+  },
+  mediaPreviewRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: 10,
+    borderRadius: 10,
+    border: "1px solid #2f2f2f",
+    background: "#111111",
+  },
+  mediaPreviewImage: {
+    width: 56,
+    height: 56,
+    objectFit: "cover",
+    borderRadius: 10,
+    border: "1px solid #2f2f2f",
+    background: "#0f0f0f",
+    flexShrink: 0,
+  },
+  hiddenFileInput: {
+    display: "none",
+  },
   input: {
     border: "1px solid #2f2f2f",
     background: "#0f0f0f",
@@ -1534,6 +1749,19 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
