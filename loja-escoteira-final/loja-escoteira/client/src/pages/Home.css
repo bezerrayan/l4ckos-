@@ -697,6 +697,13 @@
   margin: 8px 0 20px;
 }
 
+.l4-home-trust-title {
+  display: block;
+  font-size: 18px;
+  color: var(--white);
+  letter-spacing: 0.2px;
+}
+
 .l4-home-testimonial-author {
   display: flex;
   gap: 10px;

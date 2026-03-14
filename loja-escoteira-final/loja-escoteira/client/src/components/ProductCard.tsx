@@ -1,5 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
-import { useToast } from "../contexts/ToastContext";
+﻿import { useNavigate, useLocation } from "react-router-dom";
 import type { CSSProperties } from "react";
 import type { Product } from "../types/product";
 import camisaFallback from "../images/camisa.png";
@@ -11,13 +10,16 @@ type Props = {
 export default function ProductCard({ product }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { showToast } = useToast();
+  const formattedPrice = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(product.price);
 
   const getBadgeInfo = () => {
-    if (product.name.includes("Aventura")) return { text: "AVENTURA", color: "#8b6f47" };
-    if (product.name.toLowerCase().includes("lider")) return { text: "LIDERANCA", color: "#4a5568" };
-    if (product.name.includes("Natureza")) return { text: "NATUREZA", color: "#2d5a2d" };
-    return { text: "NOVO", color: "#555555" };
+    if ((product.stock ?? 0) <= 0) return { text: "INDISPONÍVEL", color: "#5b1d1d" };
+    if ((product.stock ?? 0) <= 3) return { text: "ESTOQUE REDUZIDO", color: "#6b3e0b" };
+    if (product.category?.trim()) return { text: product.category.toUpperCase(), color: "#4a5568" };
+    return { text: "DESTAQUE", color: "#555555" };
   };
 
   const badge = getBadgeInfo();
@@ -56,31 +58,24 @@ export default function ProductCard({ product }: Props) {
         />
         <div style={{ ...styles.badge, background: badge.color } as CSSProperties}>{badge.text}</div>
         <div style={styles.designOverlay as CSSProperties}>
-          {product.name.includes("Aventura") && (
-            <div style={styles.overlayContent as CSSProperties}>Mapa Topografico</div>
-          )}
-          {product.name.toLowerCase().includes("lider") && (
-            <div style={styles.overlayContent as CSSProperties}>Brasao Customizado</div>
-          )}
-          {product.name.includes("Natureza") && (
-            <div style={styles.overlayContent as CSSProperties}>Botanica Exclusiva</div>
-          )}
+          <div style={styles.overlayContent as CSSProperties}>
+            {(product.stock ?? 0) > 0 ? "Clique para ver detalhes" : "Indisponível no momento"}
+          </div>
         </div>
       </div>
 
       <div style={styles.content as CSSProperties}>
         <h3 style={styles.name as CSSProperties}>{product.name}</h3>
-        <p style={styles.price as CSSProperties}>R$ {product.price.toFixed(2)}</p>
+        <p style={styles.price as CSSProperties}>{formattedPrice}</p>
+        <p style={styles.helper as CSSProperties}>
+          {(product.stock ?? 0) > 0
+            ? "Consulte variações, disponibilidade e prazo na página do produto."
+            : "Este item está temporariamente indisponível."}
+        </p>
         <button
           style={styles.button as CSSProperties}
           onClick={(e) => {
             e.stopPropagation();
-            showToast({
-              message: "Selecione cor e tamanho para adicionar ao carrinho",
-              actionLabel: "Escolher opcoes",
-              action: () => navigate(`/produto/${product.id}`, { state: { from: location.pathname } }),
-              duration: 4500,
-            });
             navigate(`/produto/${product.id}`, { state: { from: location.pathname } });
           }}
           onMouseEnter={(e) => {
@@ -94,7 +89,7 @@ export default function ProductCard({ product }: Props) {
             btn.style.transform = "scale(1)";
           }}
         >
-          Adicionar ao Carrinho
+          Ver detalhes
         </button>
       </div>
     </div>
@@ -126,7 +121,6 @@ const styles = {
     position: "absolute",
     top: 12,
     right: 12,
-    background: "#4a4a4a",
     color: "white",
     padding: "4px 12px",
     borderRadius: 20,
@@ -169,6 +163,12 @@ const styles = {
     fontSize: 20,
     fontWeight: 800,
     color: "#f0ede8",
+    margin: "0 0 8px 0",
+  },
+  helper: {
+    fontSize: 12,
+    lineHeight: 1.5,
+    color: "#9ca3af",
     margin: "0 0 16px 0",
   },
   button: {

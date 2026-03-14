@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+﻿import { Link, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
@@ -25,24 +25,18 @@ const productBgClasses = [
   "l4-home-prod-img-8",
 ];
 
-const testimonials = [
+const trustHighlights = [
   {
-    initials: "CL",
-    name: "Carlos Lima",
-    city: "Brasilia, DF",
-    text: "Produto de qualidade e entrega rapida. O atendimento ajudou em tudo no meu primeiro pedido.",
+    title: "Compra com mais clareza",
+    text: "Preço, frete e prazo aparecem no fluxo de compra, sem promessa solta e sem surpresa desnecessária.",
   },
   {
-    initials: "MF",
-    name: "Marina Freitas",
-    city: "Sao Paulo, SP",
-    text: "Comprei para trilha e acampamento. Chegou bem embalado e exatamente como descrito no site.",
+    title: "Curadoria focada",
+    text: "A vitrine prioriza itens com perfil outdoor, escoteiro e de uso real para quem quer comprar com propósito.",
   },
   {
-    initials: "JP",
-    name: "Joao Pedro",
-    city: "Belo Horizonte, MG",
-    text: "Precisei trocar tamanho e resolveram muito rapido. Experiencia bem segura do inicio ao fim.",
+    title: "Atendimento direto",
+    text: "Quando precisar de suporte, o cliente encontra canais claros para contato e acompanhamento do pedido.",
   },
 ];
 
@@ -78,8 +72,8 @@ export default function Home() {
     <div className="l4-home">
       <div className="l4-home-announce">
         <span className="l4-home-announce-track">
-          FRETE GRATIS ACIMA DE R$299 - NOVA COLECAO DISPONIVEL - USE L4CKOS10 E GANHE 10% OFF - TROCA GRATIS EM 30 DIAS
-          - FRETE GRATIS ACIMA DE R$299 - NOVA COLECAO DISPONIVEL - USE L4CKOS10 E GANHE 10% OFF - TROCA GRATIS EM 30 DIAS
+          PAGAMENTO SEGURO - CONSULTE FRETE E PRAZO NO CHECKOUT - NOVOS ITENS EM DESTAQUE - ATENDIMENTO PELOS CANAIS OFICIAIS
+          - PAGAMENTO SEGURO - CONSULTE FRETE E PRAZO NO CHECKOUT - NOVOS ITENS EM DESTAQUE - ATENDIMENTO PELOS CANAIS OFICIAIS
         </span>
       </div>
 
@@ -87,7 +81,7 @@ export default function Home() {
         <div className="l4-home-hero-grid" />
         <div className="l4-home-hero-bg" />
         <div className="l4-home-hero-content">
-          <div className="l4-home-tag">Drop 01 - Disponivel Agora</div>
+          <div className="l4-home-tag">Drop 01 - Disponível agora</div>
           <h1 className="l4-home-title">
             <span>BEM-VINDO</span>
             <br />
@@ -96,14 +90,14 @@ export default function Home() {
             <span className="accent">LOJA</span>
           </h1>
           <p className="l4-home-subtitle">
-            Descubra uma seleção variada de produtos de qualidade para esportes, aventura e movimento escoteiro.
+            Peças e equipamentos selecionados para quem vive trilha, campo, rotina escoteira e movimento outdoor com identidade.
           </p>
           <div className="l4-home-hero-cta">
             <Link to="/produtos" className="l4-btn-primary">
-              Explorar Catalogo
+              Explorar catálogo
             </Link>
             <a href="#l4-products" className="l4-btn-outline">
-              Ver Destaques
+              Ver destaques
             </a>
           </div>
         </div>
@@ -132,7 +126,7 @@ export default function Home() {
             <h2 className="l4-home-section-title">CATEGORIAS</h2>
           </div>
           <Link className="l4-home-view-all" to="/produtos">
-            Ver Todas
+            Ver todas
           </Link>
         </div>
         <div className="l4-home-categories-grid">
@@ -158,10 +152,10 @@ export default function Home() {
         <div className="l4-home-section-header">
           <div>
             <div className="l4-home-section-tag">// Destaque</div>
-            <h2 className="l4-home-section-title">MAIS VENDIDOS</h2>
+            <h2 className="l4-home-section-title">MAIS VISTOS</h2>
           </div>
           <Link className="l4-home-view-all" to="/produtos">
-            Ver Todos
+            Ver todos
           </Link>
         </div>
         <div className="l4-home-products-grid">
@@ -198,9 +192,7 @@ export default function Home() {
                 <h3 className="l4-home-product-name">{product.name}</h3>
                 <div className="l4-home-product-meta">
                   <span>{formatCurrency(product.priceCents)}</span>
-                  <span className="l4-home-product-link">
-                    ver
-                  </span>
+                  <span className="l4-home-product-link">ver detalhes</span>
                 </div>
               </div>
             </article>
@@ -211,22 +203,16 @@ export default function Home() {
       <section className="l4-home-section">
         <div className="l4-home-section-header">
           <div>
-            <div className="l4-home-section-tag">// Reviews</div>
-            <h2 className="l4-home-section-title">O QUE FALAM</h2>
+            <div className="l4-home-section-tag">// Confianca</div>
+            <h2 className="l4-home-section-title">POR QUE COMPRAR</h2>
           </div>
         </div>
         <div className="l4-home-testimonials-grid">
-          {testimonials.map(item => (
-            <article key={item.initials} className="l4-home-testimonial">
-              <div className="l4-home-testimonial-quote">"</div>
+          {trustHighlights.map(item => (
+            <article key={item.title} className="l4-home-testimonial">
+              <div className="l4-home-testimonial-quote">+</div>
+              <strong className="l4-home-trust-title">{item.title}</strong>
               <p>{item.text}</p>
-              <div className="l4-home-testimonial-author">
-                <div className="l4-home-avatar">{item.initials}</div>
-                <div>
-                  <strong>{item.name}</strong>
-                  <span>{item.city}</span>
-                </div>
-              </div>
             </article>
           ))}
         </div>
@@ -235,7 +221,7 @@ export default function Home() {
       <section className="l4-home-newsletter">
         <div>
           <h3>FIQUE POR DENTRO</h3>
-          <p>Receba novidades, promocoes e lancamentos em primeira mao.</p>
+          <p>Receba novidades, lançamentos e comunicações oficiais da loja em primeira mão.</p>
         </div>
         <Link to="/contato" className="l4-btn-primary">
           Falar com a loja

@@ -1,6 +1,5 @@
-/**
- * Página de Produtos - Lista todos os produtos disponíveis
- * Usa: getProducts(), useCart() para adicionar ao carrinho
+﻿/**
+ * Pagina de produtos.
  */
 
 import { useMemo, useState } from "react";
@@ -54,9 +53,9 @@ export default function Produtos() {
     <div>
       <div style={{ ...styles.header, marginBottom: isMobile ? 28 : styles.header.marginBottom, paddingBottom: isMobile ? 20 : styles.header.paddingBottom }}>
         <div>
-          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa Colecao</h1>
+          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa coleção</h1>
           <p style={{ ...styles.subtitle, fontSize: isMobile ? 15 : styles.subtitle.fontSize }}>
-            Descubra nossos {produtos.length} produtos de qualidade premium para o seu movimento escoteiro
+            Explore a vitrine da L4CKOS e encontre produtos selecionados para rotina outdoor, escotismo e uso diário.
           </p>
         </div>
       </div>
@@ -64,7 +63,7 @@ export default function Produtos() {
       <div style={{ ...styles.searchContainer, marginBottom: isMobile ? 30 : styles.searchContainer.marginBottom }}>
         <input
           type="text"
-          placeholder="Buscar equipamentos..."
+          placeholder="Buscar por nome ou categoria..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={styles.searchInput as CSSProperties}
@@ -80,7 +79,7 @@ export default function Produtos() {
       </div>
 
       {productsQuery.isLoading ? <p style={styles.resultInfo}>Carregando produtos...</p> : null}
-      {productsQuery.isError ? <p style={styles.resultInfo}>Não foi possível carregar produtos do banco.</p> : null}
+      {productsQuery.isError ? <p style={styles.resultInfo}>Não foi possível carregar os produtos agora.</p> : null}
 
       {!productsQuery.isLoading && produtos.length > 0 ? (
         <div>
@@ -88,7 +87,7 @@ export default function Produtos() {
             <p>
               {searchTerm
                 ? `Mostrando ${produtos.length} resultado(s) para "${searchTerm}"`
-                : `Exibindo ${produtos.length} produtos`}
+                : `Exibindo ${produtos.length} produtos disponíveis`}
             </p>
           </div>
 
@@ -107,16 +106,16 @@ export default function Produtos() {
         </div>
       ) : !productsQuery.isLoading ? (
         <div style={{ ...styles.emptyState, padding: isMobile ? "40px 16px" : styles.emptyState.padding }}>
-          <div style={styles.emptyIcon}>o</div>
+          <div style={styles.emptyIcon}>×</div>
           <h2 style={styles.emptyTitle}>Nenhum produto encontrado</h2>
           <p style={styles.emptyText}>
-            Não encontramos produtos para "{searchTerm}"
+            Não encontramos produtos para "{searchTerm}".
           </p>
           <button
             onClick={() => setSearchTerm("")}
             style={styles.emptyButton as CSSProperties}
           >
-            Limpar Filtro
+            Limpar filtro
           </button>
         </div>
       ) : null}
