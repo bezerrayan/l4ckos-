@@ -3,10 +3,10 @@
  */
 
 import { useMemo, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import type { CSSProperties } from "react";
 import ProductCard from "../components/ProductCard";
 import type { Product } from "../types/product";
-import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
@@ -32,9 +32,8 @@ export default function Produtos() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { categorySlug } = useParams<{ categorySlug?: string }>();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const selectedCategory = normalizeCategoryValue(categorySlug || searchParams.get("categoria"));
+  const selectedCategory = normalizeCategoryValue(categorySlug);
 
   const productsQuery = trpc.products.list.useQuery({
     search: searchTerm.trim() || undefined,
@@ -81,13 +80,19 @@ export default function Produtos() {
 
   return (
     <div>
-      <div style={{ ...styles.header, marginBottom: isMobile ? 28 : styles.header.marginBottom, paddingBottom: isMobile ? 20 : styles.header.paddingBottom }}>
+      <div
+        style={{
+          ...styles.header,
+          marginBottom: isMobile ? 28 : styles.header.marginBottom,
+          paddingBottom: isMobile ? 20 : styles.header.paddingBottom,
+        }}
+      >
         <div>
-          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa coleção</h1>
+          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa colecao</h1>
           <p style={{ ...styles.subtitle, fontSize: isMobile ? 15 : styles.subtitle.fontSize }}>
             {activeCategoryLabel
-              ? `Você está vendo a categoria ${activeCategoryLabel}. Explore os itens relacionados e filtre com mais rapidez.`
-              : "Explore a vitrine da L4CKOS e encontre produtos selecionados para rotina outdoor, escotismo e uso diário."}
+              ? `Voce esta vendo a categoria ${activeCategoryLabel}. Explore os itens relacionados e filtre com mais rapidez.`
+              : "Explore a vitrine da L4CKOS e encontre produtos selecionados para rotina outdoor, escotismo e uso diario."}
           </p>
         </div>
       </div>
@@ -97,7 +102,7 @@ export default function Produtos() {
           <div style={styles.categoryHeroTag}>Categoria em destaque</div>
           <h2 style={styles.categoryHeroTitle}>{activeCategoryMeta?.headline || activeCategoryLabel}</h2>
           <p style={styles.categoryHeroText}>
-            {activeCategoryMeta?.description || `Veja os produtos publicados em ${activeCategoryLabel} e encontre opções relacionadas a essa linha.`}
+            {activeCategoryMeta?.description || `Veja os produtos publicados em ${activeCategoryLabel} e encontre opcoes relacionadas a essa linha.`}
           </p>
         </section>
       ) : null}
@@ -137,17 +142,14 @@ export default function Produtos() {
           style={styles.searchInput as CSSProperties}
         />
         {searchTerm && (
-          <button
-            onClick={() => setSearchTerm("")}
-            style={styles.clearButton as CSSProperties}
-          >
+          <button onClick={() => setSearchTerm("")} style={styles.clearButton as CSSProperties}>
             x
           </button>
         )}
       </div>
 
       {productsQuery.isLoading ? <p style={styles.resultInfo}>Carregando produtos...</p> : null}
-      {productsQuery.isError ? <p style={styles.resultInfo}>Não foi possível carregar os produtos agora.</p> : null}
+      {productsQuery.isError ? <p style={styles.resultInfo}>Nao foi possivel carregar os produtos agora.</p> : null}
 
       {!productsQuery.isLoading && produtos.length > 0 ? (
         <div>
@@ -157,11 +159,17 @@ export default function Produtos() {
                 ? `Mostrando ${produtos.length} resultado(s) para "${searchTerm}"`
                 : activeCategoryLabel
                   ? `Exibindo ${produtos.length} produto(s) em ${activeCategoryLabel}`
-                  : `Exibindo ${produtos.length} produtos disponíveis`}
+                  : `Exibindo ${produtos.length} produtos disponiveis`}
             </p>
           </div>
 
-          <div style={{ ...styles.productsGrid, gridTemplateColumns: isMobile ? "1fr" : styles.productsGrid.gridTemplateColumns, gap: isMobile ? 16 : styles.productsGrid.gap }}>
+          <div
+            style={{
+              ...styles.productsGrid,
+              gridTemplateColumns: isMobile ? "1fr" : styles.productsGrid.gridTemplateColumns,
+              gap: isMobile ? 16 : styles.productsGrid.gap,
+            }}
+          >
             {produtos.map((produto, idx) => (
               <div
                 key={produto.id}
@@ -176,27 +184,21 @@ export default function Produtos() {
         </div>
       ) : !productsQuery.isLoading ? (
         <div style={{ ...styles.emptyState, padding: isMobile ? "40px 16px" : styles.emptyState.padding }}>
-          <div style={styles.emptyIcon}>×</div>
+          <div style={styles.emptyIcon}>x</div>
           <h2 style={styles.emptyTitle}>Nenhum produto encontrado</h2>
           <p style={styles.emptyText}>
             {searchTerm
-              ? `Não encontramos produtos para "${searchTerm}".`
+              ? `Nao encontramos produtos para "${searchTerm}".`
               : activeCategoryLabel
-                ? `Ainda não há itens publicados em ${activeCategoryLabel}.`
+                ? `Ainda nao ha itens publicados em ${activeCategoryLabel}.`
                 : "Nenhum produto foi encontrado no momento."}
           </p>
           <div style={styles.emptyActions}>
-            <button
-              onClick={() => setSearchTerm("")}
-              style={styles.emptyButton as CSSProperties}
-            >
+            <button onClick={() => setSearchTerm("")} style={styles.emptyButton as CSSProperties}>
               Limpar busca
             </button>
             {selectedCategory ? (
-              <button
-                onClick={() => navigate("/produtos")}
-                style={styles.emptyButtonSecondary as CSSProperties}
-              >
+              <button onClick={() => navigate("/produtos")} style={styles.emptyButtonSecondary as CSSProperties}>
                 Ver todas as categorias
               </button>
             ) : null}
@@ -245,7 +247,7 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 10,
     letterSpacing: 2,
     textTransform: "uppercase",
-    fontFamily: "\"Space Mono\", monospace",
+    fontFamily: '"Space Mono", monospace',
     marginBottom: 14,
   },
   categoryHeroTitle: {
@@ -299,7 +301,7 @@ const styles: Record<string, CSSProperties> = {
     top: "50%",
     transform: "translateY(-50%)",
     border: "none",
-    fontSize: 20,
+    fontSize: 18,
     cursor: "pointer",
     color: "#6b7280",
     background: "transparent",
