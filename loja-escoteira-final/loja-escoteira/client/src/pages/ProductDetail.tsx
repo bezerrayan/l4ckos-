@@ -16,6 +16,7 @@ import { apiUrl } from "../const";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 import logoPreta from "../images/logo_preta.jpeg";
 import camisaFallback from "../images/camisa.png";
+import { getCategoryLabel } from "../lib/productCategories";
 
 const DEFAULT_COLORS = ["Preto", "Branco", "Azul", "Vermelho", "Verde"];
 const DEFAULT_SIZES = ["PP", "P", "M", "G", "GG", "XG"];
@@ -171,7 +172,7 @@ export default function ProductDetail() {
   const handleAddToCart = () => {
     if (product.stock <= 0) {
       showToast({
-        message: "Este produto está indisponível no momento.",
+        message: "Este produto está Indisponível no momento.",
         duration: 3500,
       });
       return;
@@ -283,7 +284,7 @@ export default function ProductDetail() {
           <div style={styles.headerSection as CSSProperties}>
             <h1 style={{ ...styles.productTitle, fontSize: isMobile ? 24 : styles.productTitle.fontSize } as CSSProperties}>{product.name}</h1>
             <div style={styles.headerMetaRow as CSSProperties}>
-              <span style={styles.badge as CSSProperties}>{product.category || "Produto oficial"}</span>
+              <span style={styles.badge as CSSProperties}>{getCategoryLabel(product.category) || "Produto oficial"}</span>
               <button
                 onClick={handleAddToFavorites}
                 style={{
@@ -465,7 +466,7 @@ export default function ProductDetail() {
           {product.stock >= 0 && (
             <div style={styles.stockInfo as CSSProperties}>
               <span style={{
-                color: product.stock > 5 ? "#1a1a1a" : "#dc2626"
+                color: product.stock > 5 ? "#86efac" : product.stock > 0 ? "#facc15" : "#f87171"
               }}>
                 {product.stock > 5
                   ? "Disponível para compra"
@@ -567,7 +568,7 @@ const styles: Record<string, CSSProperties> = {
   productTitle: {
     fontSize: 32,
     fontWeight: 900,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     marginBottom: 12,
     lineHeight: 1.2,
   },
@@ -602,13 +603,13 @@ const styles: Record<string, CSSProperties> = {
   price: {
     fontSize: 36,
     fontWeight: 900,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     margin: 0,
     marginBottom: 8,
   },
   priceNote: {
     fontSize: 13,
-    color: "#555555",
+    color: "#9ca3af",
     margin: 0,
     fontWeight: 600,
   },
@@ -616,14 +617,14 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: 28,
     padding: "18px 18px 16px",
     borderRadius: 10,
-    background: "#f7f7f7",
-    border: "1px solid #e5e7eb",
+    background: "#111111",
+    border: "1px solid #2a2a2a",
   },
   trustPanelTitle: {
     display: "block",
     fontSize: 14,
     fontWeight: 800,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     marginBottom: 10,
     textTransform: "uppercase",
     letterSpacing: "0.4px",
@@ -631,7 +632,7 @@ const styles: Record<string, CSSProperties> = {
   trustList: {
     margin: 0,
     paddingLeft: 18,
-    color: "#4b5563",
+    color: "#d1d5db",
     fontSize: 13,
     lineHeight: 1.6,
   },
@@ -644,7 +645,7 @@ const styles: Record<string, CSSProperties> = {
   sectionTitle: {
     fontSize: 14,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     marginBottom: 12,
     textTransform: "uppercase",
     letterSpacing: "0.5px",
@@ -688,7 +689,7 @@ const styles: Record<string, CSSProperties> = {
   },
   selectedLabel: {
     fontSize: 13,
-    color: "#666",
+    color: "#9ca3af",
     margin: 0,
   },
   quantityControl: {
@@ -701,7 +702,8 @@ const styles: Record<string, CSSProperties> = {
     width: 40,
     height: 40,
     border: "2px solid #e0e0e0",
-    background: "white",
+    background: "#111111",
+    color: "#f0ede8",
     borderRadius: 6,
     cursor: "pointer",
     fontSize: 18,
@@ -716,6 +718,8 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "center",
     fontSize: 14,
     fontWeight: 700,
+    background: "#111111",
+    color: "#f0ede8",
   },
   actionButtons: {
     display: "flex",
@@ -804,10 +808,12 @@ const styles: Record<string, CSSProperties> = {
   stockInfo: {
     marginTop: 16,
     padding: 12,
-    background: "#f5f5f5",
-    borderRadius: 6,
+    background: "#111111",
+    border: "1px solid #2a2a2a",
+    borderRadius: 10,
     fontSize: 14,
-    fontWeight: 600,
+    fontWeight: 700,
+    color: "#f0ede8",
   },
   loadingText: {
     color: "#6b7280",
@@ -815,5 +821,8 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
   },
 };
+
+
+
 
 

@@ -13,7 +13,7 @@ function firstName(name?: string, email?: string) {
   const trimmed = name?.trim();
   if (trimmed) return trimmed.split(/\s+/)[0];
   const local = email?.split("@")[0]?.trim();
-  if (!local) return "Usuario";
+  if (!local) return "Usuário";
   return local.split(/[._-]+/)[0] || local;
 }
 
@@ -29,7 +29,7 @@ export default function Header() {
   const mobileCategoryLinks = PRODUCT_CATEGORIES.slice(0, 6);
 
   const navItems = [
-    { to: "/", label: "Inicio", active: location.pathname === "/" },
+    { to: "/", label: "Início", active: location.pathname === "/" },
     {
       to: "/produtos",
       label: "Produtos",
@@ -47,7 +47,7 @@ export default function Header() {
     <header className="l4-header">
       <div className="l4-header-inner">
         <button className="l4-header-menu-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
-          {menuOpen ? "x" : "="}
+          {menuOpen ? "×" : "☰"}
         </button>
 
         <Link to="/" className="l4-header-brand" onClick={() => setMenuOpen(false)}>
@@ -113,7 +113,7 @@ export default function Header() {
           {isAuthenticated ? (
             <div className="l4-header-user">
               <Link to="/perfil" className="l4-header-chip" onClick={() => setMenuOpen(false)}>
-                Ola, {displayName}
+                Olá, {displayName}
               </Link>
               {user?.role === "admin" ? (
                 <Link to="/admin" className="l4-header-chip admin" onClick={() => setMenuOpen(false)}>

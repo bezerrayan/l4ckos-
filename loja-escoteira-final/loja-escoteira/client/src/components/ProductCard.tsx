@@ -17,7 +17,7 @@ export default function ProductCard({ product }: Props) {
   }).format(product.price);
 
   const getBadgeInfo = () => {
-    if ((product.stock ?? 0) <= 0) return { text: "INDISPONIVEL", color: "#5b1d1d" };
+    if ((product.stock ?? 0) <= 0) return { text: "INDISPONÍVEL", color: "#5b1d1d" };
     if ((product.stock ?? 0) <= 3) return { text: "ESTOQUE REDUZIDO", color: "#6b3e0b" };
     if (product.category?.trim()) return { text: getCategoryLabel(product.category).toUpperCase(), color: "#4a5568" };
     return { text: "DESTAQUE", color: "#555555" };
@@ -60,7 +60,7 @@ export default function ProductCard({ product }: Props) {
         <div style={{ ...styles.badge, background: badge.color } as CSSProperties}>{badge.text}</div>
         <div style={styles.designOverlay as CSSProperties}>
           <div style={styles.overlayContent as CSSProperties}>
-            {(product.stock ?? 0) > 0 ? "Clique para ver detalhes" : "Indisponivel no momento"}
+            {(product.stock ?? 0) > 0 ? "Clique para ver detalhes" : "Indisponível no momento"}
           </div>
         </div>
       </div>
@@ -70,8 +70,8 @@ export default function ProductCard({ product }: Props) {
         <p style={styles.price as CSSProperties}>{formattedPrice}</p>
         <p style={styles.helper as CSSProperties}>
           {(product.stock ?? 0) > 0
-            ? "Consulte variacoes, disponibilidade e prazo na pagina do produto."
-            : "Este item esta temporariamente indisponivel."}
+            ? "Consulte variações, disponibilidade e prazo na página do produto."
+            : "Este item está temporariamente indisponível."}
         </p>
         <button
           style={styles.button as CSSProperties}

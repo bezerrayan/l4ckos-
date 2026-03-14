@@ -1,5 +1,5 @@
 ﻿/**
- * Pagina de produtos.
+ * Página de produtos.
  */
 
 import { useMemo, useState } from "react";
@@ -88,11 +88,11 @@ export default function Produtos() {
         }}
       >
         <div>
-          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa colecao</h1>
+          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa coleção</h1>
           <p style={{ ...styles.subtitle, fontSize: isMobile ? 15 : styles.subtitle.fontSize }}>
             {activeCategoryLabel
-              ? `Voce esta vendo a categoria ${activeCategoryLabel}. Explore os itens relacionados e filtre com mais rapidez.`
-              : "Explore a vitrine da L4CKOS e encontre produtos selecionados para rotina outdoor, escotismo e uso diario."}
+              ? `Você está vendo a categoria ${activeCategoryLabel}. Explore os itens relacionados e filtre com mais rapidez.`
+              : "Explore a vitrine da L4CKOS e encontre produtos selecionados para rotina outdoor, escotismo e uso diário."}
           </p>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function Produtos() {
           <div style={styles.categoryHeroTag}>Categoria em destaque</div>
           <h2 style={styles.categoryHeroTitle}>{activeCategoryMeta?.headline || activeCategoryLabel}</h2>
           <p style={styles.categoryHeroText}>
-            {activeCategoryMeta?.description || `Veja os produtos publicados em ${activeCategoryLabel} e encontre opcoes relacionadas a essa linha.`}
+            {activeCategoryMeta?.description || `Veja os produtos publicados em ${activeCategoryLabel} e encontre opções relacionadas a essa linha.`}
           </p>
         </section>
       ) : null}
@@ -143,13 +143,13 @@ export default function Produtos() {
         />
         {searchTerm && (
           <button onClick={() => setSearchTerm("")} style={styles.clearButton as CSSProperties}>
-            x
+            ×
           </button>
         )}
       </div>
 
       {productsQuery.isLoading ? <p style={styles.resultInfo}>Carregando produtos...</p> : null}
-      {productsQuery.isError ? <p style={styles.resultInfo}>Nao foi possivel carregar os produtos agora.</p> : null}
+      {productsQuery.isError ? <p style={styles.resultInfo}>Não foi possível carregar os produtos agora.</p> : null}
 
       {!productsQuery.isLoading && produtos.length > 0 ? (
         <div>
@@ -159,7 +159,7 @@ export default function Produtos() {
                 ? `Mostrando ${produtos.length} resultado(s) para "${searchTerm}"`
                 : activeCategoryLabel
                   ? `Exibindo ${produtos.length} produto(s) em ${activeCategoryLabel}`
-                  : `Exibindo ${produtos.length} produtos disponiveis`}
+                  : `Exibindo ${produtos.length} produtos disponíveis`}
             </p>
           </div>
 
@@ -184,13 +184,13 @@ export default function Produtos() {
         </div>
       ) : !productsQuery.isLoading ? (
         <div style={{ ...styles.emptyState, padding: isMobile ? "40px 16px" : styles.emptyState.padding }}>
-          <div style={styles.emptyIcon}>x</div>
+          <div style={styles.emptyIcon}>×</div>
           <h2 style={styles.emptyTitle}>Nenhum produto encontrado</h2>
           <p style={styles.emptyText}>
             {searchTerm
-              ? `Nao encontramos produtos para "${searchTerm}".`
+              ? `Não encontramos produtos para "${searchTerm}".`
               : activeCategoryLabel
-                ? `Ainda nao ha itens publicados em ${activeCategoryLabel}.`
+                ? `Ainda não há itens publicados em ${activeCategoryLabel}.`
                 : "Nenhum produto foi encontrado no momento."}
           </p>
           <div style={styles.emptyActions}>

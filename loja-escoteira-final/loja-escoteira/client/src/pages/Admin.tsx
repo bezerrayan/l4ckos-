@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { trpc } from "../lib/trpc";
@@ -33,7 +33,7 @@ const emptyProductForm = {
 };
 
 const emptyPromoForm = {
-  badge: "PROMOCAO",
+  badge: "PROMOÇÃO",
   title: "",
   description: "",
   ctaLabel: "Aproveitar oferta",
@@ -81,7 +81,7 @@ export default function Admin() {
   const [restoreFileName, setRestoreFileName] = useState("");
   const [newCoupon, setNewCoupon] = useState({ code: "", type: "percent", value: "10", maxUses: "" });
   const [launchEmailForm, setLaunchEmailForm] = useState({
-    couponCode: "LANCAMENTO15",
+    couponCode: "lançamento15",
     discountPercent: "15",
     launchUrl: "https://l4ckos.com.br",
     batchSize: "25",
@@ -271,7 +271,7 @@ export default function Admin() {
     return (
       <div style={styles.centerCard}>
         <h1 style={styles.title}>Acesso negado</h1>
-        <p style={styles.muted}>Faça login para acessar a área administrativa.</p>
+        <p style={styles.muted}>FaÃ§a login para acessar a Ã¡rea administrativa.</p>
         <button style={styles.primaryBtn} onClick={() => navigate("/login")}>Ir para login</button>
       </div>
     );
@@ -280,9 +280,9 @@ export default function Admin() {
   if (!isAdmin) {
     return (
       <div style={styles.centerCard}>
-        <h1 style={styles.title}>Sem permissão</h1>
-        <p style={styles.muted}>Esta área é exclusiva para administradores.</p>
-        <button style={styles.primaryBtn} onClick={() => navigate("/")}>Voltar para início</button>
+        <h1 style={styles.title}>Sem permissÃ£o</h1>
+        <p style={styles.muted}>Esta Ã¡rea Ã© exclusiva para administradores.</p>
+        <button style={styles.primaryBtn} onClick={() => navigate("/")}>Voltar para inÃ­cio</button>
       </div>
     );
   }
@@ -290,7 +290,7 @@ export default function Admin() {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Painel Administrativo Seguro</h1>
-      <p style={styles.muted}>Gestão completa de catálogo, pedidos, clientes, cupons, relatórios, auditoria e backup.</p>
+      <p style={styles.muted}>GestÃ£o completa de catÃ¡logo, pedidos, clientes, cupons, relatÃ³rios, auditoria e backup.</p>
 
       <div style={styles.tabs}>
         {[
@@ -300,7 +300,7 @@ export default function Admin() {
           { key: "promos", label: "Promocoes" },
           { key: "orders", label: "Pedidos" },
           { key: "coupons", label: "Cupons" },
-          { key: "reports", label: "Relatórios" },
+          { key: "reports", label: "RelatÃ³rios" },
           { key: "audit", label: "Auditoria" },
           { key: "backup", label: "Backup" },
         ].map(tab => (
@@ -325,7 +325,7 @@ export default function Admin() {
 
       {section === "customers" && (
         <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Gestão de Clientes</h2>
+          <h2 style={styles.sectionTitle}>GestÃ£o de Clientes</h2>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
               <thead><tr><th>ID</th><th>Nome</th><th>Email</th><th>Role</th><th>Pedidos</th><th>VIP</th><th>Bloqueado</th><th>Ações</th></tr></thead>
@@ -359,9 +359,9 @@ export default function Admin() {
               ))}
             </select>
             <div style={styles.categoryPreviewBox}>
-              <span style={styles.categoryPreviewLabel}>Pr�via da categoria</span>
+              <span style={styles.categoryPreviewLabel}>Prévia da categoria</span>
               <strong style={styles.categoryPreviewValue}>{newProduct.category ? getCategoryLabel(newProduct.category) : "Selecione uma categoria"}</strong>
-              <span style={styles.categoryPreviewHint}>Essa categoria define onde o produto aparece para o cliente na vitrine e nas p�ginas dedicadas.</span>
+              <span style={styles.categoryPreviewHint}>Essa categoria define onde o produto aparece para o cliente na vitrine e nas páginas dedicadas.</span>
             </div>
             <input style={styles.input} placeholder="Preço (R$)" value={newProduct.price} onChange={e => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
             <input style={styles.input} placeholder="Estoque" value={newProduct.stock} onChange={e => setNewProduct(prev => ({ ...prev, stock: e.target.value }))} />
@@ -374,7 +374,7 @@ export default function Admin() {
             <input style={styles.input} placeholder="Tamanhos (CSV: PP,P,M,G,GG ou 36,38,40)" value={newProduct.sizesCsv} onChange={e => setNewProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
             <input style={styles.input} placeholder="Imagem principal" value={newProduct.imageUrl} onChange={e => setNewProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
             <input style={styles.input} placeholder="Outras imagens CSV" value={newProduct.imagesCsv} onChange={e => setNewProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
-            <input style={styles.input} placeholder="Variantes CSV (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+            <input style={styles.input} placeholder="Variantes CSV (nome|sku|Preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
             <input style={styles.input} placeholder="Descrição" value={newProduct.description} onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))} />
           </div>
           <button
@@ -383,7 +383,7 @@ export default function Admin() {
               const price = parseMoneyToCents(newProduct.price);
               const stock = Number(newProduct.stock);
               if (!newProduct.name.trim() || !newProduct.category.trim() || !Number.isFinite(price) || price <= 0) {
-                showToast({ message: "Preencha nome/categoria/preço válidos", duration: 2400 });
+                showToast({ message: "Preencha nome/categoria/Preço válidos", duration: 2400 });
                 return;
               }
 
@@ -519,9 +519,9 @@ export default function Admin() {
                   ))}
                 </select>
                 <div style={styles.categoryPreviewBox}>
-                  <span style={styles.categoryPreviewLabel}>Pr�via da categoria</span>
+                  <span style={styles.categoryPreviewLabel}>Prévia da categoria</span>
                   <strong style={styles.categoryPreviewValue}>{editProduct.category ? getCategoryLabel(editProduct.category) : "Selecione uma categoria"}</strong>
-                  <span style={styles.categoryPreviewHint}>Essa categoria ser� usada na navega��o da loja e no filtro que o cliente v�.</span>
+                  <span style={styles.categoryPreviewHint}>Essa categoria será usada na navegação da loja e no filtro que o cliente vê.</span>
                 </div>
                 <input style={styles.input} placeholder="Preço (R$)" value={editProduct.price} onChange={e => setEditProduct(prev => ({ ...prev, price: e.target.value }))} />
                 <input style={styles.input} placeholder="Estoque" value={editProduct.stock} onChange={e => setEditProduct(prev => ({ ...prev, stock: e.target.value }))} />
@@ -534,7 +534,7 @@ export default function Admin() {
                 <input style={styles.input} placeholder="Tamanhos (CSV: PP,P,M,G,GG ou 36,38,40)" value={editProduct.sizesCsv} onChange={e => setEditProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
                 <input style={styles.input} placeholder="Imagem principal" value={editProduct.imageUrl} onChange={e => setEditProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
                 <input style={styles.input} placeholder="Outras imagens CSV" value={editProduct.imagesCsv} onChange={e => setEditProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
-                <input style={styles.input} placeholder="Variantes CSV (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+                <input style={styles.input} placeholder="Variantes CSV (nome|sku|Preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
                 <input style={styles.input} placeholder="Descrição" value={editProduct.description} onChange={e => setEditProduct(prev => ({ ...prev, description: e.target.value }))} />
               </div>
               <div style={styles.inlineRow}>
@@ -546,7 +546,7 @@ export default function Admin() {
                     const price = parseMoneyToCents(editProduct.price);
                     const stock = Number(editProduct.stock);
                     if (!editProduct.name.trim() || !editProduct.category.trim() || !Number.isFinite(price) || price <= 0) {
-                      showToast({ message: "Preencha nome/categoria/preço válidos", duration: 2400 });
+                      showToast({ message: "Preencha nome/categoria/Preço válidos", duration: 2400 });
                       return;
                     }
 
@@ -594,7 +594,7 @@ export default function Admin() {
                     });
                   }}
                 >
-                  Salvar Edição
+                  Salvar EdiÃ§Ã£o
                 </button>
                 <button
                   style={styles.smallBtn}
@@ -673,7 +673,7 @@ export default function Admin() {
                           );
                         }}
                       >
-                        Salvar rápido
+                        Salvar rÃ¡pido
                       </button>
                       <button
                         style={styles.smallBtn}
@@ -766,7 +766,7 @@ export default function Admin() {
                       <button
                         style={styles.smallBtn}
                         onClick={() => {
-                          const tracking = window.prompt("Número de rastreio:", row.trackingCode || "");
+                          const tracking = window.prompt("NÃºmero de rastreio:", row.trackingCode || "");
                           if (tracking === null) return;
                           updateOrderMutation.mutate({ orderId: row.id, trackingCode: tracking || null });
                         }}
@@ -790,8 +790,8 @@ export default function Admin() {
           </p>
           <div style={styles.formGrid}>
             <input style={styles.input} placeholder="Badge" value={newPromo.badge} onChange={e => setNewPromo(prev => ({ ...prev, badge: e.target.value }))} />
-            <input style={styles.input} placeholder="Titulo" value={newPromo.title} onChange={e => setNewPromo(prev => ({ ...prev, title: e.target.value }))} />
-            <input style={styles.input} placeholder="Descricao" value={newPromo.description} onChange={e => setNewPromo(prev => ({ ...prev, description: e.target.value }))} />
+            <input style={styles.input} placeholder="título" value={newPromo.title} onChange={e => setNewPromo(prev => ({ ...prev, title: e.target.value }))} />
+            <input style={styles.input} placeholder="descrição" value={newPromo.description} onChange={e => setNewPromo(prev => ({ ...prev, description: e.target.value }))} />
             <input style={styles.input} placeholder="CTA" value={newPromo.ctaLabel} onChange={e => setNewPromo(prev => ({ ...prev, ctaLabel: e.target.value }))} />
             <input style={styles.input} placeholder="URL da imagem" value={newPromo.imageUrl} onChange={e => setNewPromo(prev => ({ ...prev, imageUrl: e.target.value }))} />
             <input style={styles.input} placeholder="Texto alternativo da imagem" value={newPromo.imageAlt} onChange={e => setNewPromo(prev => ({ ...prev, imageAlt: e.target.value }))} />
@@ -810,12 +810,12 @@ export default function Admin() {
               onClick={() => {
                 const sortOrder = Number(newPromo.sortOrder || "0");
                 if (!newPromo.title.trim() || !newPromo.description.trim() || !newPromo.discountText.trim()) {
-                  showToast({ message: "Preencha titulo, descricao e desconto", duration: 2400 });
+                  showToast({ message: "Preencha título, descrição e desconto", duration: 2400 });
                   return;
                 }
 
                 const payload = {
-                  badge: newPromo.badge.trim() || "PROMOCAO",
+                  badge: newPromo.badge.trim() || "PROMOÇÃO",
                   title: newPromo.title.trim(),
                   description: newPromo.description.trim(),
                   ctaLabel: newPromo.ctaLabel.trim() || "Aproveitar oferta",
@@ -853,23 +853,23 @@ export default function Admin() {
 
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Titulo</th><th>Imagem</th><th>Desconto</th><th>Ordem</th><th>Ativo</th><th>Acoes</th></tr></thead>
+              <thead><tr><th>ID</th><th>título</th><th>Imagem</th><th>Desconto</th><th>Ordem</th><th>Ativo</th><th>Acoes</th></tr></thead>
               <tbody>
                 {(promoBannersQuery.data ?? []).map((row: any) => (
                   <tr key={row.id}>
                     <td>{row.id}</td>
                     <td>{row.title}</td>
-                    <td>{row.imageUrl ? "Sim" : "Nao"}</td>
+                    <td>{row.imageUrl ? "Sim" : "Não"}</td>
                     <td>{row.discountText}</td>
                     <td>{row.sortOrder}</td>
-                    <td>{row.isActive ? "Sim" : "Nao"}</td>
+                    <td>{row.isActive ? "Sim" : "Não"}</td>
                     <td style={styles.actionsCell}>
                       <button
                         style={styles.smallBtn}
                         onClick={() => {
                           setEditingPromoId(row.id);
                           setNewPromo({
-                            badge: row.badge ?? "PROMOCAO",
+                            badge: row.badge ?? "PROMOÇÃO",
                             title: row.title ?? "",
                             description: row.description ?? "",
                             ctaLabel: row.ctaLabel ?? "Aproveitar oferta",
@@ -906,7 +906,7 @@ export default function Admin() {
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Cupons e Descontos</h2>
           <div style={styles.inlineRow}>
-            <input style={styles.input} placeholder="Código" value={newCoupon.code} onChange={e => setNewCoupon(prev => ({ ...prev, code: e.target.value }))} />
+            <input style={styles.input} placeholder="CÃ³digo" value={newCoupon.code} onChange={e => setNewCoupon(prev => ({ ...prev, code: e.target.value }))} />
             <select style={styles.select} value={newCoupon.type} onChange={e => setNewCoupon(prev => ({ ...prev, type: e.target.value }))}>
               <option value="percent">percent</option>
               <option value="fixed">fixed</option>
@@ -929,11 +929,11 @@ export default function Admin() {
           </div>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Código</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Ativo</th><th>Ação</th></tr></thead>
+              <thead><tr><th>ID</th><th>CÃ³digo</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Ativo</th><th>Ação</th></tr></thead>
               <tbody>
                 {(couponsQuery.data ?? []).map(coupon => (
                   <tr key={coupon.id}>
-                    <td>{coupon.id}</td><td>{coupon.code}</td><td>{coupon.type}</td><td>{coupon.value}</td><td>{coupon.usedCount}/{coupon.maxUses ?? "∞"}</td><td>{coupon.isActive ? "Sim" : "Não"}</td>
+                    <td>{coupon.id}</td><td>{coupon.code}</td><td>{coupon.type}</td><td>{coupon.value}</td><td>{coupon.usedCount}/{coupon.maxUses ?? "âˆž"}</td><td>{coupon.isActive ? "Sim" : "Não"}</td>
                     <td><button style={styles.dangerBtn} onClick={() => couponDeleteMutation.mutate({ id: coupon.id })}>Excluir</button></td>
                   </tr>
                 ))}
@@ -943,7 +943,7 @@ export default function Admin() {
           <div style={styles.launchCard}>
             <h3 style={styles.sectionTitle}>Avisar lista de espera sobre a abertura</h3>
             <p style={styles.muted}>
-              Use esta acao para disparar o e-mail de lancamento para todos os cadastrados, com o cupom exclusivo de abertura.
+              Use esta acao para disparar o e-mail de lançamento para todos os cadastrados, com o cupom exclusivo de abertura.
             </p>
             <div style={styles.formGrid}>
               <input
@@ -1000,7 +1000,7 @@ export default function Admin() {
                   });
                 }}
               >
-                {waitlistLaunchSendMutation.isPending ? "Enviando..." : "Disparar e-mail de lancamento"}
+                {waitlistLaunchSendMutation.isPending ? "Enviando..." : "Disparar e-mail de lançamento"}
               </button>
             </div>
 
@@ -1034,7 +1034,7 @@ export default function Admin() {
 
       {section === "reports" && (
         <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Relatórios</h2>
+          <h2 style={styles.sectionTitle}>RelatÃ³rios</h2>
           <div style={styles.inlineRow}>
             <input type="datetime-local" style={styles.input} value={reportFrom} onChange={e => setReportFrom(e.target.value)} />
             <input type="datetime-local" style={styles.input} value={reportTo} onChange={e => setReportTo(e.target.value)} />
@@ -1066,7 +1066,7 @@ export default function Admin() {
           <h2 style={styles.sectionTitle}>Logs de Auditoria</h2>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>Quando</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>ID</th><th>Meta</th></tr></thead>
+              <thead><tr><th>Quando</th><th>UsuÃ¡rio</th><th>Ação</th><th>Entidade</th><th>ID</th><th>Meta</th></tr></thead>
               <tbody>
                 {(auditQuery.data ?? []).map(log => (
                   <tr key={log.id}>
@@ -1086,7 +1086,7 @@ export default function Admin() {
 
       {section === "backup" && (
         <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Backup e Restauração</h2>
+          <h2 style={styles.sectionTitle}>Backup e RestaurAção</h2>
           <div style={styles.inlineRow}>
             <button style={styles.primaryBtn} onClick={() => backupManualMutation.mutate()}>Backup Manual</button>
             <input style={styles.input} placeholder="arquivo backup.json" value={restoreFileName} onChange={e => setRestoreFileName(e.target.value)} />
@@ -1106,7 +1106,7 @@ export default function Admin() {
           </div>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>Arquivos disponíveis</th></tr></thead>
+              <thead><tr><th>Arquivos disponÃ­veis</th></tr></thead>
               <tbody>
                 {(backupsQuery.data ?? []).map(file => (
                   <tr key={file}><td>{file}</td></tr>
@@ -1223,9 +1223,9 @@ const styles: Record<string, CSSProperties> = {
   },
   formGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: 8,
-    alignItems: "center",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 12,
+    alignItems: "stretch",
   },
   inlineRow: {
     display: "flex",
@@ -1238,44 +1238,51 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    gap: 6,
-    padding: 14,
+    alignItems: "flex-start",
+    textAlign: "left",
+    gap: 8,
+    padding: 16,
     border: "1px solid #2f2f2f",
-    borderRadius: 10,
-    background: "#121212",
-    minHeight: 88,
+    borderRadius: 12,
+    background: "linear-gradient(135deg, #121212 0%, #181818 100%)",
+    minHeight: 0,
+    gridColumn: "1 / -1",
   },
   categoryPreviewLabel: {
     fontSize: 11,
-    letterSpacing: 1.4,
+    letterSpacing: 1.6,
     textTransform: "uppercase",
     color: "#9ca3af",
   },
   categoryPreviewValue: {
     color: "#f0ede8",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 800,
+    lineHeight: 1.35,
   },
   categoryPreviewHint: {
     color: "#9ca3af",
-    fontSize: 12,
-    lineHeight: 1.5,
+    fontSize: 13,
+    lineHeight: 1.6,
+    maxWidth: 640,
   },
   input: {
     border: "1px solid #2f2f2f",
     background: "#0f0f0f",
     color: "#f0ede8",
     borderRadius: 8,
-    padding: "8px 10px",
-    textAlign: "center",
+    padding: "12px 14px",
+    textAlign: "left",
+    minHeight: 46,
   },
   select: {
     border: "1px solid #2f2f2f",
     background: "#0f0f0f",
     color: "#f0ede8",
     borderRadius: 8,
-    padding: "6px 8px",
-    textAlign: "center",
+    padding: "12px 14px",
+    textAlign: "left",
+    minHeight: 46,
   },
   tableWrap: {
     overflowX: "auto",
@@ -1324,5 +1331,8 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
 };
+
+
+
 
 
