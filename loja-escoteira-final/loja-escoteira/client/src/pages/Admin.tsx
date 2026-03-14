@@ -59,6 +59,12 @@ function resolveAdminImageUrl(imageUrl?: string | null) {
   return apiUrl(`/${imageUrl}`);
 }
 
+function normalizeAdminImageValue(imageUrl?: string | null) {
+  const value = String(imageUrl ?? "").trim();
+  if (!value) return "";
+  return resolveAdminImageUrl(value);
+}
+
 function centsToMoneyInput(cents: number | null | undefined) {
   if (cents === null || cents === undefined) return "";
   return (Number(cents) / 100).toFixed(2);
@@ -559,7 +565,7 @@ export default function Admin() {
                 category: normalizeCategoryValue(newProduct.category),
                 price,
                 stock: Number.isFinite(stock) && stock >= 0 ? stock : 0,
-                imageUrl: newProduct.imageUrl.trim() || undefined,
+                imageUrl: normalizeAdminImageValue(newProduct.imageUrl) || undefined,
                 optionColors,
                 optionSizes,
                 sizeType: newProduct.sizeType as "alpha" | "numeric" | "custom",
@@ -622,12 +628,12 @@ export default function Admin() {
                   category: selected.category ?? "",
                   price: centsToMoneyInput(selected.price),
                   stock: String(selected.stock ?? 0),
-                  imageUrl: selected.imageUrl ?? "",
+                  imageUrl: normalizeAdminImageValue(selected.imageUrl),
                   colorsCsv: selectedColors.join(", "),
                   sizesCsv: selectedSizes.join(", "),
                   sizeType: selected.sizeType ?? "alpha",
                   imagesCsv: (selected.images ?? [])
-                    .map(item => (typeof item === "string" ? item : item?.imageUrl ?? ""))
+                    .map(item => normalizeAdminImageValue(typeof item === "string" ? item : item?.imageUrl ?? ""))
                     .filter(Boolean)
                     .join(", "),
                   variantsCsv: (selected.variants ?? [])
@@ -786,7 +792,7 @@ export default function Admin() {
                       category: normalizeCategoryValue(editProduct.category),
                       price,
                       stock: Number.isFinite(stock) && stock >= 0 ? stock : 0,
-                      imageUrl: editProduct.imageUrl.trim() || undefined,
+                      imageUrl: normalizeAdminImageValue(editProduct.imageUrl) || undefined,
                       optionColors,
                       optionSizes,
                       sizeType: editProduct.sizeType as "alpha" | "numeric" | "custom",
@@ -945,12 +951,12 @@ export default function Admin() {
                             category: row.category ?? "",
                             price: centsToMoneyInput(row.price),
                             stock: String(row.stock ?? 0),
-                            imageUrl: row.imageUrl ?? "",
+                            imageUrl: normalizeAdminImageValue(row.imageUrl),
                             colorsCsv: rowColors.join(", "),
                             sizesCsv: rowSizes.join(", "),
                             sizeType: row.sizeType ?? "alpha",
                             imagesCsv: (row.images ?? [])
-                              .map(item => (typeof item === "string" ? item : item?.imageUrl ?? ""))
+                              .map(item => normalizeAdminImageValue(typeof item === "string" ? item : item?.imageUrl ?? ""))
                               .filter(Boolean)
                               .join(", "),
                             variantsCsv: (row.variants ?? [])
@@ -1116,7 +1122,7 @@ export default function Admin() {
                             title: row.title ?? "",
                             description: row.description ?? "",
                             ctaLabel: row.ctaLabel ?? "Aproveitar oferta",
-                            imageUrl: row.imageUrl ?? "",
+                            imageUrl: normalizeAdminImageValue(row.imageUrl),
                             imageAlt: row.imageAlt ?? "",
                             linkUrl: row.linkUrl ?? "",
                             discountText: row.discountText ?? "",
@@ -1749,6 +1755,8 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
 };
+
+
 
 
 
