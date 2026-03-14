@@ -27,7 +27,7 @@ export default function Header() {
   const displayName = firstName(user?.name, user?.email);
 
   const navItems = [
-    { to: "/", label: "In√≠cio", active: location.pathname === "/" },
+    { to: "/", label: "InÌcio", active: location.pathname === "/" },
     {
       to: "/produtos",
       label: "Produtos",
@@ -88,7 +88,7 @@ export default function Header() {
           {isAuthenticated ? (
             <div className="l4-header-user">
               <Link to="/perfil" className="l4-header-chip" onClick={() => setMenuOpen(false)}>
-                Ol√°, {displayName}
+                Ol·, {displayName}
               </Link>
               {user?.role === "admin" ? (
                 <Link to="/admin" className="l4-header-chip admin" onClick={() => setMenuOpen(false)}>
@@ -120,3 +120,4 @@ export default function Header() {
     </header>
   );
 }
+

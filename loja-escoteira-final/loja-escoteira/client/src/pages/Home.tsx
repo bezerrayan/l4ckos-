@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
+import { getCategoryLabel } from "../lib/productCategories";
 import "./Home.css";
 import camisaFallback from "../images/camisa.png";
 import PromoCarousel from "../components/PromoCarousel";
@@ -38,6 +39,14 @@ const trustHighlights = [
     title: "Atendimento direto",
     text: "Quando precisar de suporte, o cliente encontra canais claros para contato e acompanhamento do pedido.",
   },
+];
+
+const homeCategories = [
+  { value: "camping", label: "CAMPING", className: "l4-home-cat l4-home-cat-large l4-home-cat-1" },
+  { value: "uniformes", label: "UNIFORMES", className: "l4-home-cat l4-home-cat-2" },
+  { value: "trilha", label: "TRILHA", className: "l4-home-cat l4-home-cat-3" },
+  { value: "acessorios", label: "ACESSÓRIOS", className: "l4-home-cat l4-home-cat-4" },
+  { value: "mochilas", label: "MOCHILAS", className: "l4-home-cat l4-home-cat-5" },
 ];
 
 function formatCurrency(cents: number) {
@@ -130,21 +139,11 @@ export default function Home() {
           </Link>
         </div>
         <div className="l4-home-categories-grid">
-          <Link className="l4-home-cat l4-home-cat-large l4-home-cat-1" to="/produtos">
-            <span className="l4-home-cat-name">CAMPING</span>
-          </Link>
-          <Link className="l4-home-cat l4-home-cat-2" to="/produtos">
-            <span className="l4-home-cat-name">UNIFORMES</span>
-          </Link>
-          <Link className="l4-home-cat l4-home-cat-3" to="/produtos">
-            <span className="l4-home-cat-name">TRILHA</span>
-          </Link>
-          <Link className="l4-home-cat l4-home-cat-4" to="/produtos">
-            <span className="l4-home-cat-name">ACESSORIOS</span>
-          </Link>
-          <Link className="l4-home-cat l4-home-cat-5" to="/produtos">
-            <span className="l4-home-cat-name">MOCHILAS</span>
-          </Link>
+          {homeCategories.map(category => (
+            <Link key={category.value} className={category.className} to={`/produtos?categoria=${category.value}`}>
+              <span className="l4-home-cat-name">{category.label}</span>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -190,6 +189,7 @@ export default function Home() {
               </div>
               <div className="l4-home-product-info">
                 <h3 className="l4-home-product-name">{product.name}</h3>
+                <p className="l4-home-product-category">{getCategoryLabel(product.category)}</p>
                 <div className="l4-home-product-meta">
                   <span>{formatCurrency(product.priceCents)}</span>
                   <span className="l4-home-product-link">ver detalhes</span>

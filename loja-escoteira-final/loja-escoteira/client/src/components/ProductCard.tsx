@@ -1,4 +1,4 @@
-ï»¿import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { CSSProperties } from "react";
 import type { Product } from "../types/product";
 import camisaFallback from "../images/camisa.png";
@@ -16,9 +16,9 @@ export default function ProductCard({ product }: Props) {
   }).format(product.price);
 
   const getBadgeInfo = () => {
-    if ((product.stock ?? 0) <= 0) return { text: "INDISPONÃVEL", color: "#5b1d1d" };
+    if ((product.stock ?? 0) <= 0) return { text: "INDISPONÍVEL", color: "#5b1d1d" };
     if ((product.stock ?? 0) <= 3) return { text: "ESTOQUE REDUZIDO", color: "#6b3e0b" };
-    if (product.category?.trim()) return { text: product.category.toUpperCase(), color: "#4a5568" };
+    if (product.category?.trim()) return { text: getCategoryLabel(product.category).toUpperCase(), color: "#4a5568" };
     return { text: "DESTAQUE", color: "#555555" };
   };
 
@@ -59,7 +59,7 @@ export default function ProductCard({ product }: Props) {
         <div style={{ ...styles.badge, background: badge.color } as CSSProperties}>{badge.text}</div>
         <div style={styles.designOverlay as CSSProperties}>
           <div style={styles.overlayContent as CSSProperties}>
-            {(product.stock ?? 0) > 0 ? "Clique para ver detalhes" : "IndisponÃ­vel no momento"}
+            {(product.stock ?? 0) > 0 ? "Clique para ver detalhes" : "Indisponível no momento"}
           </div>
         </div>
       </div>
@@ -69,8 +69,8 @@ export default function ProductCard({ product }: Props) {
         <p style={styles.price as CSSProperties}>{formattedPrice}</p>
         <p style={styles.helper as CSSProperties}>
           {(product.stock ?? 0) > 0
-            ? "Consulte variaÃ§Ãµes, disponibilidade e prazo na pÃ¡gina do produto."
-            : "Este item estÃ¡ temporariamente indisponÃ­vel."}
+            ? "Consulte variações, disponibilidade e prazo na página do produto."
+            : "Este item está temporariamente indisponível."}
         </p>
         <button
           style={styles.button as CSSProperties}
@@ -185,3 +185,4 @@ const styles = {
     letterSpacing: "0.3px",
   },
 };
+

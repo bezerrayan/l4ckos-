@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { trpc } from "../lib/trpc";
 import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
+import { PRODUCT_CATEGORIES, getCategoryLabel, normalizeCategoryValue } from "../lib/productCategories";
 
 type Section =
   | "overview"
@@ -30,18 +31,6 @@ const emptyProductForm = {
   variantsCsv: "",
   description: "",
 };
-
-const PREDEFINED_CATEGORIES = [
-  "uniformes",
-  "camisas",
-  "calcas",
-  "bermudas",
-  "acessorios",
-  "equipamentos",
-  "camping",
-  "insignias",
-  "calçados",
-];
 
 const emptyPromoForm = {
   badge: "PROMOCAO",
@@ -365,8 +354,8 @@ export default function Admin() {
             <input style={styles.input} placeholder="Nome" value={newProduct.name} onChange={e => setNewProduct(prev => ({ ...prev, name: e.target.value }))} />
             <select style={styles.select} value={newProduct.category} onChange={e => setNewProduct(prev => ({ ...prev, category: e.target.value }))}>
               <option value="">Selecione categoria</option>
-              {PREDEFINED_CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {PRODUCT_CATEGORIES.map(cat => (
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
               ))}
             </select>
             <input style={styles.input} placeholder="Preço (R$)" value={newProduct.price} onChange={e => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
@@ -423,7 +412,7 @@ export default function Admin() {
 
               createProductMutation.mutate({
                 name: newProduct.name.trim(),
-                category: newProduct.category.trim(),
+                category: normalizeCategoryValue(newProduct.category),
                 price,
                 stock: Number.isFinite(stock) && stock >= 0 ? stock : 0,
                 imageUrl: newProduct.imageUrl.trim() || undefined,
@@ -520,8 +509,8 @@ export default function Admin() {
                 <input style={styles.input} placeholder="Nome" value={editProduct.name} onChange={e => setEditProduct(prev => ({ ...prev, name: e.target.value }))} />
                 <select style={styles.select} value={editProduct.category} onChange={e => setEditProduct(prev => ({ ...prev, category: e.target.value }))}>
                   <option value="">Selecione categoria</option>
-                  {PREDEFINED_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                  {PRODUCT_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
                 </select>
                 <input style={styles.input} placeholder="Preço (R$)" value={editProduct.price} onChange={e => setEditProduct(prev => ({ ...prev, price: e.target.value }))} />
@@ -582,7 +571,7 @@ export default function Admin() {
                     updateProductMutation.mutate({
                       id: editingProductId,
                       name: editProduct.name.trim(),
-                      category: editProduct.category.trim(),
+                      category: normalizeCategoryValue(editProduct.category),
                       price,
                       stock: Number.isFinite(stock) && stock >= 0 ? stock : 0,
                       imageUrl: editProduct.imageUrl.trim() || undefined,
@@ -616,7 +605,7 @@ export default function Admin() {
               <tbody>
                 {products.map(row => (
                   <tr key={row.id}>
-                    <td>{row.id}</td><td>{row.name}</td><td>{row.category}</td>
+                    <td>{row.id}</td><td>{row.name}</td><td>{getCategoryLabel(row.category)}</td>
                     <td>
                       <input
                         style={{ ...styles.input, width: 130 }}
@@ -1298,3 +1287,4 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
   },
 };
+

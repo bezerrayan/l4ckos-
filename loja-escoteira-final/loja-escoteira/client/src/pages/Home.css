@@ -602,6 +602,15 @@
   font-size: 13px;
 }
 
+.l4-home-product-category {
+  margin-top: 8px;
+  color: var(--gray-light);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-family: "Space Mono", monospace;
+}
+
 .l4-home-product-meta {
   margin-top: 8px;
   display: flex;

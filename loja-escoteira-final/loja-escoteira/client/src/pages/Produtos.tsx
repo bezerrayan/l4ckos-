@@ -3,12 +3,14 @@
  */
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import type { Product } from "../types/product";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
+import { PRODUCT_CATEGORIES, getCategoryLabel, normalizeCategoryValue } from "../lib/productCategories";
 import camisaFallback from "../images/camisa.png";
 
 function normalizePrice(value: number) {
@@ -28,14 +30,16 @@ function resolveProductImageUrl(imageUrl?: string | null) {
 
 export default function Produtos() {
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const selectedCategory = normalizeCategoryValue(searchParams.get("categoria"));
 
   const productsQuery = trpc.products.list.useQuery({
     search: searchTerm.trim() || undefined,
     limit: 200,
   });
 
-  const produtos: Product[] = useMemo(
+  const produtosBrutos: Product[] = useMemo(
     () =>
       (productsQuery.data ?? []).map(item => ({
         id: item.id,
@@ -49,15 +53,66 @@ export default function Produtos() {
     [productsQuery.data],
   );
 
+  const produtos = useMemo(
+    () =>
+      selectedCategory
+        ? produtosBrutos.filter(item => normalizeCategoryValue(item.category) === selectedCategory)
+        : produtosBrutos,
+    [produtosBrutos, selectedCategory],
+  );
+
+  const availableCategories = useMemo(() => {
+    const categoryMap = new Map<string, string>();
+    for (const category of PRODUCT_CATEGORIES) {
+      categoryMap.set(category.value, category.label);
+    }
+    for (const product of produtosBrutos) {
+      const normalized = normalizeCategoryValue(product.category);
+      if (!normalized || categoryMap.has(normalized)) continue;
+      categoryMap.set(normalized, getCategoryLabel(product.category));
+    }
+    return Array.from(categoryMap.entries()).map(([value, label]) => ({ value, label }));
+  }, [produtosBrutos]);
+
+  const activeCategoryLabel = selectedCategory ? getCategoryLabel(selectedCategory) : "";
+
   return (
     <div>
       <div style={{ ...styles.header, marginBottom: isMobile ? 28 : styles.header.marginBottom, paddingBottom: isMobile ? 20 : styles.header.paddingBottom }}>
         <div>
           <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa coleção</h1>
           <p style={{ ...styles.subtitle, fontSize: isMobile ? 15 : styles.subtitle.fontSize }}>
-            Explore a vitrine da L4CKOS e encontre produtos selecionados para rotina outdoor, escotismo e uso diário.
+            {activeCategoryLabel
+              ? `Você está vendo a categoria ${activeCategoryLabel}. Explore os itens relacionados e filtre com mais rapidez.`
+              : "Explore a vitrine da L4CKOS e encontre produtos selecionados para rotina outdoor, escotismo e uso diário."}
           </p>
         </div>
+      </div>
+
+      <div style={{ ...styles.categoryBar, gap: isMobile ? 8 : styles.categoryBar.gap }}>
+        <button
+          type="button"
+          style={{
+            ...styles.categoryChip,
+            ...(!selectedCategory ? styles.categoryChipActive : {}),
+          }}
+          onClick={() => setSearchParams({})}
+        >
+          Todas
+        </button>
+        {availableCategories.map(category => (
+          <button
+            key={category.value}
+            type="button"
+            style={{
+              ...styles.categoryChip,
+              ...(selectedCategory === category.value ? styles.categoryChipActive : {}),
+            }}
+            onClick={() => setSearchParams({ categoria: category.value })}
+          >
+            {category.label}
+          </button>
+        ))}
       </div>
 
       <div style={{ ...styles.searchContainer, marginBottom: isMobile ? 30 : styles.searchContainer.marginBottom }}>
@@ -87,7 +142,9 @@ export default function Produtos() {
             <p>
               {searchTerm
                 ? `Mostrando ${produtos.length} resultado(s) para "${searchTerm}"`
-                : `Exibindo ${produtos.length} produtos disponíveis`}
+                : activeCategoryLabel
+                  ? `Exibindo ${produtos.length} produto(s) em ${activeCategoryLabel}`
+                  : `Exibindo ${produtos.length} produtos disponíveis`}
             </p>
           </div>
 
@@ -109,14 +166,28 @@ export default function Produtos() {
           <div style={styles.emptyIcon}>×</div>
           <h2 style={styles.emptyTitle}>Nenhum produto encontrado</h2>
           <p style={styles.emptyText}>
-            Não encontramos produtos para "{searchTerm}".
+            {searchTerm
+              ? `Não encontramos produtos para "${searchTerm}".`
+              : activeCategoryLabel
+                ? `Ainda não há itens publicados em ${activeCategoryLabel}.`
+                : "Nenhum produto foi encontrado no momento."}
           </p>
-          <button
-            onClick={() => setSearchTerm("")}
-            style={styles.emptyButton as CSSProperties}
-          >
-            Limpar filtro
-          </button>
+          <div style={styles.emptyActions}>
+            <button
+              onClick={() => setSearchTerm("")}
+              style={styles.emptyButton as CSSProperties}
+            >
+              Limpar busca
+            </button>
+            {selectedCategory ? (
+              <button
+                onClick={() => setSearchParams({})}
+                style={styles.emptyButtonSecondary as CSSProperties}
+              >
+                Ver todas as categorias
+              </button>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </div>
@@ -139,6 +210,27 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 18,
     color: "#9ca3af",
     margin: 0,
+  },
+  categoryBar: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+    marginBottom: 28,
+  },
+  categoryChip: {
+    border: "1px solid #2f2f2f",
+    borderRadius: 999,
+    padding: "10px 14px",
+    fontSize: 13,
+    fontWeight: 700,
+    background: "#111111",
+    color: "#d1d5db",
+    cursor: "pointer",
+  },
+  categoryChipActive: {
+    background: "#f0ede8",
+    color: "#111111",
+    border: "1px solid #f0ede8",
   },
   searchContainer: {
     position: "relative",
@@ -207,11 +299,28 @@ const styles: Record<string, CSSProperties> = {
     color: "#9ca3af",
     marginBottom: 24,
   },
+  emptyActions: {
+    display: "flex",
+    gap: 12,
+    justifyContent: "center",
+    flexWrap: "wrap",
+  },
   emptyButton: {
     padding: "12px 24px",
     background: "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
     color: "white",
     border: "none",
+    borderRadius: 8,
+    fontWeight: 700,
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    fontSize: 16,
+  },
+  emptyButtonSecondary: {
+    padding: "12px 24px",
+    background: "transparent",
+    color: "#f0ede8",
+    border: "1px solid #3a3a3a",
     borderRadius: 8,
     fontWeight: 700,
     cursor: "pointer",
