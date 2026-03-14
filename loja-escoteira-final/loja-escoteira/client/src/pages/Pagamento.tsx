@@ -36,6 +36,12 @@ type ShippingOption = {
   maxDays: number;
 };
 
+const checkoutHighlights = [
+  "Revise frete, prazo e dados antes de gerar a cobrança.",
+  "O pedido segue para separação após confirmação do pagamento.",
+  "Se precisar ajustar algo, o suporte atende pelos canais oficiais da loja.",
+];
+
 function sanitizeCep(value: string) {
   return value.replace(/\D/g, "").slice(0, 8);
 }
@@ -680,6 +686,17 @@ export default function Pagamento() {
                 {couponError ? <p style={styles.checkoutError}>{couponError}</p> : null}
               </div>
 
+              <div style={styles.shippingBox}>
+                <p style={styles.shippingTitle}>Antes de finalizar</p>
+                <ul style={styles.checkoutChecklist}>
+                  {checkoutHighlights.map(item => (
+                    <li key={item} style={styles.checkoutChecklistItem}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               {/* Botoes */}
               <div style={styles.methodSelector}>
                 <button
@@ -772,6 +789,10 @@ export default function Pagamento() {
               >
                 {createAsaasCharge.isPending ? "Gerando cobrança..." : "Finalizar compra"}
               </button>
+
+              <p style={styles.checkoutSupportText}>
+                Ao gerar a cobrança, você poderá concluir o pagamento com mais calma pela página do Asaas ou pelo código PIX.
+              </p>
 
               {paymentError ? <p style={styles.checkoutError}>{paymentError}</p> : null}
 
@@ -1297,6 +1318,16 @@ const styles: Record<string, CSSProperties> = {
     color: "#0f766e",
     fontWeight: 600,
   },
+  checkoutChecklist: {
+    margin: 0,
+    paddingLeft: 18,
+    color: "#cbd5e1",
+    fontSize: 12,
+    lineHeight: 1.6,
+  },
+  checkoutChecklistItem: {
+    marginBottom: 4,
+  },
   checkoutBtn: {
     width: "100%",
     padding: "18px",
@@ -1309,6 +1340,12 @@ const styles: Record<string, CSSProperties> = {
     transition: "all 0.3s ease",
     marginBottom: 12,
     fontSize: 18,
+  },
+  checkoutSupportText: {
+    margin: "0 0 12px 0",
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 1.6,
   },
   checkoutError: {
     color: "#b91c1c",
