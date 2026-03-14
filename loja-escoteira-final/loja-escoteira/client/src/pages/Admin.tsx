@@ -350,10 +350,16 @@ export default function Admin() {
       {section === "products" && (
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>CRUD de Produtos</h2>
+          <div style={styles.productAdminHeader}>
+            <div>
+              <h3 style={styles.productAdminTitle}>Criar produto</h3>
+              <p style={styles.productAdminText}>Preencha as informações principais, organize a categoria e publique o item com uma estrutura mais clara.</p>
+            </div>
+          </div>
           <div style={styles.formGrid}>
-            <input style={styles.input} placeholder="Nome" value={newProduct.name} onChange={e => setNewProduct(prev => ({ ...prev, name: e.target.value }))} />
+            <input style={styles.input} placeholder="Nome do produto" value={newProduct.name} onChange={e => setNewProduct(prev => ({ ...prev, name: e.target.value }))} />
             <select style={styles.select} value={newProduct.category} onChange={e => setNewProduct(prev => ({ ...prev, category: e.target.value }))}>
-              <option value="">Selecione categoria</option>
+              <option value="">Selecione a categoria</option>
               {PRODUCT_CATEGORIES.map(cat => (
                 <option key={cat.value} value={cat.value}>{cat.label}</option>
               ))}
@@ -364,26 +370,27 @@ export default function Admin() {
               <span style={styles.categoryPreviewHint}>Essa categoria define onde o produto aparece para o cliente na vitrine e nas páginas dedicadas.</span>
             </div>
             <input style={styles.input} placeholder="Preço (R$)" value={newProduct.price} onChange={e => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
-            <input style={styles.input} placeholder="Estoque" value={newProduct.stock} onChange={e => setNewProduct(prev => ({ ...prev, stock: e.target.value }))} />
-            <input style={styles.input} placeholder="Cores (CSV: preto,branco,verde)" value={newProduct.colorsCsv} onChange={e => setNewProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
+            <input style={styles.input} placeholder="Estoque disponível" value={newProduct.stock} onChange={e => setNewProduct(prev => ({ ...prev, stock: e.target.value }))} />
+            <input style={styles.input} placeholder="Cores (CSV: preto, branco, verde)" value={newProduct.colorsCsv} onChange={e => setNewProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
             <select style={styles.select} value={newProduct.sizeType} onChange={e => setNewProduct(prev => ({ ...prev, sizeType: e.target.value }))}>
-              <option value="alpha">Tamanho alfabético (PP,P,M...)</option>
-              <option value="numeric">Tamanho numérico (36,38,40...)</option>
+              <option value="alpha">Tamanho alfabético (PP, P, M...)</option>
+              <option value="numeric">Tamanho numérico (36, 38, 40...)</option>
               <option value="custom">Tamanho customizado</option>
             </select>
-            <input style={styles.input} placeholder="Tamanhos (CSV: PP,P,M,G,GG ou 36,38,40)" value={newProduct.sizesCsv} onChange={e => setNewProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
+            <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={newProduct.sizesCsv} onChange={e => setNewProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
             <input style={styles.input} placeholder="Imagem principal" value={newProduct.imageUrl} onChange={e => setNewProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
-            <input style={styles.input} placeholder="Outras imagens CSV" value={newProduct.imagesCsv} onChange={e => setNewProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
-            <input style={styles.input} placeholder="Variantes CSV (nome|sku|Preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
-            <input style={styles.input} placeholder="Descrição" value={newProduct.description} onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))} />
+            <input style={styles.input} placeholder="Outras imagens (CSV)" value={newProduct.imagesCsv} onChange={e => setNewProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
+            <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+            <input style={styles.input} placeholder="Descrição curta" value={newProduct.description} onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))} />
           </div>
+          <div style={styles.productAdminActions}>
           <button
             style={styles.primaryBtn}
             onClick={() => {
               const price = parseMoneyToCents(newProduct.price);
               const stock = Number(newProduct.stock);
               if (!newProduct.name.trim() || !newProduct.category.trim() || !Number.isFinite(price) || price <= 0) {
-                showToast({ message: "Preencha nome/categoria/Preço válidos", duration: 2400 });
+                showToast({ message: "Preencha nome, categoria e preço válidos", duration: 2400 });
                 return;
               }
 
@@ -430,13 +437,19 @@ export default function Admin() {
               });
             }}
           >
-            Criar Produto
+            Criar produto
           </button>
+          </div>
 
-          <h3 style={styles.sectionTitle}>Editar Produto</h3>
+          <div style={styles.productAdminHeader}>
+            <div>
+              <h3 style={styles.productAdminTitle}>Editar produto</h3>
+              <p style={styles.productAdminText}>Selecione um item já cadastrado para revisar preço, estoque, imagens, variantes e categoria.</p>
+            </div>
+          </div>
           <div style={styles.inlineRow}>
             <select
-              style={styles.select}
+              style={{ ...styles.select, minWidth: 280 }}
               value={editingProductId ?? ""}
               onChange={e => {
                 const nextId = Number(e.target.value);
@@ -511,9 +524,9 @@ export default function Admin() {
           {editingProductId ? (
             <>
               <div style={styles.formGrid}>
-                <input style={styles.input} placeholder="Nome" value={editProduct.name} onChange={e => setEditProduct(prev => ({ ...prev, name: e.target.value }))} />
+                <input style={styles.input} placeholder="Nome do produto" value={editProduct.name} onChange={e => setEditProduct(prev => ({ ...prev, name: e.target.value }))} />
                 <select style={styles.select} value={editProduct.category} onChange={e => setEditProduct(prev => ({ ...prev, category: e.target.value }))}>
-                  <option value="">Selecione categoria</option>
+                  <option value="">Selecione a categoria</option>
                   {PRODUCT_CATEGORIES.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
@@ -524,20 +537,20 @@ export default function Admin() {
                   <span style={styles.categoryPreviewHint}>Essa categoria será usada na navegação da loja e no filtro que o cliente vê.</span>
                 </div>
                 <input style={styles.input} placeholder="Preço (R$)" value={editProduct.price} onChange={e => setEditProduct(prev => ({ ...prev, price: e.target.value }))} />
-                <input style={styles.input} placeholder="Estoque" value={editProduct.stock} onChange={e => setEditProduct(prev => ({ ...prev, stock: e.target.value }))} />
-                <input style={styles.input} placeholder="Cores (CSV: preto,branco,verde)" value={editProduct.colorsCsv} onChange={e => setEditProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
+                <input style={styles.input} placeholder="Estoque disponível" value={editProduct.stock} onChange={e => setEditProduct(prev => ({ ...prev, stock: e.target.value }))} />
+                <input style={styles.input} placeholder="Cores (CSV: preto, branco, verde)" value={editProduct.colorsCsv} onChange={e => setEditProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
                 <select style={styles.select} value={editProduct.sizeType} onChange={e => setEditProduct(prev => ({ ...prev, sizeType: e.target.value }))}>
-                  <option value="alpha">Tamanho alfabético (PP,P,M...)</option>
-                  <option value="numeric">Tamanho numérico (36,38,40...)</option>
+                  <option value="alpha">Tamanho alfabético (PP, P, M...)</option>
+                  <option value="numeric">Tamanho numérico (36, 38, 40...)</option>
                   <option value="custom">Tamanho customizado</option>
                 </select>
-                <input style={styles.input} placeholder="Tamanhos (CSV: PP,P,M,G,GG ou 36,38,40)" value={editProduct.sizesCsv} onChange={e => setEditProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
+                <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={editProduct.sizesCsv} onChange={e => setEditProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
                 <input style={styles.input} placeholder="Imagem principal" value={editProduct.imageUrl} onChange={e => setEditProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
-                <input style={styles.input} placeholder="Outras imagens CSV" value={editProduct.imagesCsv} onChange={e => setEditProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
-                <input style={styles.input} placeholder="Variantes CSV (nome|sku|Preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
-                <input style={styles.input} placeholder="Descrição" value={editProduct.description} onChange={e => setEditProduct(prev => ({ ...prev, description: e.target.value }))} />
+                <input style={styles.input} placeholder="Outras imagens (CSV)" value={editProduct.imagesCsv} onChange={e => setEditProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
+                <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+                <input style={styles.input} placeholder="Descrição curta" value={editProduct.description} onChange={e => setEditProduct(prev => ({ ...prev, description: e.target.value }))} />
               </div>
-              <div style={styles.inlineRow}>
+              <div style={styles.productAdminActions}>
                 <button
                   style={styles.primaryBtn}
                   onClick={() => {
@@ -546,9 +559,9 @@ export default function Admin() {
                     const price = parseMoneyToCents(editProduct.price);
                     const stock = Number(editProduct.stock);
                     if (!editProduct.name.trim() || !editProduct.category.trim() || !Number.isFinite(price) || price <= 0) {
-                      showToast({ message: "Preencha nome/categoria/Preço válidos", duration: 2400 });
-                      return;
-                    }
+                        showToast({ message: "Preencha nome, categoria e preço válidos", duration: 2400 });
+                        return;
+                      }
 
                     const images = editProduct.imagesCsv
                       .split(",")
@@ -594,10 +607,10 @@ export default function Admin() {
                     });
                   }}
                 >
-                  Salvar EdiÃ§Ã£o
+                  Salvar edição
                 </button>
                 <button
-                  style={styles.smallBtn}
+                  style={styles.secondaryBtn}
                   onClick={() => {
                     setEditingProductId(null);
                     setEditProduct({ ...emptyProductForm });
@@ -607,7 +620,11 @@ export default function Admin() {
                 </button>
               </div>
             </>
-          ) : null}
+          ) : (
+            <div style={styles.productAdminEmpty}>
+              Selecione um produto acima para liberar o formulário de edição.
+            </div>
+          )}
 
           <div style={styles.tableWrap}>
             <table style={styles.table}>
@@ -1221,11 +1238,48 @@ const styles: Record<string, CSSProperties> = {
     color: "#f0ede8",
     textAlign: "center",
   },
+  productAdminHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+    textAlign: "left",
+  },
+  productAdminTitle: {
+    margin: 0,
+    color: "#f0ede8",
+    fontSize: 20,
+    fontWeight: 800,
+    textAlign: "left",
+  },
+  productAdminText: {
+    margin: "6px 0 0 0",
+    color: "#9ca3af",
+    fontSize: 13,
+    lineHeight: 1.6,
+    maxWidth: 720,
+    textAlign: "left",
+  },
   formGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: 12,
     alignItems: "stretch",
+  },
+  productAdminActions: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+  },
+  productAdminEmpty: {
+    border: "1px dashed #303030",
+    borderRadius: 12,
+    padding: 18,
+    color: "#9ca3af",
+    fontSize: 13,
+    textAlign: "left",
+    background: "#111111",
   },
   inlineRow: {
     display: "flex",
@@ -1319,8 +1373,20 @@ const styles: Record<string, CSSProperties> = {
     background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
     color: "#fff",
     borderRadius: 8,
-    padding: "8px 12px",
+    padding: "12px 16px",
     cursor: "pointer",
+    minWidth: 180,
+    fontWeight: 800,
+  },
+  secondaryBtn: {
+    border: "1px solid #2f2f2f",
+    background: "#111111",
+    color: "#f0ede8",
+    borderRadius: 8,
+    padding: "12px 16px",
+    cursor: "pointer",
+    minWidth: 140,
+    fontWeight: 700,
   },
   dangerBtn: {
     border: "1px solid #dc2626",
