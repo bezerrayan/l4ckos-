@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Página Contato - Formulário para contatar a loja
  */
 
@@ -39,10 +39,9 @@ export default function Contato() {
     e.preventDefault();
     const normalizedEmail = formData.email.trim().toLowerCase();
 
-    // Validação básica
     if (!formData.nome || !normalizedEmail || !formData.mensagem) {
       showToast({
-        message: "Por favor, preencha todos os campos obrigatórios",
+        message: "Por favor, preencha todos os campos obrigatórios.",
         duration: 3000,
       });
       return;
@@ -50,7 +49,7 @@ export default function Contato() {
 
     if (!isValidEmail(normalizedEmail)) {
       showToast({
-        message: "Informe um email valido",
+        message: "Informe um e-mail válido.",
         duration: 3000,
       });
       return;
@@ -78,7 +77,7 @@ export default function Contato() {
       }
 
       showToast({
-        message: "Mensagem enviada com sucesso! Responderemos em breve.",
+        message: "Mensagem enviada com sucesso. Responderemos em breve.",
         duration: 4000,
       });
       setFormData({
@@ -100,11 +99,18 @@ export default function Contato() {
 
   return (
     <div style={styles.container as CSSProperties}>
-      {/* Hero Section */}
-      <div style={{ ...styles.hero, padding: isMobile ? "42px 14px" : styles.hero.padding, marginBottom: isMobile ? 30 : styles.hero.marginBottom } as CSSProperties}>
-        <h1 style={{ ...styles.title, fontSize: isMobile ? 34 : styles.title.fontSize }}>Entre em Contato</h1>
+      <div
+        style={{
+          ...styles.hero,
+          padding: isMobile ? "42px 14px" : styles.hero.padding,
+          marginBottom: isMobile ? 30 : styles.hero.marginBottom,
+        } as CSSProperties}
+      >
+        <h1 style={{ ...styles.title, fontSize: isMobile ? 34 : styles.title.fontSize }}>
+          Fale com a L4CKOS
+        </h1>
         <p style={{ ...styles.subtitle, fontSize: isMobile ? 16 : styles.subtitle.fontSize }}>
-          Estamos aqui para ajudar! Tire suas dúvidas ou envie sugestões
+          Tire dúvidas sobre produtos, pedidos, entregas, trocas e pós-venda.
         </p>
       </div>
 
@@ -116,55 +122,55 @@ export default function Contato() {
           padding: isMobile ? "0 14px" : styles.content.padding,
         } as CSSProperties}
       >
-        {/* Informações de Contato */}
         <div style={styles.infoSection as CSSProperties}>
-          <h2 style={styles.sectionTitle}>Informações de Contato</h2>
-          
+          <h2 style={styles.sectionTitle}>Canais de Atendimento</h2>
+
           <div style={styles.infoCard as CSSProperties}>
             <div style={styles.infoIcon as CSSProperties}>@</div>
             <div>
-              <h3 style={styles.infoTitle}>Email</h3>
-              <p style={styles.infoText}>contato@l4ckos.com</p>
-              <p style={styles.infoText}>suporte@l4ckos.com</p>
+              <h3 style={styles.infoTitle}>E-mail</h3>
+              <p style={styles.infoText}>contato@l4ckos.com.br</p>
+              <p style={styles.infoCaption}>Canal oficial para dúvidas, suporte e pós-venda.</p>
             </div>
           </div>
 
           <div style={styles.infoCard as CSSProperties}>
-            <div style={styles.infoIcon as CSSProperties}>☎</div>
+            <div style={styles.infoIcon as CSSProperties}>W</div>
             <div>
-              <h3 style={styles.infoTitle}>Telefone</h3>
-              <p style={styles.infoText}>(11) 99999-9999</p>
-              <p style={styles.infoText}>(11) 3333-3333</p>
+              <h3 style={styles.infoTitle}>WhatsApp</h3>
+              <p style={styles.infoText}>+55 (61) 99803-0913</p>
+              <p style={styles.infoCaption}>Atendimento direto para orientações e acompanhamento.</p>
             </div>
           </div>
 
           <div style={styles.infoCard as CSSProperties}>
-            <div style={styles.infoIcon as CSSProperties}>◐</div>
+            <div style={styles.infoIcon as CSSProperties}>◷</div>
             <div>
-              <h3 style={styles.infoTitle}>Horário de Atendimento</h3>
-              <p style={styles.infoText}>Seg - Sex: 09:00 - 18:00</p>
-              <p style={styles.infoText}>Sáb: 10:00 - 14:00</p>
+              <h3 style={styles.infoTitle}>Prazo de resposta</h3>
+              <p style={styles.infoText}>Atendimento em dias úteis</p>
+              <p style={styles.infoCaption}>Buscamos responder em até 1 dia útil.</p>
             </div>
           </div>
 
           <div style={styles.infoCard as CSSProperties}>
-            <div style={styles.infoIcon as CSSProperties}>◈</div>
+            <div style={styles.infoIcon as CSSProperties}>◎</div>
             <div>
-              <h3 style={styles.infoTitle}>Localização</h3>
-              <p style={styles.infoText}>Rua da Loja, 123</p>
-              <p style={styles.infoText}>São Paulo - SP, 01234-567</p>
+              <h3 style={styles.infoTitle}>Cobertura</h3>
+              <p style={styles.infoText}>Atendimento online em todo o Brasil</p>
+              <p style={styles.infoCaption}>
+                Para agilizar o suporte, informe o número do pedido quando aplicável.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Formulário */}
         <div style={styles.formSection as CSSProperties}>
           <h2 style={styles.sectionTitle}>Envie uma Mensagem</h2>
-          
+
           <form onSubmit={handleSubmit} style={styles.form as CSSProperties}>
             <div style={styles.formGroup as CSSProperties}>
               <label style={styles.label as CSSProperties} htmlFor="nome">
-                Nome Completo *
+                Nome completo *
               </label>
               <input
                 id="nome"
@@ -180,7 +186,7 @@ export default function Contato() {
 
             <div style={styles.formGroup as CSSProperties}>
               <label style={styles.label as CSSProperties} htmlFor="email">
-                Email *
+                E-mail *
               </label>
               <input
                 id="email"
@@ -196,7 +202,7 @@ export default function Contato() {
 
             <div style={styles.formGroup as CSSProperties}>
               <label style={styles.label as CSSProperties} htmlFor="telefone">
-                Telefone (Opcional)
+                Telefone ou WhatsApp (opcional)
               </label>
               <input
                 id="telefone"
@@ -204,7 +210,7 @@ export default function Contato() {
                 name="telefone"
                 value={formData.telefone}
                 onChange={handleChange}
-                placeholder="(11) 99999-9999"
+                placeholder="(61) 99803-0913"
                 style={styles.input as CSSProperties}
                 disabled={isSubmitting}
               />
@@ -222,13 +228,13 @@ export default function Contato() {
                 style={styles.input as CSSProperties}
                 disabled={isSubmitting}
               >
-                <option value="duvida">Dúvida sobre Produtos</option>
-                <option value="pedido">Dúvida sobre Pedido</option>
-                <option value="entrega">Dúvida sobre Entrega</option>
-                <option value="devolucao">Devoluções</option>
+                <option value="duvida">Dúvida sobre produtos</option>
+                <option value="pedido">Dúvida sobre pedido</option>
+                <option value="entrega">Dúvida sobre entrega</option>
+                <option value="devolucao">Trocas e devoluções</option>
                 <option value="sugestao">Sugestão</option>
                 <option value="reclamacao">Reclamação</option>
-                <option value="outro">Outro</option>
+                <option value="outro">Outro assunto</option>
               </select>
             </div>
 
@@ -241,8 +247,8 @@ export default function Contato() {
                 name="mensagem"
                 value={formData.mensagem}
                 onChange={handleChange}
-                placeholder="Escreva sua mensagem aqui..."
-                style={{...styles.input, minHeight: 150} as CSSProperties}
+                placeholder="Descreva sua dúvida ou solicitação. Se houver pedido, informe o número para agilizar o atendimento."
+                style={{ ...styles.input, minHeight: 150 } as CSSProperties}
                 disabled={isSubmitting}
               />
             </div>
@@ -257,15 +263,17 @@ export default function Contato() {
               onMouseEnter={(e) => {
                 if (!isSubmitting) {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 20px rgba(26,26,26,0.2)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "0 8px 20px rgba(26,26,26,0.2)";
                 }
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(26,26,26,0.1)";
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 4px 12px rgba(26,26,26,0.1)";
               }}
             >
-              {isSubmitting ? "Enviando..." : "Enviar Mensagem"}
+              {isSubmitting ? "Enviando..." : "Enviar mensagem"}
             </button>
           </form>
         </div>
@@ -326,27 +334,38 @@ const styles: Record<string, CSSProperties> = {
   infoCard: {
     display: "flex",
     gap: 16,
-    padding: 24,
-    background: "#111111",
+    padding: 20,
     borderRadius: 12,
-    border: "1px solid #2b2b2b",
-    transition: "all 0.3s ease",
+    background: "#151515",
+    border: "1px solid #2a2a2a",
   },
   infoIcon: {
-    fontSize: 32,
-    minWidth: 40,
-    textAlign: "center",
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    background: "#202020",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#f0ede8",
+    fontWeight: 800,
+    flexShrink: 0,
   },
   infoTitle: {
-    fontSize: 16,
-    fontWeight: 700,
+    margin: "0 0 6px 0",
+    fontSize: 18,
     color: "#f0ede8",
-    margin: "0 0 8px 0",
   },
   infoText: {
-    fontSize: 14,
-    color: "#a1a1aa",
     margin: "0 0 4px 0",
+    color: "#d4d4d8",
+    lineHeight: 1.6,
+  },
+  infoCaption: {
+    margin: 0,
+    color: "#9f9f9f",
+    lineHeight: 1.6,
+    fontSize: 14,
   },
   form: {
     display: "flex",

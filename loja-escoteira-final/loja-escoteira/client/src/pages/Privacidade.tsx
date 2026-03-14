@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Página Política de Privacidade
  */
 
@@ -12,7 +12,6 @@ export default function Privacidade() {
 
   return (
     <div style={styles.container as CSSProperties}>
-      {/* Hero */}
       <div style={styles.hero as CSSProperties}>
         <h1 style={styles.title}>Política de Privacidade</h1>
         <p style={styles.subtitle}>
@@ -20,214 +19,171 @@ export default function Privacidade() {
         </p>
       </div>
 
-      {/* Conteúdo */}
       <div style={styles.content as CSSProperties}>
         <section style={styles.section as CSSProperties}>
           <h2 style={styles.sectionTitle as CSSProperties}>1. Introdução</h2>
           <p style={styles.text as CSSProperties}>
-            A L4ckos - Loja Escoteira ("nós" ou "a Empresa") é comprometida com a
-            proteção de sua privacidade. Esta Política de Privacidade explica como
-            coletamos, usamos, divulgamos e protegemos suas informações quando você
-            usa nosso site.
+            A L4CKOS respeita sua privacidade e trata dados pessoais de acordo com a
+            legislação aplicável, especialmente a Lei Geral de Proteção de Dados
+            Pessoais (LGPD). Esta Política explica quais informações coletamos, para
+            quais finalidades e como você pode exercer seus direitos.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>
-            2. Informações que Coletamos
-          </h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>2. Dados que podemos coletar</h2>
           <p style={styles.text as CSSProperties}>
-            Podemos coletar informações sobre você de várias formas:
+            Os dados tratados variam conforme a forma de uso do site e os serviços
+            solicitados por você.
           </p>
-          <h3 style={styles.subTitle as CSSProperties}>Informações Fornecidas por Você:</h3>
+          <h3 style={styles.subTitle as CSSProperties}>Dados informados diretamente:</h3>
           <ul style={styles.list as CSSProperties}>
-            <li>Nome completo</li>
-            <li>Endereço de e-mail</li>
-            <li>Número de telefone</li>
-            <li>Endereço postal</li>
-            <li>Informações de pagamento</li>
-            <li>Preferências pessoais</li>
+            <li>Nome completo;</li>
+            <li>E-mail;</li>
+            <li>Telefone;</li>
+            <li>CPF, quando necessário para faturamento ou entrega;</li>
+            <li>Endereço de entrega e cobrança;</li>
+            <li>Informações relacionadas ao pedido e ao atendimento.</li>
           </ul>
-          <h3 style={styles.subTitle as CSSProperties}>Informações Coletadas Automaticamente:</h3>
+          <h3 style={styles.subTitle as CSSProperties}>Dados coletados automaticamente:</h3>
           <ul style={styles.list as CSSProperties}>
-            <li>Endereço IP</li>
-            <li>Tipo de navegador</li>
-            <li>Páginas visitadas</li>
-            <li>Tempo gasto no site</li>
-            <li>Cookies e dados similares</li>
+            <li>Endereço IP e dados de conexão;</li>
+            <li>Dispositivo, navegador e sistema operacional;</li>
+            <li>Páginas acessadas e interações com o site;</li>
+            <li>Cookies e identificadores semelhantes.</li>
           </ul>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>3. Como Usamos as Informações</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>3. Finalidades e bases legais</h2>
           <p style={styles.text as CSSProperties}>
-            Usamos as informações coletadas para:
+            Tratamos seus dados pessoais para executar o contrato de compra e venda,
+            prestar atendimento, cumprir obrigações legais e proteger a segurança das
+            operações.
           </p>
           <ul style={styles.list as CSSProperties}>
-            <li>Processar suas compras e enviar pedidos</li>
-            <li>Fornecer atendimento ao cliente</li>
-            <li>Enviar atualizações de pedidos e notificações</li>
-            <li>Melhorar e personalizar sua experiência</li>
-            <li>Enviar comunicações de marketing (com seu consentimento)</li>
-            <li>Prevenir fraude e atividades ilegais</li>
-            <li>Cumprir obrigações legais</li>
+            <li>Processar pagamentos, pedidos, entregas e reembolsos;</li>
+            <li>Responder contatos, reclamações, trocas e devoluções;</li>
+            <li>Prevenir fraude e aumentar a segurança da conta;</li>
+            <li>Cumprir obrigações fiscais, regulatórias e de defesa do consumidor;</li>
+            <li>Enviar comunicações promocionais, quando houver consentimento ou base legal aplicável.</li>
           </ul>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>4. Compartilhamento de Informações</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>4. Compartilhamento de dados</h2>
           <p style={styles.text as CSSProperties}>
-            Não vendemos suas informações pessoais. Podemos compartilhar suas
-            informações apenas:
+            Não comercializamos seus dados pessoais. O compartilhamento pode ocorrer
+            apenas quando necessário para a operação do serviço ou para cumprimento de
+            obrigação legal.
           </p>
           <ul style={styles.list as CSSProperties}>
-            <li>Com fornecedores e prestadores de serviço necessários</li>
-            <li>Com parceiros de página (empresas de envio, processadores de pagamento)</li>
-            <li>Quando exigido por lei ou ordem judicial</li>
-            <li>Para proteger direitos, privacidade ou segurança</li>
-            <li>Em caso de venda ou fusão da empresa</li>
+            <li>Processadores de pagamento e instituições financeiras;</li>
+            <li>Plataformas de envio, logística e antifraude;</li>
+            <li>Prestadores de tecnologia, hospedagem, e-mail e suporte;</li>
+            <li>Autoridades públicas, quando houver obrigação legal ou regulatória.</li>
           </ul>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>5. Cookies e Rastreamento</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>5. Cookies e tecnologias semelhantes</h2>
           <p style={styles.text as CSSProperties}>
-            Usamos cookies e tecnologias similares para melhorar sua experiência. Os
-            cookies são pequenos arquivos armazenados em seu dispositivo que ajudam a:
-          </p>
-          <ul style={styles.list as CSSProperties}>
-            <li>Manter você conectado</li>
-            <li>Lembrar suas preferências</li>
-            <li>Analisar como você usa o site</li>
-            <li>Fornecer conteúdo e anúncios personalizados</li>
-          </ul>
-          <p style={styles.text as CSSProperties}>
-            Você pode desabilitar cookies em seu navegador, mas alguns recursos do
-            site podem não funcionarem corretamente.
+            Utilizamos cookies e tecnologias similares para autenticação, segurança,
+            desempenho e melhoria da navegação. Você pode gerenciar preferências de
+            cookies diretamente em seu navegador, observando que determinadas funções
+            do site podem depender deles para operar corretamente.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>6. Segurança das Informações</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>6. Armazenamento e segurança</h2>
           <p style={styles.text as CSSProperties}>
-            Implementamos medidas de segurança apropriadas para proteger suas
-            informações pessoais contra acesso não autorizado, alteração ou
-            destruição. Isso inclui:
-          </p>
-          <ul style={styles.list as CSSProperties}>
-            <li>Criptografia SSL/TLS</li>
-            <li>Firewalls de segurança</li>
-            <li>Controle de acesso restrito</li>
-            <li>Monitoramento regular de segurança</li>
-          </ul>
-          <p style={styles.text as CSSProperties}>
-            Porém, nenhum sistema é completamente seguro. Você é responsável por
-            manter sua senha confidencial.
+            Adotamos medidas técnicas e administrativas razoáveis para proteger os
+            dados pessoais contra acessos não autorizados, destruição, perda, alteração
+            ou qualquer forma de tratamento inadequado ou ilícito. Ainda assim, nenhum
+            ambiente digital é completamente imune a riscos.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>7. Retenção de Dados</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>7. Retenção dos dados</h2>
           <p style={styles.text as CSSProperties}>
-            Retemos suas informações pessoais pelo tempo necessário para fornecer
-            nossos serviços e cumprir obrigações legais. Você pode solicitar a
-            exclusão de suas informações a qualquer momento entrando em contato
-            conosco.
+            Mantemos os dados pessoais pelo prazo necessário para cumprir as
+            finalidades desta Política, atender exigências legais, fiscais e
+            regulatórias, e resguardar o exercício regular de direitos em processos
+            administrativos, arbitrais ou judiciais.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>8. Seus Direitos</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>8. Seus direitos</h2>
           <p style={styles.text as CSSProperties}>
-            Você tem o direito de:
+            Nos termos da LGPD, você pode solicitar, quando aplicável:
           </p>
           <ul style={styles.list as CSSProperties}>
-            <li>Acessar suas informações pessoais</li>
-            <li>Corrigir informações imprecisas</li>
-            <li>Solicitar exclusão de seus dados</li>
-            <li>Optar por não receber comunicações de marketing</li>
-            <li>Solicitar uma cópia de suas informações</li>
-          </ul>
-          <p style={styles.text as CSSProperties}>
-            Para exercer qualquer um desses direitos, entre em contato conosco.
-          </p>
-        </section>
-
-        <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>9. LGPD (Lei Geral de Proteção de Dados)</h2>
-          <p style={styles.text as CSSProperties}>
-            Se você é residente no Brasil, suas informações são processadas de
-            acordo com a Lei Geral de Proteção de Dados (LGPD). Você tem direitos
-            adicionais sob a LGPD, incluindo:
-          </p>
-          <ul style={styles.list as CSSProperties}>
-            <li>Direito de confirmar a existência de seus dados</li>
-            <li>Direito de acesso a seus dados personais</li>
-            <li>Direito de correção de dados incompletos ou incorretos</li>
-            <li>Direito ao apagamento ou anonimização de dados</li>
-            <li>Direito de portabilidade dos dados</li>
-            <li>Direito de oposição ao processamento dos dados</li>
+            <li>Confirmação da existência de tratamento;</li>
+            <li>Acesso aos dados pessoais;</li>
+            <li>Correção de dados incompletos, inexatos ou desatualizados;</li>
+            <li>Anonimização, bloqueio ou eliminação de dados desnecessários;</li>
+            <li>Portabilidade, observado o segredo comercial e regulatório;</li>
+            <li>Informações sobre compartilhamento;</li>
+            <li>Revogação do consentimento, quando esta for a base legal aplicável.</li>
           </ul>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>10. Marketing e Comunicações</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>9. Marketing e comunicações</h2>
           <p style={styles.text as CSSProperties}>
-            Podemos enviar e-mails de marketing com ofertas especiais, novos
-            produtos e atualizações. Você pode:
-          </p>
-          <ul style={styles.list as CSSProperties}>
-            <li>Optar por não receber esses e-mails a qualquer momento</li>
-            <li>Usar o link "Unsubscribe" no final de nossos e-mails</li>
-            <li>Contatar-nos diretamente para remover-se da lista</li>
-          </ul>
-        </section>
-
-        <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>11. Links Externos</h2>
-          <p style={styles.text as CSSProperties}>
-            Nosso site pode conter links para sites de terceiros. Esta Política de
-            Privacidade não se aplica a sites de terceiros, e somos responsáveis
-            por suas práticas de privacidade. Recomendamos que você leia a política
-            de privacidade deles.
+            Comunicações promocionais podem ser enviadas de acordo com a legislação
+            aplicável e com suas preferências. Você pode solicitar o cancelamento
+            dessas mensagens a qualquer momento pelos canais informados no próprio
+            e-mail ou entrando em contato conosco.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>12. Crianças</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>10. Links de terceiros</h2>
           <p style={styles.text as CSSProperties}>
-            Nosso site não é direcionado a crianças menores de 13 anos, e não
-            coletamos intencionalmente informações de crianças. Se descobrir que
-            coletamos informações de uma criança menor de 13 anos, notificaremos
-            imediatamente e tomaremos medidas para remover essas informações.
+            O site pode conter links para páginas de terceiros. Esta Política não se
+            aplica a ambientes externos e a L4CKOS não controla as práticas de
+            privacidade adotadas por esses terceiros.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>13. Alterações na Política</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>11. Crianças e adolescentes</h2>
           <p style={styles.text as CSSProperties}>
-            Podemos atualizar esta Política de Privacidade de tempos em tempos. As
-            alterações serão publicadas nesta página com a nova data de atualização.
-            Seu uso contínuo do site após alterações constitui aceição da nova
-            política.
+            O site não é direcionado especificamente a crianças. Caso seja constatado
+            tratamento inadequado de dados de crianças ou adolescentes em desacordo
+            com a legislação, as medidas cabíveis serão adotadas para correção da
+            situação.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>14. Entre em Contato</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>12. Alterações nesta política</h2>
           <p style={styles.text as CSSProperties}>
-            Se tiver dúvidas sobre esta Política de Privacidade ou nossas práticas
-            de privacidade, entre em contato:
+            Esta Política pode ser atualizada para refletir mudanças legais,
+            regulatórias ou operacionais. A versão mais recente permanecerá
+            disponível nesta página, com a respectiva data de atualização.
+          </p>
+        </section>
+
+        <section style={styles.section as CSSProperties}>
+          <h2 style={styles.sectionTitle as CSSProperties}>13. Contato sobre privacidade</h2>
+          <p style={styles.text as CSSProperties}>
+            Se você quiser exercer direitos previstos na LGPD ou tiver dúvidas sobre o
+            tratamento de seus dados, entre em contato pelos canais abaixo:
           </p>
           <div style={styles.contactBox as CSSProperties}>
             <p>
-              <strong>Email:</strong> privacidade@l4ckos.com
+              <strong>E-mail:</strong> contato@l4ckos.com.br
             </p>
             <p>
-              <strong>Telefone:</strong> (11) 99999-9999
+              <strong>WhatsApp:</strong> +55 (61) 99803-0913
             </p>
             <p>
-              <strong>Endereço:</strong> Rua da Loja, 123 - São Paulo, SP
+              <strong>Canal de atendimento:</strong> atendimento digital em todo o Brasil
             </p>
           </div>
         </section>

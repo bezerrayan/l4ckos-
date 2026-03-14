@@ -1,5 +1,5 @@
-/**
- * Página Termos de Serviço
+﻿/**
+ * Página Termos de Uso e Condições de Compra
  */
 
 import { useEffect } from "react";
@@ -12,156 +12,180 @@ export default function Termos() {
 
   return (
     <div style={styles.container as CSSProperties}>
-      {/* Hero */}
       <div style={styles.hero as CSSProperties}>
-        <h1 style={styles.title}>Termos de Serviço</h1>
+        <h1 style={styles.title}>Termos de Uso e Condições de Compra</h1>
         <p style={styles.subtitle}>
           Última atualização: {new Date().toLocaleDateString("pt-BR")}
         </p>
       </div>
 
-      {/* Conteúdo */}
       <div style={styles.content as CSSProperties}>
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>1. Aceitação dos Termos</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>1. Objeto</h2>
           <p style={styles.text as CSSProperties}>
-            Ao acessar e usar o site da L4ckos - Loja Escoteira, você concorda em
-            estar vinculado por estes termos e condições de serviço. Se você não
-            concorda com qualquer parte destes termos, não prossiga usando o site.
+            Estes Termos regulam o acesso ao site da L4CKOS e as condições aplicáveis
+            às compras realizadas pelos canais digitais da marca. Ao navegar, criar
+            conta ou concluir um pedido, você declara que leu e compreendeu estas
+            regras.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>2. Licença de Uso</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>2. Cadastro e segurança da conta</h2>
           <p style={styles.text as CSSProperties}>
-            É concedida a você uma licença limitada, não exclusiva e não transferível
-            para acessar e usar o site e seus conteúdos para fins pessoais e não
-            comerciais. Você não pode modificar, copiar, distribuir ou reproduzir o
-            conteúdo sem permissão prévia.
-          </p>
-        </section>
-
-        <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>3. Contas de Usuário</h2>
-          <p style={styles.text as CSSProperties}>
-            Ao criar uma conta, você é responsável por manter a confidencialidade de
-            sua senha e por todas as atividades que ocorrem em sua conta. Você
-            concorda em fornecer informações precisas, precisas e completas no
-            registro.
+            Você é responsável por fornecer informações corretas, atualizadas e
+            completas, bem como por manter a confidencialidade de sua senha e dos
+            dados de acesso da conta.
           </p>
           <ul style={styles.list as CSSProperties}>
-            <li>Você deve ter pelo menos 18 anos para usar o site</li>
-            <li>Você é responsável por toda atividade em sua conta</li>
-            <li>Você concorda em notificar sobre qualquer uso não autorizado</li>
-            <li>Uma conta por pessoa é permitida</li>
+            <li>Não compartilhe sua senha com terceiros.</li>
+            <li>Mantenha seu e-mail e telefone atualizados para contato sobre pedidos.</li>
+            <li>Comunique imediatamente qualquer uso não autorizado de sua conta.</li>
           </ul>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>4. Pedidos e Compras</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>3. Produtos, preços e disponibilidade</h2>
           <p style={styles.text as CSSProperties}>
-            Ao fazer um pedido, você concorda com os seguintes termos:
+            As ofertas apresentadas no site contêm informações essenciais sobre os
+            produtos, incluindo descrição, preço, formas de pagamento e condições de
+            entrega. A disponibilidade está sujeita ao estoque no momento da
+            confirmação do pedido.
           </p>
           <ul style={styles.list as CSSProperties}>
-            <li>Os preços estão sujeitos a alterações sem aviso prévio</li>
+            <li>Os preços exibidos no site são informados em reais.</li>
+            <li>O valor final da compra é apresentado antes da conclusão do pedido.</li>
             <li>
-              Reservamos o direito de recusar ou cancelar qualquer pedido sem
-              justificativa
+              Imagens, cores e medidas podem sofrer pequenas variações em razão de
+              iluminação, monitor ou lote, sem prejuízo das características essenciais
+              do produto.
             </li>
-            <li>As descrições dos produtos são aproximadas, não obrigatórias</li>
             <li>
-              As imagens são para ilustração e podem não refletir exatamente o
-              produto
+              Em caso de erro material evidente de preço ou descrição, a L4CKOS poderá
+              entrar em contato para corrigir a informação antes da conclusão da venda.
             </li>
           </ul>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>5. Política de Retorno</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>4. Pedido, pagamento e confirmação</h2>
           <p style={styles.text as CSSProperties}>
-            Produtos podem ser devolvidos dentro de 30 dias da compra, desde que:
+            O envio do pedido pelo cliente representa uma proposta de compra. A
+            confirmação definitiva ocorre após a aprovação do pagamento e a validação
+            dos dados da transação.
           </p>
           <ul style={styles.list as CSSProperties}>
-            <li>Estejam em perfeito estado</li>
-            <li>Incluam todos os acessórios e embalagem original</li>
-            <li>Não tenham sido usados ou danificados</li>
-            <li>O cliente arque com o frete de retorno (exceto em caso de defeito)</li>
+            <li>Você receberá confirmação do pedido pelos canais informados no cadastro.</li>
+            <li>Os meios de pagamento disponíveis são exibidos no checkout.</li>
+            <li>
+              Pedidos com indício consistente de fraude, inconsistência cadastral ou
+              impossibilidade de processamento podem ser suspensos para verificação.
+            </li>
           </ul>
+        </section>
+
+        <section style={styles.section as CSSProperties}>
+          <h2 style={styles.sectionTitle as CSSProperties}>5. Entrega</h2>
+          <p style={styles.text as CSSProperties}>
+            O prazo e o custo de entrega são informados antes da finalização da compra.
+            O acompanhamento do pedido pode ser feito pela área do cliente e pelos
+            canais de atendimento disponibilizados no site.
+          </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
           <h2 style={styles.sectionTitle as CSSProperties}>
-            6. Isenção de Responsabilidade
+            6. Direito de arrependimento, trocas, devoluções e garantia legal
           </h2>
           <p style={styles.text as CSSProperties}>
-            O site e os produtos são fornecidos "conforme estão" sem garantias de
-            qualquer tipo. A L4ckos não se responsabiliza por:
+            Para compras realizadas fora do estabelecimento físico, o consumidor pode
+            exercer o direito de arrependimento em até 7 dias corridos a partir do
+            recebimento do produto, nos termos do art. 49 do Código de Defesa do
+            Consumidor.
           </p>
           <ul style={styles.list as CSSProperties}>
-            <li>Danos diretos, indiretos ou consequentes</li>
-            <li>Interrupção do serviço</li>
-            <li>Perda de dados ou lucros</li>
-            <li>Qualquer conteúdo de terceiros</li>
+            <li>
+              Para solicitar arrependimento, troca ou devolução, utilize a página de
+              contato informando o número do pedido e o motivo da solicitação.
+            </li>
+            <li>
+              Em caso de defeito ou divergência no envio, a L4CKOS orientará o
+              procedimento de análise e a logística reversa quando aplicável.
+            </li>
+            <li>
+              A garantia legal segue os prazos do CDC: 30 dias para produtos não
+              duráveis e 90 dias para produtos duráveis, contados na forma da lei.
+            </li>
+            <li>
+              O reembolso, quando devido, será realizado conforme o meio de pagamento
+              utilizado e os prazos operacionais da instituição financeira.
+            </li>
           </ul>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>7. Limitação de Responsabilidade</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>7. Atendimento ao consumidor</h2>
           <p style={styles.text as CSSProperties}>
-            Em nenhuma circunstância a L4ckos será responsável por perdas ou danos
-            superiores ao valor total da compra, independentemente da causa.
+            A L4CKOS disponibiliza atendimento para dúvidas, pedidos, trocas,
+            devoluções e suporte pós-venda pelos canais oficiais informados nesta
+            página e na página de contato.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>8. Propriedade Intelectual</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>8. Propriedade intelectual</h2>
           <p style={styles.text as CSSProperties}>
-            Todo o conteúdo do site, incluindo textos, imagens, gráficos e logotipos,
-            é propriedade da L4ckos e protegido por leis de propriedade intelectual.
-            Reprodução não autorizada é proibida.
+            Textos, imagens, identidade visual, logotipos, layout e demais conteúdos
+            do site pertencem à L4CKOS ou aos seus licenciantes. É proibida a
+            reprodução, distribuição ou uso comercial sem autorização prévia e
+            expressa.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>9. Links Externos</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>9. Privacidade e proteção de dados</h2>
           <p style={styles.text as CSSProperties}>
-            O site pode conter links para sites de terceiros. Não somos responsáveis
-            pelo conteúdo, precisão ou práticas de privacidade desses sites.
+            O tratamento de dados pessoais realizado pela L4CKOS observa a legislação
+            aplicável, especialmente a Lei Geral de Proteção de Dados Pessoais
+            (Lei nº 13.709/2018). Para mais detalhes, consulte nossa Política de
+            Privacidade.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>10. Modificação dos Termos</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>10. Alterações destes termos</h2>
           <p style={styles.text as CSSProperties}>
-            Reservamos o direito de modificar estes termos a qualquer momento. As
-            modificações entram em vigor imediatamente após a publicação. Seu uso
-            contínuo do site após alterações constitui aceição dos novos termos.
+            Estes Termos podem ser atualizados periodicamente para refletir mudanças
+            operacionais, legais ou regulatórias. A versão vigente estará sempre
+            disponível nesta página com a respectiva data de atualização.
           </p>
         </section>
 
         <section style={styles.section as CSSProperties}>
           <h2 style={styles.sectionTitle as CSSProperties}>11. Contato</h2>
           <p style={styles.text as CSSProperties}>
-            Para dúvidas sobre estes Termos de Serviço, entre em contato:
+            Para dúvidas sobre estes Termos, compras, pedidos ou atendimento ao
+            consumidor, utilize nossos canais oficiais:
           </p>
           <div style={styles.contactBox as CSSProperties}>
             <p>
-              <strong>Email:</strong> contato@l4ckos.com
+              <strong>E-mail:</strong> contato@l4ckos.com.br
             </p>
             <p>
-              <strong>Telefone:</strong> (11) 99999-9999
+              <strong>WhatsApp:</strong> +55 (61) 99803-0913
             </p>
             <p>
-              <strong>Endereço:</strong> Rua da Loja, 123 - São Paulo, SP
+              <strong>Atendimento:</strong> online, com cobertura em todo o Brasil
             </p>
           </div>
         </section>
 
         <section style={styles.section as CSSProperties}>
-          <h2 style={styles.sectionTitle as CSSProperties}>12. Lei Aplicável</h2>
+          <h2 style={styles.sectionTitle as CSSProperties}>12. Legislação aplicável</h2>
           <p style={styles.text as CSSProperties}>
-            Estes termos são regidos pelas leis da República Federativa do Brasil,
-            sem considerar seus conflitos de disposições legais.
+            Estes Termos são regidos pela legislação brasileira, em especial pelo
+            Código de Defesa do Consumidor, pelo Código Civil e pelo Decreto nº
+            7.962/2013, sem prejuízo de outros direitos assegurados ao consumidor.
           </p>
         </section>
       </div>
