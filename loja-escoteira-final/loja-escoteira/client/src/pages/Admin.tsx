@@ -2,6 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { trpc } from "../lib/trpc";
+import { apiUrl } from "../const";
 import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import { PRODUCT_CATEGORIES, getCategoryLabel, normalizeCategoryValue } from "../lib/productCategories";
@@ -46,6 +47,17 @@ const emptyPromoForm = {
   sortOrder: "0",
   isActive: true,
 };
+
+function resolveAdminImageUrl(imageUrl?: string | null) {
+  if (!imageUrl) return "";
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("data:")) {
+    return imageUrl;
+  }
+  if (imageUrl.startsWith("/")) {
+    return apiUrl(imageUrl);
+  }
+  return apiUrl(`/${imageUrl}`);
+}
 
 function centsToMoneyInput(cents: number | null | undefined) {
   if (cents === null || cents === undefined) return "";
@@ -628,11 +640,22 @@ export default function Admin() {
 
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Preço (R$)</th><th>Estoque</th><th>Imagens</th><th>Variantes</th><th>Ação</th></tr></thead>
+              <thead><tr><th>ID</th><th>Produto</th><th>Categoria</th><th>Preço (R$)</th><th>Estoque</th><th>Visual</th><th>Variantes</th><th>Ação</th></tr></thead>
               <tbody>
                 {products.map(row => (
                   <tr key={row.id}>
-                    <td>{row.id}</td><td>{row.name}</td><td>{getCategoryLabel(row.category)}</td>
+                    <td>{row.id}</td>
+                    <td>
+                      <div style={styles.productTableCell}>
+                        <strong style={styles.productTableName}>{row.name}</strong>
+                        <span style={styles.productTableMeta}>
+                          {row.description?.trim() ? row.description : "Sem descrição curta"}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span style={styles.categoryTableBadge}>{getCategoryLabel(row.category)}</span>
+                    </td>
                     <td>
                       <input
                         style={{ ...styles.input, width: 130 }}
@@ -651,7 +674,15 @@ export default function Admin() {
                     </td>
                     <td>
                       <input
-                        style={{ ...styles.input, width: 90 }}
+                        style={{
+                          ...styles.input,
+                          width: 90,
+                          ...(Number(quickProductEdits[row.id]?.stock ?? row.stock) <= 0
+                            ? styles.stockInputEmpty
+                            : Number(quickProductEdits[row.id]?.stock ?? row.stock) <= 3
+                              ? styles.stockInputLow
+                              : {}),
+                        }}
                         value={quickProductEdits[row.id]?.stock ?? String(row.stock)}
                         onChange={e => {
                           const value = e.target.value;
@@ -665,7 +696,25 @@ export default function Admin() {
                         }}
                       />
                     </td>
-                    <td>{row.images?.length ?? 0}</td><td>{row.variants?.length ?? 0}</td>
+                    <td>
+                      <div style={styles.productVisualCell}>
+                        {resolveAdminImageUrl(row.imageUrl) ? (
+                          <img
+                            src={resolveAdminImageUrl(row.imageUrl)}
+                            alt={row.name}
+                            style={styles.productThumb as CSSProperties}
+                          />
+                        ) : (
+                          <div style={styles.productThumbEmpty}>Sem imagem</div>
+                        )}
+                        <span style={styles.productVisualMeta}>
+                          {(row.images?.length ?? 0) > 0 ? `${row.images?.length ?? 0} extras` : "Só capa"}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span style={styles.variantCountBadge}>{row.variants?.length ?? 0}</span>
+                    </td>
                     <td style={styles.actionsCell}>
                       <button
                         style={styles.smallBtn}
@@ -690,7 +739,7 @@ export default function Admin() {
                           );
                         }}
                       >
-                        Salvar rÃ¡pido
+                        Salvar rápido
                       </button>
                       <button
                         style={styles.smallBtn}
@@ -1353,6 +1402,94 @@ const styles: Record<string, CSSProperties> = {
     lineHeight: 1.4,
     color: "#e5e7eb",
     textAlign: "center",
+  },
+  productTableCell: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    alignItems: "flex-start",
+    textAlign: "left",
+    minWidth: 180,
+  },
+  productTableName: {
+    color: "#f0ede8",
+    fontSize: 14,
+    fontWeight: 800,
+    lineHeight: 1.35,
+  },
+  productTableMeta: {
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 1.5,
+  },
+  categoryTableBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "6px 10px",
+    borderRadius: 999,
+    border: "1px solid #2f2f2f",
+    background: "#151515",
+    color: "#f0ede8",
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  stockInputLow: {
+    border: "1px solid #7c5a10",
+    background: "#17120a",
+    color: "#facc15",
+  },
+  stockInputEmpty: {
+    border: "1px solid #7f1d1d",
+    background: "#160b0b",
+    color: "#f87171",
+  },
+  productVisualCell: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 6,
+  },
+  productThumb: {
+    width: 52,
+    height: 52,
+    objectFit: "cover",
+    borderRadius: 10,
+    border: "1px solid #2f2f2f",
+    background: "#0f0f0f",
+  },
+  productThumbEmpty: {
+    width: 52,
+    height: 52,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+    border: "1px dashed #3a3a3a",
+    background: "#121212",
+    color: "#9ca3af",
+    fontSize: 10,
+    textAlign: "center",
+    padding: 4,
+  },
+  productVisualMeta: {
+    color: "#9ca3af",
+    fontSize: 11,
+    lineHeight: 1.3,
+  },
+  variantCountBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 34,
+    height: 30,
+    padding: "0 10px",
+    borderRadius: 999,
+    border: "1px solid #2f2f2f",
+    background: "#151515",
+    color: "#f0ede8",
+    fontSize: 12,
+    fontWeight: 800,
   },
   actionsCell: {
     display: "flex",
