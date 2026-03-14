@@ -1,4 +1,4 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -141,7 +141,7 @@ async function startServer() {
 
       return allowedOrigins.some(allowed => {
         const allowedUrl = new URL(allowed);
-        return url.host === allowedUrl.host; // ignora protocolo, barra final e porta padrão
+        return url.host === allowedUrl.host; // ignora protocolo, barra final e porta padrÃ£o
       });
     } catch {
       return false;
@@ -275,6 +275,7 @@ async function startServer() {
   app.post("/webhook/asaas", asaasWebhookHandler);
   // REST API (upload)
   app.use("/api/upload", uploadRouter);
+  app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
   app.use("/api/payments", paymentRoutes);
   app.use("/api/webhooks", webhookRoutes);
   app.use("/api/shipping", shippingRoutes);
@@ -312,3 +313,4 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+
