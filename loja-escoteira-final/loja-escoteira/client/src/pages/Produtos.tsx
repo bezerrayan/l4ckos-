@@ -11,21 +11,22 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
 import { PRODUCT_CATEGORIES, getCategoryLabel, getCategoryMeta, normalizeCategoryValue } from "../lib/productCategories";
+import { appendImageVersion } from "../lib/images";
 import camisaFallback from "../images/camisa.png";
 
 function normalizePrice(value: number) {
   return value / 100;
 }
 
-function resolveProductImageUrl(imageUrl?: string | null) {
+function resolveProductImageUrl(imageUrl?: string | null, versionToken?: string | number | null) {
   if (!imageUrl) return camisaFallback;
   if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("data:")) {
-    return imageUrl;
+    return appendImageVersion(imageUrl, versionToken);
   }
   if (imageUrl.startsWith("/")) {
-    return apiUrl(imageUrl);
+    return appendImageVersion(apiUrl(imageUrl), versionToken);
   }
-  return apiUrl(`/${imageUrl}`);
+  return appendImageVersion(apiUrl(`/${imageUrl}`), versionToken);
 }
 
 export default function Produtos() {
@@ -47,7 +48,7 @@ export default function Produtos() {
         name: item.name,
         description: item.description || "",
         price: normalizePrice(Number(item.price)),
-        image: resolveProductImageUrl(item.imageUrl),
+        image: resolveProductImageUrl(item.imageUrl, item.id),
         category: item.category,
         stock: Number(item.stock ?? 0),
       })),

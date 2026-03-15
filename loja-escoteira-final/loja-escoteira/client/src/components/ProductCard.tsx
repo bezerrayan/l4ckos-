@@ -2,6 +2,7 @@
 import type { CSSProperties } from "react";
 import type { Product } from "../types/product";
 import { getCategoryLabel } from "../lib/productCategories";
+import { retryImageWithVersion } from "../lib/images";
 import camisaFallback from "../images/camisa.png";
 
 type Props = {
@@ -54,7 +55,7 @@ export default function ProductCard({ product }: Props) {
           style={styles.image as CSSProperties}
           alt={product.name}
           onError={(event) => {
-            event.currentTarget.src = camisaFallback;
+            retryImageWithVersion(event, product.image, camisaFallback, product.id);
           }}
         />
         <div style={{ ...styles.badge, background: badge.color } as CSSProperties}>{badge.text}</div>

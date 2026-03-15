@@ -15,6 +15,7 @@ import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
 import camisaFallback from "../images/camisa.png";
 import { getCategoryLabel } from "../lib/productCategories";
+import { appendImageVersion, retryImageWithVersion } from "../lib/images";
 
 const DEFAULT_COLORS = ["Preto", "Branco", "Azul", "Vermelho", "Verde"];
 const DEFAULT_SIZES = ["PP", "P", "M", "G", "GG", "XG"];
@@ -43,15 +44,15 @@ function normalizePrice(value: number) {
   return value / 100;
 }
 
-function resolveProductImageUrl(imageUrl?: string | null) {
+function resolveProductImageUrl(imageUrl?: string | null, versionToken?: string | number | null) {
   if (!imageUrl) return camisaFallback;
   if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("data:")) {
-    return imageUrl;
+    return appendImageVersion(imageUrl, versionToken);
   }
   if (imageUrl.startsWith("/")) {
-    return apiUrl(imageUrl);
+    return appendImageVersion(apiUrl(imageUrl), versionToken);
   }
-  return apiUrl(`/${imageUrl}`);
+  return appendImageVersion(apiUrl(`/${imageUrl}`), versionToken);
 }
 
 function parseJsonList(raw: unknown): string[] {
@@ -99,7 +100,7 @@ export default function ProductDetail() {
         name: productQuery.data.name,
         description: productQuery.data.description || "",
         price: normalizePrice(Number(productQuery.data.price)),
-        image: resolveProductImageUrl(productQuery.data.imageUrl),
+        image: resolveProductImageUrl(productQuery.data.imageUrl, productQuery.data.id),
         category: productQuery.data.category,
         stock: Number(productQuery.data.stock ?? 0),
         optionColors: parseJsonList((productQuery.data as any).optionColors),
@@ -108,7 +109,10 @@ export default function ProductDetail() {
         images:
           Array.isArray((productQuery.data as any).images) && (productQuery.data as any).images.length > 0
             ? ((productQuery.data as any).images as Array<any>).map((img) => ({
-                imageUrl: resolveProductImageUrl(typeof img === "string" ? img : img?.imageUrl),
+                imageUrl: resolveProductImageUrl(
+                  typeof img === "string" ? img : img?.imageUrl,
+                  `${productQuery.data.id}-${typeof img === "string" ? "gallery" : img?.color ?? "gallery"}`,
+                ),
                 color: typeof img === "string" ? null : String(img?.color ?? "").trim() || null,
               }))
             : [],
@@ -289,7 +293,7 @@ export default function ProductDetail() {
               alt={product.name}
               style={styles.productImage as CSSProperties}
               onError={(event) => {
-                event.currentTarget.src = camisaFallback;
+                retryImageWithVersion(event, selectedImage || product.image, camisaFallback, `${product.id}-hero`);
               }}
             />
           </div>
@@ -322,7 +326,7 @@ export default function ProductDetail() {
                     alt={`Foto ${idx + 1}`}
                     style={styles.thumbImage as CSSProperties}
                     onError={(event) => {
-                      event.currentTarget.src = camisaFallback;
+                      retryImageWithVersion(event, image.imageUrl, camisaFallback, `${product.id}-${idx}`);
                     }}
                   />
                 </button>

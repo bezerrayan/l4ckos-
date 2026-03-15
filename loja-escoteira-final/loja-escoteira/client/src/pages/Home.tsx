@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
 import { getCategoryLabel } from "../lib/productCategories";
+import { appendImageVersion, retryImageWithVersion } from "../lib/images";
 import "./Home.css";
 import camisaFallback from "../images/camisa.png";
 import PromoCarousel from "../components/PromoCarousel";
@@ -53,12 +54,12 @@ function formatCurrency(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format((cents || 0) / 100);
 }
 
-function resolveProductImageUrl(raw: string | null | undefined) {
+function resolveProductImageUrl(raw: string | null | undefined, versionToken?: string | number | null) {
   const value = (raw || "").trim();
   if (!value) return "";
-  if (/^https?:\/\//i.test(value) || value.startsWith("data:")) return value;
-  if (value.startsWith("/")) return apiUrl(value);
-  return apiUrl(`/${value}`);
+  if (/^https?:\/\//i.test(value) || value.startsWith("data:")) return appendImageVersion(value, versionToken);
+  if (value.startsWith("/")) return appendImageVersion(apiUrl(value), versionToken);
+  return appendImageVersion(apiUrl(`/${value}`), versionToken);
 }
 
 export default function Home() {
@@ -71,7 +72,7 @@ export default function Home() {
         id: item.id,
         name: item.name,
         priceCents: Number(item.price ?? 0),
-        imageUrl: resolveProductImageUrl(item.imageUrl),
+        imageUrl: resolveProductImageUrl(item.imageUrl, item.id),
         category: item.category,
       })),
     [productsQuery.data],
@@ -177,10 +178,10 @@ export default function Home() {
                   <img
                     src={product.imageUrl}
                     alt={product.name}
-                    loading="lazy"
+                    loading={idx < 4 ? "eager" : "lazy"}
+                    decoding="async"
                     onError={(event) => {
-                      event.currentTarget.onerror = null;
-                      event.currentTarget.src = camisaFallback;
+                      retryImageWithVersion(event, product.imageUrl, camisaFallback, product.id);
                     }}
                   />
                 ) : (
