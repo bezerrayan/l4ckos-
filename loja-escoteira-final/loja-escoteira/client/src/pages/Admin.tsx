@@ -1258,11 +1258,17 @@ export default function Admin() {
                             price: centsToMoneyInput(row.price),
                             stock: String(row.stock ?? 0),
                             imageUrl: normalizeAdminImageValue(row.imageUrl),
+                            galleryColor: "",
                             colorsCsv: rowColors.join(", "),
                             sizesCsv: rowSizes.join(", "),
                             sizeType: row.sizeType ?? "alpha",
                             imagesCsv: (row.images ?? [])
-                              .map(item => normalizeAdminImageValue(typeof item === "string" ? item : item?.imageUrl ?? ""))
+                              .map(item =>
+                                formatImageCsvEntry(
+                                  typeof item === "string" ? item : item?.imageUrl ?? "",
+                                  typeof item === "string" ? null : item?.color ?? null,
+                                ),
+                              )
                               .filter(Boolean)
                               .join(", "),
                             variantsCsv: (row.variants ?? [])
