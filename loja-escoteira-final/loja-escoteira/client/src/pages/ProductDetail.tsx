@@ -471,10 +471,11 @@ export default function ProductDetail() {
               bottom: "auto",
               zIndex: 0,
               marginBottom: isMobile ? 20 : styles.actionButtons.marginBottom,
-              padding: 0,
-              background: "transparent",
+              padding: isMobile ? "0 0 2px" : 0,
+              background: isMobile ? "#080808" : "transparent",
               borderTop: "none",
               boxShadow: "none",
+              borderRadius: isMobile ? 0 : undefined,
             } as CSSProperties}
           >
             <button
