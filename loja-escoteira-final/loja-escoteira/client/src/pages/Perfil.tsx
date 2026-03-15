@@ -495,12 +495,12 @@ export default function Perfil() {
           </div>
           <div style={styles.inputGroup as CSSProperties}>
             <label style={styles.infoLabel as CSSProperties}>Telefone</label>
-            <input
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="(11) 99999-9999"
-              style={styles.input as CSSProperties}
-            />
+              <input
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                placeholder="(61) 99803-0913"
+                style={styles.input as CSSProperties}
+              />
           </div>
 
           {isEditingProfile ? (
@@ -579,26 +579,26 @@ export default function Perfil() {
                 {editingAddressId ? "Editar endereço" : "Novo endereço"}
               </h3>
               <input
-                placeholder="Apelido (Casa, Trabalho...)"
+                placeholder="Apelido do endereço (Casa, Trabalho...)"
                 value={addressDraft.label}
                 onChange={(event) => setAddressDraft((prev) => ({ ...prev, label: event.target.value }))}
                 style={styles.input as CSSProperties}
               />
               <input
-                placeholder="Nome do recebedor"
+                placeholder="Nome completo de quem recebe"
                 value={addressDraft.recipient}
                 onChange={(event) => setAddressDraft((prev) => ({ ...prev, recipient: event.target.value }))}
                 style={styles.input as CSSProperties}
               />
               <div style={styles.twoCols as CSSProperties}>
                 <input
-                  placeholder="CEP"
+                  placeholder="CEP com 8 dígitos"
                   value={addressDraft.zipCode}
                   onChange={(event) => setAddressDraft((prev) => ({ ...prev, zipCode: event.target.value }))}
                   style={styles.input as CSSProperties}
                 />
                 <input
-                  placeholder="Estado"
+                  placeholder="UF"
                   value={addressDraft.state}
                   onChange={(event) => setAddressDraft((prev) => ({ ...prev, state: event.target.value }))}
                   style={styles.input as CSSProperties}
@@ -606,7 +606,7 @@ export default function Perfil() {
               </div>
               <div style={styles.twoCols as CSSProperties}>
                 <input
-                  placeholder="Rua"
+                  placeholder="Rua ou avenida"
                   value={addressDraft.street}
                   onChange={(event) => setAddressDraft((prev) => ({ ...prev, street: event.target.value }))}
                   style={styles.input as CSSProperties}
@@ -632,9 +632,9 @@ export default function Perfil() {
                   style={styles.input as CSSProperties}
                 />
               </div>
-              <input
-                placeholder="Complemento"
-                value={addressDraft.complement}
+                <input
+                  placeholder="Complemento (opcional)"
+                  value={addressDraft.complement}
                 onChange={(event) => setAddressDraft((prev) => ({ ...prev, complement: event.target.value }))}
                 style={styles.input as CSSProperties}
               />
@@ -720,13 +720,13 @@ export default function Perfil() {
                 {editingPaymentId ? "Editar método" : "Novo método"}
               </h3>
               <input
-                placeholder="Apelido (Principal, Trabalho...)"
+                placeholder="Apelido do cartão (Principal, Reserva...)"
                 value={paymentDraft.label}
                 onChange={(event) => setPaymentDraft((prev) => ({ ...prev, label: event.target.value }))}
                 style={styles.input as CSSProperties}
               />
               <input
-                placeholder="Nome no cartão"
+                placeholder="Nome impresso no cartão"
                 value={paymentDraft.holderName}
                 onChange={(event) =>
                   setPaymentDraft((prev) => ({ ...prev, holderName: event.target.value }))
@@ -735,13 +735,13 @@ export default function Perfil() {
               />
               <div style={styles.twoCols as CSSProperties}>
                 <input
-                  placeholder="Bandeira (Visa, Master...)"
+                  placeholder="Bandeira (Visa, Master, Elo...)"
                   value={paymentDraft.brand}
                   onChange={(event) => setPaymentDraft((prev) => ({ ...prev, brand: event.target.value }))}
                   style={styles.input as CSSProperties}
                 />
                 <input
-                    placeholder="Últimos 4 dígitos"
+                  placeholder="Últimos 4 dígitos"
                   maxLength={4}
                   value={paymentDraft.last4}
                   onChange={(event) =>

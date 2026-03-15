@@ -19,6 +19,9 @@ type Section =
   | "backup";
 
 const orderStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
+const productColorSuggestions = ["preto", "branco", "verde", "azul-marinho", "cinza", "caqui"] as const;
+const alphaSizeSuggestions = ["PP", "P", "M", "G", "GG", "XG"] as const;
+const numericSizeSuggestions = ["36", "38", "40", "42", "44", "46"] as const;
 const emptyProductForm = {
   name: "",
   category: "",
@@ -97,6 +100,15 @@ function joinCsvUrls(currentValue: string, urls: string[]) {
   ];
 
   return Array.from(new Set(merged)).join(", ");
+}
+
+function appendCsvToken(currentValue: string, token: string) {
+  const items = currentValue
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+  if (!items.includes(token)) items.push(token);
+  return items.join(", ");
 }
 
 export default function Admin() {
@@ -483,13 +495,31 @@ export default function Admin() {
             </div>
             <input style={styles.input} placeholder="Preço (R$)" value={newProduct.price} onChange={e => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
             <input style={styles.input} placeholder="Estoque disponível" value={newProduct.stock} onChange={e => setNewProduct(prev => ({ ...prev, stock: e.target.value }))} />
-            <input style={styles.input} placeholder="Cores (CSV: preto, branco, verde)" value={newProduct.colorsCsv} onChange={e => setNewProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
+            <div style={styles.mediaField}>
+              <input style={styles.input} placeholder="Cores (CSV: preto, branco, verde)" value={newProduct.colorsCsv} onChange={e => setNewProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
+              <div style={styles.quickPickRow}>
+                {productColorSuggestions.map(color => (
+                  <button key={color} style={styles.quickPickBtn} onClick={() => setNewProduct(prev => ({ ...prev, colorsCsv: appendCsvToken(prev.colorsCsv, color) }))}>
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
             <select style={styles.select} value={newProduct.sizeType} onChange={e => setNewProduct(prev => ({ ...prev, sizeType: e.target.value }))}>
               <option value="alpha">Tamanho alfabético (PP, P, M...)</option>
               <option value="numeric">Tamanho numérico (36, 38, 40...)</option>
               <option value="custom">Tamanho customizado</option>
             </select>
-            <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={newProduct.sizesCsv} onChange={e => setNewProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
+            <div style={styles.mediaField}>
+              <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={newProduct.sizesCsv} onChange={e => setNewProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
+              <div style={styles.quickPickRow}>
+                {(newProduct.sizeType === "numeric" ? numericSizeSuggestions : alphaSizeSuggestions).map(size => (
+                  <button key={size} style={styles.quickPickBtn} onClick={() => setNewProduct(prev => ({ ...prev, sizesCsv: appendCsvToken(prev.sizesCsv, size) }))}>
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div style={styles.mediaField}>
               <input style={styles.input} placeholder="Imagem principal" value={newProduct.imageUrl} onChange={e => setNewProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
               <div style={styles.mediaActions}>
@@ -549,7 +579,10 @@ export default function Admin() {
                 }}
               />
             </div>
-            <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+            <div style={styles.mediaField}>
+              <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+              <span style={styles.mediaHint}>Exemplo: Camiseta P|CAM-P|89.90|10; Camiseta M|CAM-M|89.90|8</span>
+            </div>
             <input style={styles.input} placeholder="Descrição curta" value={newProduct.description} onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))} />
           </div>
           <div style={styles.productAdminActions}>
@@ -707,13 +740,31 @@ export default function Admin() {
                 </div>
                 <input style={styles.input} placeholder="Preço (R$)" value={editProduct.price} onChange={e => setEditProduct(prev => ({ ...prev, price: e.target.value }))} />
                 <input style={styles.input} placeholder="Estoque disponível" value={editProduct.stock} onChange={e => setEditProduct(prev => ({ ...prev, stock: e.target.value }))} />
-                <input style={styles.input} placeholder="Cores (CSV: preto, branco, verde)" value={editProduct.colorsCsv} onChange={e => setEditProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
+                <div style={styles.mediaField}>
+                  <input style={styles.input} placeholder="Cores (CSV: preto, branco, verde)" value={editProduct.colorsCsv} onChange={e => setEditProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
+                  <div style={styles.quickPickRow}>
+                    {productColorSuggestions.map(color => (
+                      <button key={color} style={styles.quickPickBtn} onClick={() => setEditProduct(prev => ({ ...prev, colorsCsv: appendCsvToken(prev.colorsCsv, color) }))}>
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <select style={styles.select} value={editProduct.sizeType} onChange={e => setEditProduct(prev => ({ ...prev, sizeType: e.target.value }))}>
                   <option value="alpha">Tamanho alfabético (PP, P, M...)</option>
                   <option value="numeric">Tamanho numérico (36, 38, 40...)</option>
                   <option value="custom">Tamanho customizado</option>
                 </select>
-                <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={editProduct.sizesCsv} onChange={e => setEditProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
+                <div style={styles.mediaField}>
+                  <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={editProduct.sizesCsv} onChange={e => setEditProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
+                  <div style={styles.quickPickRow}>
+                    {(editProduct.sizeType === "numeric" ? numericSizeSuggestions : alphaSizeSuggestions).map(size => (
+                      <button key={size} style={styles.quickPickBtn} onClick={() => setEditProduct(prev => ({ ...prev, sizesCsv: appendCsvToken(prev.sizesCsv, size) }))}>
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div style={styles.mediaField}>
                   <input style={styles.input} placeholder="Imagem principal" value={editProduct.imageUrl} onChange={e => setEditProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
                   <div style={styles.mediaActions}>
@@ -773,7 +824,10 @@ export default function Admin() {
                     }}
                   />
                 </div>
-                <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+                <div style={styles.mediaField}>
+                  <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+                  <span style={styles.mediaHint}>Exemplo: Camiseta P|CAM-P|89.90|10; Camiseta M|CAM-M|89.90|8</span>
+                </div>
                 <input style={styles.input} placeholder="Descrição curta" value={editProduct.description} onChange={e => setEditProduct(prev => ({ ...prev, description: e.target.value }))} />
               </div>
               <div style={styles.productAdminActions}>
@@ -1820,6 +1874,22 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     gap: 10,
     flexWrap: "wrap",
+  },
+  quickPickRow: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+    alignItems: "center",
+  },
+  quickPickBtn: {
+    border: "1px solid #2f2f2f",
+    background: "#141414",
+    color: "#f0ede8",
+    borderRadius: 999,
+    padding: "6px 10px",
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: "pointer",
   },
   mediaHint: {
     color: "#9ca3af",
