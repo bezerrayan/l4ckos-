@@ -131,6 +131,35 @@ function joinImageCsvEntries(currentValue: string, urls: string[], color?: strin
   return Array.from(new Set([...current, ...incoming])).join(", ");
 }
 
+function removeImageCsvEntry(currentValue: string, targetUrl: string) {
+  return parseImageCsvEntries(currentValue)
+    .filter(item => item.imageUrl !== targetUrl)
+    .map(item => formatImageCsvEntry(item.imageUrl, item.color))
+    .join(", ");
+}
+
+function moveImageCsvEntryToCover(currentValue: string, targetUrl: string, currentCover: string) {
+  const entries = parseImageCsvEntries(currentValue);
+  const picked = entries.find(item => item.imageUrl === targetUrl);
+  if (!picked) {
+    return {
+      imageUrl: currentCover,
+      imagesCsv: currentValue,
+    };
+  }
+
+  const nextEntries = entries.filter(item => item.imageUrl !== targetUrl);
+  const normalizedCurrentCover = normalizeAdminImageValue(currentCover);
+  if (normalizedCurrentCover && normalizedCurrentCover !== targetUrl) {
+    nextEntries.unshift({ imageUrl: normalizedCurrentCover, color: null });
+  }
+
+  return {
+    imageUrl: targetUrl,
+    imagesCsv: nextEntries.map(item => formatImageCsvEntry(item.imageUrl, item.color)).join(", "),
+  };
+}
+
 function appendCsvToken(currentValue: string, token: string) {
   const items = currentValue
     .split(",")
@@ -653,6 +682,43 @@ export default function Admin() {
                 }}
               />
               <span style={styles.mediaHint}>Use `url|cor` para vincular uma imagem a uma cor específica do produto.</span>
+              {parseImageCsvEntries(newProduct.imagesCsv).length > 0 ? (
+                <div style={styles.galleryPreviewGrid}>
+                  {parseImageCsvEntries(newProduct.imagesCsv).map((item, index) => (
+                    <div key={`${item.imageUrl}-${index}`} style={styles.galleryPreviewCard}>
+                      <img src={item.imageUrl} alt={`Galeria ${index + 1}`} style={styles.galleryPreviewImage} />
+                      <div style={styles.galleryPreviewMeta}>
+                        <strong style={styles.galleryPreviewTitle}>Imagem {index + 1}</strong>
+                        <span style={styles.galleryPreviewText}>{item.color ? `Cor: ${item.color}` : "Sem cor vinculada"}</span>
+                      </div>
+                      <div style={styles.galleryPreviewActions}>
+                        <button
+                          style={styles.inlineBtn}
+                          onClick={() =>
+                            setNewProduct(prev => ({
+                              ...prev,
+                              ...moveImageCsvEntryToCover(prev.imagesCsv, item.imageUrl, prev.imageUrl),
+                            }))
+                          }
+                        >
+                          Usar como capa
+                        </button>
+                        <button
+                          style={styles.inlineBtnDanger}
+                          onClick={() =>
+                            setNewProduct(prev => ({
+                              ...prev,
+                              imagesCsv: removeImageCsvEntry(prev.imagesCsv, item.imageUrl),
+                            }))
+                          }
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
             <div style={styles.mediaField}>
               <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
@@ -930,6 +996,43 @@ export default function Admin() {
                     }}
                   />
                   <span style={styles.mediaHint}>Você também pode usar `url|cor` para trocar a imagem conforme a cor escolhida.</span>
+                  {parseImageCsvEntries(editProduct.imagesCsv).length > 0 ? (
+                    <div style={styles.galleryPreviewGrid}>
+                      {parseImageCsvEntries(editProduct.imagesCsv).map((item, index) => (
+                        <div key={`${item.imageUrl}-${index}`} style={styles.galleryPreviewCard}>
+                          <img src={item.imageUrl} alt={`Galeria ${index + 1}`} style={styles.galleryPreviewImage} />
+                          <div style={styles.galleryPreviewMeta}>
+                            <strong style={styles.galleryPreviewTitle}>Imagem {index + 1}</strong>
+                            <span style={styles.galleryPreviewText}>{item.color ? `Cor: ${item.color}` : "Sem cor vinculada"}</span>
+                          </div>
+                          <div style={styles.galleryPreviewActions}>
+                            <button
+                              style={styles.inlineBtn}
+                              onClick={() =>
+                                setEditProduct(prev => ({
+                                  ...prev,
+                                  ...moveImageCsvEntryToCover(prev.imagesCsv, item.imageUrl, prev.imageUrl),
+                                }))
+                              }
+                            >
+                              Usar como capa
+                            </button>
+                            <button
+                              style={styles.inlineBtnDanger}
+                              onClick={() =>
+                                setEditProduct(prev => ({
+                                  ...prev,
+                                  imagesCsv: removeImageCsvEntry(prev.imagesCsv, item.imageUrl),
+                                }))
+                              }
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
                 <div style={styles.mediaField}>
                   <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
@@ -2032,6 +2135,49 @@ const styles: Record<string, CSSProperties> = {
     border: "1px solid #2f2f2f",
     background: "#0f0f0f",
     flexShrink: 0,
+  },
+  galleryPreviewGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+    gap: 12,
+  },
+  galleryPreviewCard: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    padding: 10,
+    borderRadius: 12,
+    border: "1px solid #2f2f2f",
+    background: "#111111",
+    textAlign: "left",
+  },
+  galleryPreviewImage: {
+    width: "100%",
+    aspectRatio: "1 / 1",
+    objectFit: "cover",
+    borderRadius: 10,
+    border: "1px solid #2f2f2f",
+    background: "#0f0f0f",
+  },
+  galleryPreviewMeta: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
+  galleryPreviewTitle: {
+    color: "#f0ede8",
+    fontSize: 13,
+    fontWeight: 800,
+  },
+  galleryPreviewText: {
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 1.45,
+  },
+  galleryPreviewActions: {
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
   },
   hiddenFileInput: {
     display: "none",
