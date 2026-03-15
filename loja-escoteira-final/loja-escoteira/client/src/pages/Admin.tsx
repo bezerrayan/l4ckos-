@@ -1126,6 +1126,7 @@ export default function Admin() {
                   <span style={styles.mediaHint}>Essa imagem será exibida no carrossel principal da home. Prefira artes horizontais com boa leitura no centro do card.</span>
                 </div>
               ) : null}
+              <span style={styles.mediaHint}>Proporção sugerida para desktop: 1600x900 ou 1920x1080.</span>
             </div>
             <div style={styles.mediaField}>
               <input
@@ -1181,6 +1182,7 @@ export default function Admin() {
                   <span style={styles.mediaHint}>Use uma arte mais fechada para o mobile, com foco no centro da imagem.</span>
                 </div>
               ) : null}
+              <span style={styles.mediaHint}>Proporção sugerida para mobile: 1080x1350 ou 1080x1440.</span>
             </div>
             <input style={styles.input} placeholder="Texto alternativo da imagem" value={newPromo.imageAlt} onChange={e => setNewPromo(prev => ({ ...prev, imageAlt: e.target.value }))} />
             <input style={styles.input} placeholder="Link do banner (ex: /produtos)" value={newPromo.linkUrl} onChange={e => setNewPromo(prev => ({ ...prev, linkUrl: e.target.value }))} />
@@ -1232,6 +1234,9 @@ export default function Admin() {
                 <span style={styles.promoPreviewCta}>{newPromo.ctaLabel.trim() || "Aproveitar oferta"}</span>
                 <span style={styles.promoPreviewLink}>{newPromo.linkUrl.trim() || "/produtos"}</span>
               </div>
+              {!resolveAdminImageUrl(newPromo.mobileImageUrl) ? (
+                <span style={styles.promoPreviewWarning}>Sem arte mobile dedicada. O carrossel vai reutilizar a versão desktop no celular.</span>
+              ) : null}
               <span style={styles.promoPreviewOrderHint}>Depois de criar os banners, arraste as linhas abaixo para reorganizar o carrossel.</span>
             </div>
           </div>
@@ -1369,6 +1374,30 @@ export default function Admin() {
                         onClick={() => updatePromoBannerMutation.mutate({ id: row.id, isActive: !row.isActive })}
                       >
                         {row.isActive ? "Desativar" : "Ativar"}
+                      </button>
+                      <button
+                        style={styles.smallBtn}
+                        onClick={() => {
+                          setEditingPromoId(null);
+                          setNewPromo({
+                            badge: row.badge ?? "PROMOÇÃO",
+                            title: `${row.title ?? ""} (Cópia)`.trim(),
+                            description: row.description ?? "",
+                            ctaLabel: row.ctaLabel ?? "Aproveitar oferta",
+                            imageUrl: normalizeAdminImageValue(row.imageUrl),
+                            mobileImageUrl: normalizeAdminImageValue(row.mobileImageUrl),
+                            imageAlt: row.imageAlt ?? "",
+                            linkUrl: row.linkUrl ?? "",
+                            discountText: row.discountText ?? "",
+                            discountLabel: row.discountLabel ?? "OFF",
+                            bgStyle: row.bgStyle ?? "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)",
+                            sortOrder: String((row.sortOrder ?? 0) + 1),
+                            isActive: Boolean(row.isActive),
+                          });
+                          showToast({ message: "Banner duplicado para edição", duration: 2200 });
+                        }}
+                      >
+                        Duplicar
                       </button>
                       <button style={styles.dangerBtn} onClick={() => deletePromoBannerMutation.mutate({ id: row.id })}>Excluir</button>
                     </td>
@@ -1969,6 +1998,15 @@ const styles: Record<string, CSSProperties> = {
     color: "#9ca3af",
     fontSize: 12,
     lineHeight: 1.5,
+  },
+  promoPreviewWarning: {
+    color: "#fbbf24",
+    fontSize: 12,
+    lineHeight: 1.6,
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid rgba(251, 191, 36, 0.28)",
+    background: "rgba(120, 53, 15, 0.18)",
   },
   promoPreviewOrderHint: {
     color: "#9ca3af",
