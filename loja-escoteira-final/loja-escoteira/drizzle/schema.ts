@@ -193,6 +193,7 @@ export const promoBanners = mysqlTable("promoBanners", {
   description: text("description").notNull(),
   ctaLabel: varchar("ctaLabel", { length: 120 }).default("Aproveitar Oferta").notNull(),
   imageUrl: varchar("imageUrl", { length: 500 }),
+  mobileImageUrl: varchar("mobileImageUrl", { length: 500 }),
   imageAlt: varchar("imageAlt", { length: 255 }),
   linkUrl: varchar("linkUrl", { length: 500 }),
   discountText: varchar("discountText", { length: 60 }).notNull(),

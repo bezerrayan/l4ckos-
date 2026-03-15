@@ -1020,6 +1020,7 @@ export async function createPromoBanner(payload: {
   description: string;
   ctaLabel: string;
   imageUrl?: string | null;
+  mobileImageUrl?: string | null;
   imageAlt?: string | null;
   linkUrl?: string | null;
   discountText: string;
@@ -1036,6 +1037,7 @@ export async function createPromoBanner(payload: {
     description: payload.description,
     ctaLabel: payload.ctaLabel,
     imageUrl: payload.imageUrl ?? null,
+    mobileImageUrl: payload.mobileImageUrl ?? null,
     imageAlt: payload.imageAlt ?? null,
     linkUrl: payload.linkUrl ?? null,
     discountText: payload.discountText,
@@ -1054,6 +1056,7 @@ export async function updatePromoBanner(
     description: string;
     ctaLabel: string;
     imageUrl: string | null;
+    mobileImageUrl: string | null;
     imageAlt: string | null;
     linkUrl: string | null;
     discountText: string;
@@ -1073,6 +1076,7 @@ export async function updatePromoBanner(
       ...(payload.description !== undefined ? { description: payload.description } : {}),
       ...(payload.ctaLabel !== undefined ? { ctaLabel: payload.ctaLabel } : {}),
       ...(payload.imageUrl !== undefined ? { imageUrl: payload.imageUrl } : {}),
+      ...(payload.mobileImageUrl !== undefined ? { mobileImageUrl: payload.mobileImageUrl } : {}),
       ...(payload.imageAlt !== undefined ? { imageAlt: payload.imageAlt } : {}),
       ...(payload.linkUrl !== undefined ? { linkUrl: payload.linkUrl } : {}),
       ...(payload.discountText !== undefined ? { discountText: payload.discountText } : {}),

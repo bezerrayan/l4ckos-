@@ -9,6 +9,7 @@ interface Promo {
   description: string;
   ctaLabel: string;
   imageUrl?: string;
+  mobileImageUrl?: string;
   imageAlt?: string;
   linkUrl?: string;
   discount: string;
@@ -52,6 +53,7 @@ function resolvePromoImageUrl(raw?: string | null) {
 export default function PromoCarousel() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const promotionsQuery = trpc.products.promotions.useQuery();
 
   const promos = useMemo<Promo[]>(() => {
@@ -62,6 +64,7 @@ export default function PromoCarousel() {
       description: String(item.description ?? "").trim() || "Confira condicoes exclusivas por tempo limitado.",
       ctaLabel: String(item.ctaLabel ?? "").trim() || "Aproveitar oferta",
       imageUrl: resolvePromoImageUrl(item.imageUrl),
+      mobileImageUrl: resolvePromoImageUrl(item.mobileImageUrl),
       imageAlt: String(item.imageAlt ?? "").trim() || String(item.title ?? "").trim() || "Banner promocional",
       linkUrl: String(item.linkUrl ?? "").trim() || "/produtos",
       discount: String(item.discountText ?? "").trim() || "30%",
@@ -71,6 +74,19 @@ export default function PromoCarousel() {
 
     return fromApi.length > 0 ? fromApi : PROMOS_FALLBACK;
   }, [promotionsQuery.data]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia("(max-width: 768px)");
+    const sync = () => setIsMobileViewport(media.matches);
+    sync();
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
+    }
+    media.addListener(sync);
+    return () => media.removeListener(sync);
+  }, []);
 
   useEffect(() => {
     if (paused || promos.length <= 1) return;
@@ -88,6 +104,7 @@ export default function PromoCarousel() {
 
   const promo = promos[current] ?? promos[0];
   if (!promo) return null;
+  const promoImage = isMobileViewport && promo.mobileImageUrl ? promo.mobileImageUrl : promo.imageUrl;
 
   return (
     <section
@@ -102,9 +119,9 @@ export default function PromoCarousel() {
         }}
       >
         <div className="l4-home-hero-carousel-frame">
-          {promo.imageUrl ? (
+          {promoImage ? (
             <img
-              src={promo.imageUrl}
+              src={promoImage}
               alt={promo.imageAlt || promo.title}
               className="l4-home-hero-carousel-image"
               loading="lazy"

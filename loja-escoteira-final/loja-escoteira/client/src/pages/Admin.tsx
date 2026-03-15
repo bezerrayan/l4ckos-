@@ -39,6 +39,7 @@ const emptyPromoForm = {
   description: "",
   ctaLabel: "Aproveitar oferta",
   imageUrl: "",
+  mobileImageUrl: "",
   imageAlt: "",
   linkUrl: "",
   discountText: "30%",
@@ -129,12 +130,14 @@ export default function Admin() {
   const [quickProductEdits, setQuickProductEdits] = useState<Record<number, { price: string; stock: string }>>({});
   const [newPromo, setNewPromo] = useState({ ...emptyPromoForm });
   const [editingPromoId, setEditingPromoId] = useState<number | null>(null);
+  const [draggingPromoId, setDraggingPromoId] = useState<number | null>(null);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const createMainImageInputRef = useRef<HTMLInputElement | null>(null);
   const createGalleryImageInputRef = useRef<HTMLInputElement | null>(null);
   const editMainImageInputRef = useRef<HTMLInputElement | null>(null);
   const editGalleryImageInputRef = useRef<HTMLInputElement | null>(null);
   const promoImageInputRef = useRef<HTMLInputElement | null>(null);
+  const promoMobileImageInputRef = useRef<HTMLInputElement | null>(null);
   const isAdmin = user?.role === "admin";
 
   async function uploadAdminImages(files: FileList | null, mode: "single" | "multiple", target: string) {
@@ -182,6 +185,29 @@ export default function Admin() {
     } finally {
       setUploadingField(null);
     }
+  }
+
+  async function reorderPromoBanners(draggedId: number, targetId: number) {
+    const currentRows = [...(promoBannersQuery.data ?? [])];
+    if (currentRows.length <= 1 || draggedId === targetId) return;
+
+    const draggedIndex = currentRows.findIndex(row => row.id === draggedId);
+    const targetIndex = currentRows.findIndex(row => row.id === targetId);
+    if (draggedIndex < 0 || targetIndex < 0) return;
+
+    const reordered = [...currentRows];
+    const [draggedRow] = reordered.splice(draggedIndex, 1);
+    reordered.splice(targetIndex, 0, draggedRow);
+
+    try {
+      for (let index = 0; index < reordered.length; index += 1) {
+        const row = reordered[index];
+        if (Number(row.sortOrder ?? 0) === index) continue;
+        await reorderPromoBannerMutation.mutateAsync({ id: row.id, sortOrder: index });
+      }
+      showToast({ message: "Ordem dos banners atualizada", duration: 2200 });
+      void promoBannersQuery.refetch();
+    } catch {}
   }
 
   const dashboardQuery = trpc.admin.dashboard.useQuery(undefined, { enabled: isAuthenticated && isAdmin });
@@ -307,6 +333,10 @@ export default function Admin() {
       setNewPromo({ ...emptyPromoForm });
       void promoBannersQuery.refetch();
     },
+    onError: error => showToast({ message: error.message, duration: 2600 }),
+  });
+
+  const reorderPromoBannerMutation = trpc.admin.promoBannerUpdate.useMutation({
     onError: error => showToast({ message: error.message, duration: 2600 }),
   });
 
@@ -1097,6 +1127,61 @@ export default function Admin() {
                 </div>
               ) : null}
             </div>
+            <div style={styles.mediaField}>
+              <input
+                style={styles.input}
+                placeholder="URL da imagem mobile (opcional)"
+                value={newPromo.mobileImageUrl}
+                onChange={e => setNewPromo(prev => ({ ...prev, mobileImageUrl: e.target.value }))}
+              />
+              <div style={styles.mediaActions}>
+                <button
+                  style={styles.secondaryBtn}
+                  onClick={() => promoMobileImageInputRef.current?.click()}
+                  disabled={uploadingField === "promo-image-mobile"}
+                >
+                  {uploadingField === "promo-image-mobile" ? "Enviando versão mobile..." : "Upload mobile"}
+                </button>
+                {resolveAdminImageUrl(newPromo.mobileImageUrl) ? (
+                  <>
+                    <a
+                      href={resolveAdminImageUrl(newPromo.mobileImageUrl) as string}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={styles.secondaryBtn}
+                    >
+                      Abrir mobile
+                    </a>
+                    <button
+                      style={styles.smallBtn}
+                      onClick={() => setNewPromo(prev => ({ ...prev, mobileImageUrl: "" }))}
+                    >
+                      Limpar mobile
+                    </button>
+                  </>
+                ) : null}
+                <span style={styles.mediaHint}>Se vazio, o carrossel reutiliza a imagem principal no celular.</span>
+              </div>
+              <input
+                ref={promoMobileImageInputRef}
+                type="file"
+                accept="image/*"
+                style={styles.hiddenFileInput}
+                onChange={async e => {
+                  const urls = await uploadAdminImages(e.target.files, "single", "promo-image-mobile");
+                  if (urls[0]) {
+                    setNewPromo(prev => ({ ...prev, mobileImageUrl: urls[0] }));
+                  }
+                  e.currentTarget.value = "";
+                }}
+              />
+              {resolveAdminImageUrl(newPromo.mobileImageUrl) ? (
+                <div style={styles.mediaPreviewRow}>
+                  <img src={resolveAdminImageUrl(newPromo.mobileImageUrl)} alt="Prévia mobile do banner" style={styles.mediaPreviewImage} />
+                  <span style={styles.mediaHint}>Use uma arte mais fechada para o mobile, com foco no centro da imagem.</span>
+                </div>
+              ) : null}
+            </div>
             <input style={styles.input} placeholder="Texto alternativo da imagem" value={newPromo.imageAlt} onChange={e => setNewPromo(prev => ({ ...prev, imageAlt: e.target.value }))} />
             <input style={styles.input} placeholder="Link do banner (ex: /produtos)" value={newPromo.linkUrl} onChange={e => setNewPromo(prev => ({ ...prev, linkUrl: e.target.value }))} />
             <input style={styles.input} placeholder="Desconto (ex: 30%)" value={newPromo.discountText} onChange={e => setNewPromo(prev => ({ ...prev, discountText: e.target.value }))} />
@@ -1105,16 +1190,32 @@ export default function Admin() {
             <input style={styles.input} placeholder="Ordem" value={newPromo.sortOrder} onChange={e => setNewPromo(prev => ({ ...prev, sortOrder: e.target.value }))} />
           </div>
           <div style={styles.promoPreviewCard}>
-            <div style={{ ...styles.promoPreviewMedia, background: newPromo.bgStyle.trim() || "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)" }}>
-              {resolveAdminImageUrl(newPromo.imageUrl) ? (
-                <img
-                  src={resolveAdminImageUrl(newPromo.imageUrl) as string}
-                  alt={newPromo.imageAlt.trim() || newPromo.title.trim() || "Banner promocional"}
-                  style={styles.promoPreviewImage}
-                />
-              ) : (
-                <div style={styles.promoPreviewPlaceholder}>Sem imagem</div>
-              )}
+            <div style={styles.promoPreviewMediaGroup}>
+              <div style={{ ...styles.promoPreviewMedia, background: newPromo.bgStyle.trim() || "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)" }}>
+                {resolveAdminImageUrl(newPromo.imageUrl) ? (
+                  <img
+                    src={resolveAdminImageUrl(newPromo.imageUrl) as string}
+                    alt={newPromo.imageAlt.trim() || newPromo.title.trim() || "Banner promocional"}
+                    style={styles.promoPreviewImage}
+                  />
+                ) : (
+                  <div style={styles.promoPreviewPlaceholder}>Sem imagem</div>
+                )}
+              </div>
+              <div style={styles.promoPreviewMobileWrap}>
+                <span style={styles.promoPreviewDeviceLabel}>Mobile</span>
+                <div style={{ ...styles.promoPreviewMobile, background: newPromo.bgStyle.trim() || "linear-gradient(135deg, #1a1a1a 0%, #333333 100%)" }}>
+                  {resolveAdminImageUrl(newPromo.mobileImageUrl || newPromo.imageUrl) ? (
+                    <img
+                      src={resolveAdminImageUrl(newPromo.mobileImageUrl || newPromo.imageUrl) as string}
+                      alt={newPromo.imageAlt.trim() || newPromo.title.trim() || "Banner mobile"}
+                      style={styles.promoPreviewMobileImage}
+                    />
+                  ) : (
+                    <div style={styles.promoPreviewPlaceholder}>Sem mobile</div>
+                  )}
+                </div>
+              </div>
             </div>
             <div style={styles.promoPreviewContent}>
               <span style={styles.promoPreviewEyebrow}>Prévia do banner</span>
@@ -1131,6 +1232,7 @@ export default function Admin() {
                 <span style={styles.promoPreviewCta}>{newPromo.ctaLabel.trim() || "Aproveitar oferta"}</span>
                 <span style={styles.promoPreviewLink}>{newPromo.linkUrl.trim() || "/produtos"}</span>
               </div>
+              <span style={styles.promoPreviewOrderHint}>Depois de criar os banners, arraste as linhas abaixo para reorganizar o carrossel.</span>
             </div>
           </div>
           <div style={styles.inlineRow}>
@@ -1152,6 +1254,7 @@ export default function Admin() {
                   description: newPromo.description.trim(),
                   ctaLabel: newPromo.ctaLabel.trim() || "Aproveitar oferta",
                   imageUrl: normalizeAdminImageValue(newPromo.imageUrl),
+                  mobileImageUrl: normalizeAdminImageValue(newPromo.mobileImageUrl),
                   imageAlt: newPromo.imageAlt.trim(),
                   linkUrl: newPromo.linkUrl.trim(),
                   discountText: newPromo.discountText.trim(),
@@ -1185,10 +1288,30 @@ export default function Admin() {
 
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Título</th><th>Imagem</th><th>Desconto</th><th>Ordem</th><th>Ativo</th><th>Ações</th></tr></thead>
+              <thead><tr><th>Ordem</th><th>ID</th><th>Título</th><th>Imagem</th><th>Desconto</th><th>Ativo</th><th>Ações</th></tr></thead>
               <tbody>
                 {(promoBannersQuery.data ?? []).map((row: any) => (
-                  <tr key={row.id}>
+                  <tr
+                    key={row.id}
+                    draggable
+                    onDragStart={() => setDraggingPromoId(row.id)}
+                    onDragEnd={() => setDraggingPromoId(null)}
+                    onDragOver={event => event.preventDefault()}
+                    onDrop={async event => {
+                      event.preventDefault();
+                      if (draggingPromoId && draggingPromoId !== row.id) {
+                        await reorderPromoBanners(draggingPromoId, row.id);
+                      }
+                      setDraggingPromoId(null);
+                    }}
+                    style={draggingPromoId === row.id ? { opacity: 0.55 } : undefined}
+                  >
+                    <td>
+                      <div style={styles.dragHandle}>
+                        <span style={styles.dragGrip}>⋮⋮</span>
+                        <span>{row.sortOrder}</span>
+                      </div>
+                    </td>
                     <td>{row.id}</td>
                     <td>
                       <div style={styles.productTableCell}>
@@ -1204,14 +1327,18 @@ export default function Admin() {
                             alt={row.title || "Banner"}
                             style={styles.productThumb as CSSProperties}
                           />
-                          <span style={styles.productVisualMeta}>Imagem ativa</span>
+                          <div style={styles.productVisualMetaStack}>
+                            <span style={styles.productVisualMeta}>Desktop</span>
+                            <span style={styles.productVisualMeta}>
+                              {resolveAdminImageUrl(row.mobileImageUrl) ? "Mobile dedicado" : "Mobile usa a capa"}
+                            </span>
+                          </div>
                         </div>
                       ) : (
                         "Não"
                       )}
                     </td>
                     <td>{row.discountText}</td>
-                    <td>{row.sortOrder}</td>
                     <td>{row.isActive ? "Sim" : "Não"}</td>
                     <td style={styles.actionsCell}>
                       <button
@@ -1224,6 +1351,7 @@ export default function Admin() {
                             description: row.description ?? "",
                             ctaLabel: row.ctaLabel ?? "Aproveitar oferta",
                             imageUrl: normalizeAdminImageValue(row.imageUrl),
+                            mobileImageUrl: normalizeAdminImageValue(row.mobileImageUrl),
                             imageAlt: row.imageAlt ?? "",
                             linkUrl: row.linkUrl ?? "",
                             discountText: row.discountText ?? "",
@@ -1702,6 +1830,12 @@ const styles: Record<string, CSSProperties> = {
     background: "linear-gradient(135deg, #101010 0%, #171717 100%)",
     alignItems: "stretch",
   },
+  promoPreviewMediaGroup: {
+    display: "grid",
+    gap: 12,
+    gridTemplateColumns: "1fr",
+    alignItems: "start",
+  },
   promoPreviewMedia: {
     minHeight: 220,
     borderRadius: 14,
@@ -1712,7 +1846,37 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: "center",
     background: "#121212",
   },
+  promoPreviewMobileWrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    alignItems: "flex-start",
+  },
+  promoPreviewDeviceLabel: {
+    color: "#9ca3af",
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+  },
+  promoPreviewMobile: {
+    width: 140,
+    height: 220,
+    borderRadius: 22,
+    border: "1px solid rgba(255,255,255,0.08)",
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#121212",
+  },
   promoPreviewImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+  },
+  promoPreviewMobileImage: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
@@ -1805,6 +1969,12 @@ const styles: Record<string, CSSProperties> = {
     color: "#9ca3af",
     fontSize: 12,
     lineHeight: 1.5,
+  },
+  promoPreviewOrderHint: {
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 1.6,
+    marginTop: 4,
   },
   input: {
     border: "1px solid #2f2f2f",
@@ -1913,6 +2083,27 @@ const styles: Record<string, CSSProperties> = {
     color: "#9ca3af",
     fontSize: 11,
     lineHeight: 1.3,
+  },
+  productVisualMetaStack: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 2,
+  },
+  dragHandle: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    color: "#d1d5db",
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  dragGrip: {
+    color: "#9ca3af",
+    fontSize: 14,
+    lineHeight: 1,
+    letterSpacing: -1,
+    cursor: "grab",
   },
   variantCountBadge: {
     display: "inline-flex",
