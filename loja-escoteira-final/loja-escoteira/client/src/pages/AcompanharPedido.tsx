@@ -7,15 +7,15 @@ type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancell
 
 const statusLabel: Record<OrderStatus, string> = {
   pending: "Aguardando pagamento",
-  processing: "Pedido confirmado e em separacao",
+  processing: "Pedido confirmado e em separação",
   shipped: "Pedido enviado para transporte",
-  delivered: "Entrega concluida",
+  delivered: "Entrega concluída",
   cancelled: "Pedido cancelado",
 };
 
 const timelineSteps: Array<{ key: Exclude<OrderStatus, "cancelled">; label: string }> = [
   { key: "pending", label: "Pagamento" },
-  { key: "processing", label: "Separacao" },
+  { key: "processing", label: "Separação" },
   { key: "shipped", label: "Transporte" },
   { key: "delivered", label: "Entrega" },
 ];
@@ -79,8 +79,8 @@ export default function AcompanharPedido() {
   if (!isAuthenticated) {
     return (
       <section style={styles.wrapper}>
-        <h1 style={styles.title}>Acompanhar Pedido</h1>
-        <p style={styles.muted}>Para acompanhar pedidos, entre com sua conta.</p>
+        <h1 style={styles.title}>Acompanhar pedido</h1>
+        <p style={styles.muted}>Para acompanhar seus pedidos, entre com a sua conta.</p>
         <Link to="/login" style={styles.primaryButton}>
           Entrar
         </Link>
@@ -90,9 +90,9 @@ export default function AcompanharPedido() {
 
   return (
     <section style={styles.wrapper}>
-      <h1 style={styles.title}>Acompanhar Pedido</h1>
+      <h1 style={styles.title}>Acompanhar pedido</h1>
       <p style={styles.muted}>
-        Consulte o status do seu pedido usando o número do pedido ou código de rastreio.
+        Consulte o status usando o número do pedido ou o código de rastreio vinculado à sua conta.
       </p>
 
       <form style={styles.form} onSubmit={handleSubmit}>
@@ -145,7 +145,7 @@ export default function AcompanharPedido() {
               <p style={styles.metaStrong}>{formatMoney(Number(query.data.totalPrice))}</p>
             </div>
             <div>
-              <p style={styles.metaLabel}>Código de rastreio</p>
+              <p style={styles.metaLabel}>Rastreio</p>
               <p style={styles.metaStrong}>{query.data.trackingCode || "Ainda não informado"}</p>
             </div>
             <div>
@@ -170,7 +170,7 @@ export default function AcompanharPedido() {
               })}
             </div>
           ) : (
-            <p style={styles.cancelled}>Este pedido foi cancelado. Se precisar, fale com o suporte.</p>
+            <p style={styles.cancelled}>Este pedido foi cancelado. Se precisar, fale com o suporte pelos canais oficiais.</p>
           )}
 
           <div style={styles.actions}>

@@ -7,7 +7,7 @@ type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancell
 
 const statusText: Record<OrderStatus, string> = {
   pending: "Aguardando pagamento",
-  processing: "Pago / em separacao",
+  processing: "Pago e em separação",
   shipped: "Enviado",
   delivered: "Entregue",
   cancelled: "Cancelado",
@@ -28,14 +28,14 @@ export default function PedidoDetalhe() {
   return (
     <section style={styles.wrapper}>
       <div style={styles.head}>
-        <h1 style={styles.title}>Detalhe do Pedido</h1>
+        <h1 style={styles.title}>Detalhes do pedido</h1>
         <Link to="/meus-pedidos" style={styles.linkButton}>
           Voltar para pedidos
         </Link>
       </div>
 
       {query.isLoading ? <p style={styles.muted}>Carregando pedido...</p> : null}
-      {query.isError ? <p style={styles.error}>Não foi possível carregar este pedido.</p> : null}
+      {query.isError ? <p style={styles.error}>Não foi possível carregar este pedido agora.</p> : null}
 
       {query.data ? (
         <article style={styles.card}>
@@ -53,11 +53,11 @@ export default function PedidoDetalhe() {
               <p style={styles.metaValue}>{formatPrice(Number(query.data.totalPrice))}</p>
             </div>
             <div>
-              <p style={styles.metaLabel}>Código de rastreio</p>
+              <p style={styles.metaLabel}>Rastreio</p>
               <p style={styles.metaValue}>{query.data.trackingCode || "Não informado"}</p>
             </div>
             <div>
-              <p style={styles.metaLabel}>Ultima atualizacao</p>
+              <p style={styles.metaLabel}>Última atualização</p>
               <p style={styles.metaValue}>{formatDate(query.data.updatedAt)}</p>
             </div>
           </div>
@@ -76,7 +76,7 @@ export default function PedidoDetalhe() {
               ))}
             </div>
           ) : (
-            <p style={styles.muted}>Itens não disponíveis para este pedido.</p>
+            <p style={styles.muted}>Os itens deste pedido não estão disponíveis no momento.</p>
           )}
         </article>
       ) : null}

@@ -111,6 +111,32 @@ function appendCsvToken(currentValue: string, token: string) {
   return items.join(", ");
 }
 
+function buildVariantDraft(name: string, colorsCsv: string, sizesCsv: string, price: string) {
+  const colors = colorsCsv.split(",").map(item => item.trim()).filter(Boolean);
+  const sizes = sizesCsv.split(",").map(item => item.trim()).filter(Boolean);
+  const basePrice = price.trim();
+  const combinations: string[] = [];
+
+  if (colors.length > 0 && sizes.length > 0) {
+    for (const color of colors) {
+      for (const size of sizes) {
+        combinations.push(`${name} ${color} ${size}|${color.toUpperCase()}-${size.toUpperCase()}|${basePrice}|0`);
+      }
+    }
+    return combinations.join("; ");
+  }
+
+  if (sizes.length > 0) {
+    return sizes.map(size => `${name} ${size}|${size.toUpperCase()}|${basePrice}|0`).join("; ");
+  }
+
+  if (colors.length > 0) {
+    return colors.map(color => `${name} ${color}|${color.toUpperCase()}|${basePrice}|0`).join("; ");
+  }
+
+  return "";
+}
+
 export default function Admin() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useUser();
@@ -581,6 +607,20 @@ export default function Admin() {
             </div>
             <div style={styles.mediaField}>
               <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+              <div style={styles.mediaActions}>
+                <button
+                  style={styles.secondaryBtn}
+                  onClick={() =>
+                    setNewProduct(prev => ({
+                      ...prev,
+                      variantsCsv: buildVariantDraft(prev.name.trim() || "Produto", prev.colorsCsv, prev.sizesCsv, prev.price || "0"),
+                    }))
+                  }
+                >
+                  Gerar variantes
+                </button>
+                <span style={styles.mediaHint}>Gera combinações a partir das cores e tamanhos informados.</span>
+              </div>
               <span style={styles.mediaHint}>Exemplo: Camiseta P|CAM-P|89.90|10; Camiseta M|CAM-M|89.90|8</span>
             </div>
             <input style={styles.input} placeholder="Descrição curta" value={newProduct.description} onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))} />
@@ -826,6 +866,20 @@ export default function Admin() {
                 </div>
                 <div style={styles.mediaField}>
                   <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
+                  <div style={styles.mediaActions}>
+                    <button
+                      style={styles.secondaryBtn}
+                      onClick={() =>
+                        setEditProduct(prev => ({
+                          ...prev,
+                          variantsCsv: buildVariantDraft(prev.name.trim() || "Produto", prev.colorsCsv, prev.sizesCsv, prev.price || "0"),
+                        }))
+                      }
+                    >
+                      Gerar variantes
+                    </button>
+                    <span style={styles.mediaHint}>Monta a base das variantes para você só revisar SKU, preço e estoque.</span>
+                  </div>
                   <span style={styles.mediaHint}>Exemplo: Camiseta P|CAM-P|89.90|10; Camiseta M|CAM-M|89.90|8</span>
                 </div>
                 <input style={styles.input} placeholder="Descrição curta" value={editProduct.description} onChange={e => setEditProduct(prev => ({ ...prev, description: e.target.value }))} />

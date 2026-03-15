@@ -7,7 +7,7 @@ type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancell
 
 const statusLabel: Record<OrderStatus, string> = {
   pending: "Aguardando pagamento",
-  processing: "Em separacao",
+  processing: "Em separação",
   shipped: "Em transporte",
   delivered: "Entregue",
   cancelled: "Cancelado",
@@ -48,8 +48,8 @@ export default function MeusPedidos() {
   if (!isAuthenticated) {
     return (
       <section style={styles.wrapper}>
-        <h1 style={styles.title}>Meus Pedidos</h1>
-        <p style={styles.muted}>Você precisa entrar para ver seu histórico de pedidos.</p>
+        <h1 style={styles.title}>Meus pedidos</h1>
+        <p style={styles.muted}>Você precisa entrar para ver seu histórico de compras.</p>
         <Link to="/login" style={styles.primaryButton}>
           Entrar na conta
         </Link>
@@ -57,24 +57,25 @@ export default function MeusPedidos() {
     );
   }
 
-  const orders = (ordersQuery.data ?? [])
-    .slice()
-    .sort((a, b) => Number(b.id) - Number(a.id));
+  const orders = (ordersQuery.data ?? []).slice().sort((a, b) => Number(b.id) - Number(a.id));
 
   return (
     <section style={styles.wrapper}>
       <div style={styles.headerRow}>
-        <h1 style={styles.title}>Meus Pedidos</h1>
+        <div>
+          <h1 style={styles.title}>Meus pedidos</h1>
+          <p style={styles.muted}>Acompanhe status, total pago e rastreio de cada compra.</p>
+        </div>
         <Link to="/acompanhar-pedido" style={styles.secondaryButton}>
           Rastrear pedido
         </Link>
       </div>
 
       {ordersQuery.isLoading ? <p style={styles.muted}>Carregando pedidos...</p> : null}
-      {ordersQuery.isError ? <p style={styles.error}>Não foi possível carregar seus pedidos.</p> : null}
+      {ordersQuery.isError ? <p style={styles.error}>Não foi possível carregar seus pedidos agora.</p> : null}
 
       {!ordersQuery.isLoading && !ordersQuery.isError && orders.length === 0 ? (
-        <p style={styles.muted}>Você ainda não possui pedidos.</p>
+        <p style={styles.muted}>Você ainda não possui pedidos concluídos na sua conta.</p>
       ) : null}
 
       <div style={styles.list}>
@@ -98,7 +99,7 @@ export default function MeusPedidos() {
                   <p style={styles.metaStrong}>{formatMoney(Number(order.totalPrice))}</p>
                 </div>
                 <div>
-                  <p style={styles.metaLabel}>Código de rastreio</p>
+                  <p style={styles.metaLabel}>Rastreio</p>
                   <p style={styles.metaStrong}>{order.trackingCode || "Ainda não informado"}</p>
                 </div>
               </div>
@@ -108,7 +109,7 @@ export default function MeusPedidos() {
                   Ver detalhes
                 </Link>
                 <Link to={`/acompanhar-pedido?pedido=${order.id}`} style={styles.primaryButton}>
-                  Acompanhar este pedido
+                  Acompanhar pedido
                 </Link>
               </div>
             </article>
