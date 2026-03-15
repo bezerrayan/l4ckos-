@@ -1,7 +1,7 @@
 import { apiUrl } from "../const";
 
 function shouldProxyImageUrl(url: URL) {
-  if (typeof window !== "undefined" && url.host === window.location.host) {
+  if (url.pathname.startsWith("/api/image-proxy")) {
     return false;
   }
 
