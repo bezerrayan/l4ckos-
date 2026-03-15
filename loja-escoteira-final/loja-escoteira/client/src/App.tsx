@@ -1,36 +1,41 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Header from "./components/Header";
+import { Suspense, lazy } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
-
-import Home from "./pages/Home";
-import Produtos from "./pages/Produtos";
-import ProductDetail from "./pages/ProductDetail";
-import Carrinho from "./pages/Carrinho";
-import Pagamento from "./pages/Pagamento";
-import Favoritos from "./pages/Favoritos";
-import Login from "./pages/Login";
-import Cadastro from "./pages/Cadastro";
-import Perfil from "./pages/Perfil";
-import Admin from "./pages/Admin";
-import Sobre from "./pages/Sobre";
-import Contato from "./pages/Contato";
-import FAQs from "./pages/FAQs";
-import Termos from "./pages/Termos";
-import Privacidade from "./pages/Privacidade";
-import NotFound from "./pages/NotFound";
-import MeusPedidos from "./pages/MeusPedidos";
-import AcompanharPedido from "./pages/AcompanharPedido";
-import TrocasDevolucoes from "./pages/TrocasDevolucoes";
-import PedidoDetalhe from "./pages/PedidoDetalhe";
-import ComingSoon from "./pages/ComingSoon";
-import { useIsMobile } from "./hooks/useIsMobile";
+import Header from "./components/Header";
 import { useUser } from "./contexts/UserContext";
+import { useIsMobile } from "./hooks/useIsMobile";
+
+const Home = lazy(() => import("./pages/Home"));
+const Produtos = lazy(() => import("./pages/Produtos"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Carrinho = lazy(() => import("./pages/Carrinho"));
+const Pagamento = lazy(() => import("./pages/Pagamento"));
+const Favoritos = lazy(() => import("./pages/Favoritos"));
+const Login = lazy(() => import("./pages/Login"));
+const Cadastro = lazy(() => import("./pages/Cadastro"));
+const Perfil = lazy(() => import("./pages/Perfil"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Sobre = lazy(() => import("./pages/Sobre"));
+const Contato = lazy(() => import("./pages/Contato"));
+const FAQs = lazy(() => import("./pages/FAQs"));
+const Termos = lazy(() => import("./pages/Termos"));
+const Privacidade = lazy(() => import("./pages/Privacidade"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const MeusPedidos = lazy(() => import("./pages/MeusPedidos"));
+const AcompanharPedido = lazy(() => import("./pages/AcompanharPedido"));
+const TrocasDevolucoes = lazy(() => import("./pages/TrocasDevolucoes"));
+const PedidoDetalhe = lazy(() => import("./pages/PedidoDetalhe"));
+const ComingSoon = lazy(() => import("./pages/ComingSoon"));
+
+function RouteFallback() {
+  return <div className="l4-page-shell" style={{ minHeight: "50vh" }} />;
+}
 
 function AdminRoute() {
   const { user, isAuthenticated, isLoading } = useUser();
 
   if (isLoading) {
-    return null;
+    return <RouteFallback />;
   }
 
   if (!isAuthenticated || user?.role !== "admin") {
@@ -44,7 +49,7 @@ function AppRoutes() {
   const isMobile = useIsMobile(980);
   const location = useLocation();
   const { user, isAuthenticated, isLoading } = useUser();
-  const comingSoonRaw = String(import.meta.env.VITE_COMING_SOON ?? "true")
+  const comingSoonRaw = String(import.meta.env.VITE_COMING_SOON ?? "false")
     .trim()
     .toLowerCase()
     .replace(/[^a-z]/g, "");
@@ -66,35 +71,37 @@ function AppRoutes() {
         style={{
           minHeight: isMobile ? "calc(100vh - 150px)" : "calc(100vh - 170px)",
           margin: "0 auto",
-          padding: isMobile ? "0" : "0",
+          padding: "0",
           width: "100%",
           overflowX: "clip",
         }}
         className="l4-page-shell"
       >
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/produtos" element={<Produtos />} />
-          <Route path="/categorias/:categorySlug" element={<Produtos />} />
-          <Route path="/produto/:id" element={<ProductDetail />} />
-          <Route path="/favoritos" element={<Favoritos />} />
-          <Route path="/carrinho" element={<Carrinho />} />
-          <Route path="/checkout" element={<Pagamento />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/cadastro" element={<Cadastro />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/meus-pedidos" element={<MeusPedidos />} />
-          <Route path="/meus-pedidos/:id" element={<PedidoDetalhe />} />
-          <Route path="/acompanhar-pedido" element={<AcompanharPedido />} />
-          <Route path="/admin" element={<AdminRoute />} />
-          <Route path="/sobre" element={<Sobre />} />
-          <Route path="/contato" element={<Contato />} />
-          <Route path="/faqs" element={<FAQs />} />
-          <Route path="/trocas-e-devolucoes" element={<TrocasDevolucoes />} />
-          <Route path="/termos" element={<Termos />} />
-          <Route path="/privacidade" element={<Privacidade />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/produtos" element={<Produtos />} />
+            <Route path="/categorias/:categorySlug" element={<Produtos />} />
+            <Route path="/produto/:id" element={<ProductDetail />} />
+            <Route path="/favoritos" element={<Favoritos />} />
+            <Route path="/carrinho" element={<Carrinho />} />
+            <Route path="/checkout" element={<Pagamento />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/cadastro" element={<Cadastro />} />
+            <Route path="/perfil" element={<Perfil />} />
+            <Route path="/meus-pedidos" element={<MeusPedidos />} />
+            <Route path="/meus-pedidos/:id" element={<PedidoDetalhe />} />
+            <Route path="/acompanhar-pedido" element={<AcompanharPedido />} />
+            <Route path="/admin" element={<AdminRoute />} />
+            <Route path="/sobre" element={<Sobre />} />
+            <Route path="/contato" element={<Contato />} />
+            <Route path="/faqs" element={<FAQs />} />
+            <Route path="/trocas-e-devolucoes" element={<TrocasDevolucoes />} />
+            <Route path="/termos" element={<Termos />} />
+            <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </div>
 
       <Footer />
@@ -102,10 +109,6 @@ function AppRoutes() {
   );
 }
 
-/**
- * App - Componente raiz com rotas
- * Nota: Providers são adicionados em main.tsx
- */
 export default function App() {
   return (
     <BrowserRouter>
