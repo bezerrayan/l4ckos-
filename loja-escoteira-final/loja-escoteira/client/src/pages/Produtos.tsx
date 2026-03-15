@@ -9,24 +9,17 @@ import ProductCard from "../components/ProductCard";
 import type { Product } from "../types/product";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
-import { apiUrl } from "../const";
 import { PRODUCT_CATEGORIES, getCategoryLabel, getCategoryMeta, normalizeCategoryValue } from "../lib/productCategories";
-import { appendImageVersion } from "../lib/images";
+import { resolveCatalogImageUrl } from "../lib/images";
 import camisaFallback from "../images/camisa.png";
 
 function normalizePrice(value: number) {
   return value / 100;
 }
 
-function resolveProductImageUrl(imageUrl?: string | null, versionToken?: string | number | null) {
+function resolveProductImageUrl(imageUrl?: string | null) {
   if (!imageUrl) return camisaFallback;
-  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://") || imageUrl.startsWith("data:")) {
-    return appendImageVersion(imageUrl, versionToken);
-  }
-  if (imageUrl.startsWith("/")) {
-    return appendImageVersion(apiUrl(imageUrl), versionToken);
-  }
-  return appendImageVersion(apiUrl(`/${imageUrl}`), versionToken);
+  return resolveCatalogImageUrl(imageUrl) || camisaFallback;
 }
 
 export default function Produtos() {
@@ -48,7 +41,7 @@ export default function Produtos() {
         name: item.name,
         description: item.description || "",
         price: normalizePrice(Number(item.price)),
-        image: resolveProductImageUrl(item.imageUrl, item.id),
+        image: resolveProductImageUrl(item.imageUrl),
         category: item.category,
         stock: Number(item.stock ?? 0),
       })),

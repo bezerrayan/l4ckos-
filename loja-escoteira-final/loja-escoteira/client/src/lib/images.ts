@@ -1,6 +1,15 @@
-import { apiUrl } from "../const";
+import { API_ORIGIN, apiUrl } from "../const";
 
 function shouldProxyImageUrl(url: URL) {
+  const apiHost = new URL(API_ORIGIN).host;
+  if (url.host === apiHost) {
+    return false;
+  }
+
+  if (typeof window !== "undefined" && url.host === window.location.host) {
+    return false;
+  }
+
   if (url.pathname.startsWith("/api/image-proxy")) {
     return false;
   }
@@ -8,8 +17,32 @@ function shouldProxyImageUrl(url: URL) {
   return /^https?:$/i.test(url.protocol);
 }
 
-export function appendImageVersion(imageUrl: string, versionToken?: string | number | null) {
+export function resolveCatalogImageUrl(imageUrl: string | null | undefined) {
   const value = String(imageUrl || "").trim();
+  if (!value) return "";
+  if (value.startsWith("data:")) return value;
+
+  try {
+    const resolved = new URL(
+      value,
+      typeof window !== "undefined" ? window.location.origin : "https://l4ckos.com.br",
+    );
+
+    if (shouldProxyImageUrl(resolved)) {
+      const proxied = new URL(apiUrl("/api/image-proxy"));
+      proxied.searchParams.set("src", resolved.toString());
+      return proxied.toString();
+    }
+
+    return resolved.toString();
+  } catch {
+    if (value.startsWith("/")) return apiUrl(value);
+    return apiUrl(`/${value}`);
+  }
+}
+
+export function appendImageVersion(imageUrl: string, versionToken?: string | number | null) {
+  const value = resolveCatalogImageUrl(imageUrl);
   if (!value || value.startsWith("data:") || versionToken === undefined || versionToken === null || versionToken === "") {
     return value;
   }
