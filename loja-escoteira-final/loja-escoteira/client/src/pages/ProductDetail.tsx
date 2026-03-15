@@ -131,6 +131,22 @@ export default function ProductDetail() {
     setSelectedImage(product.image);
   }, [product?.id, product?.image]);
 
+  const galleryImages = useMemo(
+    () =>
+      !product
+        ? []
+        : Array.from(
+            new Map(
+              [
+                { imageUrl: product.image, color: null },
+                ...(product.images || []),
+              ]
+                .filter(item => item?.imageUrl)
+                .map(item => [item.imageUrl, item]),
+            ).values(),
+          ),
+    [product],
+  );
   const handleGoBack = () => {
     const from = (location.state as any)?.from;
     if (from === "/" || from === "/produtos") {
@@ -139,6 +155,14 @@ export default function ProductDetail() {
       navigate("/");
     }
   };
+
+  useEffect(() => {
+    if (!selectedColor || galleryImages.length === 0) return;
+    const colorMatch = galleryImages.find(item => normalizeColorToken(item.color) === normalizeColorToken(selectedColor));
+    if (colorMatch?.imageUrl) {
+      setSelectedImage(colorMatch.imageUrl);
+    }
+  }, [selectedColor, galleryImages]);
 
   if (!product) {
     if (productQuery.isLoading) {
@@ -157,19 +181,12 @@ export default function ProductDetail() {
     );
   }
 
-  const galleryImages = useMemo(
-    () =>
+  const normalizedGalleryImages = Array.from(
+    new Map(
       Array.from(
-        new Map(
-          [
-            { imageUrl: product.image, color: null },
-            ...(product.images || []),
-          ]
-            .filter(item => item?.imageUrl)
-            .map(item => [item.imageUrl, item]),
-        ).values(),
+        galleryImages.map(item => [item.imageUrl, item]),
       ),
-    [product.image, product.images],
+    ).values(),
   );
   const colorOptions = (product.optionColors?.length ? product.optionColors : DEFAULT_COLORS).map(name => ({
     name,
@@ -184,14 +201,6 @@ export default function ProductDetail() {
   }).format(product.price);
   if (!selectedColor) missingSelections.push("cor");
   if (!selectedSize) missingSelections.push("tamanho");
-
-  useEffect(() => {
-    if (!selectedColor || galleryImages.length === 0) return;
-    const colorMatch = galleryImages.find(item => normalizeColorToken(item.color) === normalizeColorToken(selectedColor));
-    if (colorMatch?.imageUrl) {
-      setSelectedImage(colorMatch.imageUrl);
-    }
-  }, [selectedColor, galleryImages]);
 
   const handleAddToCart = () => {
     if (product.stock <= 0) {
@@ -273,7 +282,7 @@ export default function ProductDetail() {
           </div>
 
           <div style={styles.galleryRow as CSSProperties}>
-            {galleryImages.map((image, idx) => {
+            {normalizedGalleryImages.map((image, idx) => {
               const active = (selectedImage || product.image) === image.imageUrl;
               return (
                 <button
