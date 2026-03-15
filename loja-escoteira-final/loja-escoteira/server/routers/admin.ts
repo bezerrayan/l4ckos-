@@ -143,7 +143,12 @@ export const adminRouter = router({
         optionSizes: z.array(z.string().min(1).max(60)).optional().default([]),
         sizeType: z.enum(["alpha", "numeric", "custom"]).optional().default("alpha"),
         stock: z.number().int().min(0).default(0),
-        images: z.array(z.string().url()).optional().default([]),
+        images: z.array(
+          z.object({
+            imageUrl: z.string().url(),
+            color: z.string().trim().max(60).nullable().optional(),
+          }),
+        ).optional().default([]),
         variants: z
           .array(
             z.object({
@@ -197,7 +202,12 @@ export const adminRouter = router({
         optionSizes: z.array(z.string().min(1).max(60)).optional(),
         sizeType: z.enum(["alpha", "numeric", "custom"]).optional(),
         stock: z.number().int().min(0).optional(),
-        images: z.array(z.string().url()).optional(),
+        images: z.array(
+          z.object({
+            imageUrl: z.string().url(),
+            color: z.string().trim().max(60).nullable().optional(),
+          }),
+        ).optional(),
         variants: z
           .array(
             z.object({

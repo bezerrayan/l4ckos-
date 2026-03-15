@@ -236,7 +236,12 @@ export async function getProductByIdWithDetails(id: number) {
   return {
     ...productRows[0],
     imageUrl: productRows[0].imageUrl || imageRows[0]?.imageUrl || null,
-    images: imageRows.map(item => item.imageUrl).filter(Boolean),
+    images: imageRows.map(item => ({
+      imageUrl: item.imageUrl,
+      color: item.color ?? null,
+      alt: item.alt ?? null,
+      order: item.order,
+    })).filter(item => item.imageUrl),
     variants: variantRows,
   };
 }
@@ -834,15 +839,20 @@ export async function setOrderAdminData(
     .where(eq(orders.id, orderId));
 }
 
-export async function replaceProductImages(productId: number, imageUrls: string[]) {
+export async function replaceProductImages(
+  productId: number,
+  imageUrls: Array<string | { imageUrl: string; color?: string | null; alt?: string | null }>,
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(productImages).where(eq(productImages.productId, productId));
   if (imageUrls.length > 0) {
     await db.insert(productImages).values(
-      imageUrls.map((imageUrl, index) => ({
+      imageUrls.map((item, index) => ({
         productId,
-        imageUrl,
+        imageUrl: typeof item === "string" ? item : item.imageUrl,
+        color: typeof item === "string" ? null : item.color ?? null,
+        alt: typeof item === "string" ? null : item.alt ?? null,
         order: index,
       })),
     );

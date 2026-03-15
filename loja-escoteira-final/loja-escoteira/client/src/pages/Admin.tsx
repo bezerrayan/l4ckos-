@@ -29,6 +29,7 @@ const emptyProductForm = {
   stock: "0",
   imageUrl: "",
   imagesCsv: "",
+  galleryColor: "",
   colorsCsv: "",
   sizesCsv: "",
   sizeType: "alpha",
@@ -100,6 +101,34 @@ function joinCsvUrls(currentValue: string, urls: string[]) {
   ];
 
   return Array.from(new Set(merged)).join(", ");
+}
+
+function formatImageCsvEntry(imageUrl: string, color?: string | null) {
+  const normalizedUrl = normalizeAdminImageValue(imageUrl);
+  const normalizedColor = String(color ?? "").trim();
+  return normalizedColor ? `${normalizedUrl}|${normalizedColor}` : normalizedUrl;
+}
+
+function parseImageCsvEntries(raw: string) {
+  return raw
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean)
+    .map(item => {
+      const [imageUrlRaw, colorRaw] = item.split("|").map(part => part?.trim() ?? "");
+      const imageUrl = normalizeAdminImageValue(imageUrlRaw);
+      return {
+        imageUrl,
+        color: colorRaw || null,
+      };
+    })
+    .filter(item => item.imageUrl);
+}
+
+function joinImageCsvEntries(currentValue: string, urls: string[], color?: string | null) {
+  const current = parseImageCsvEntries(currentValue).map(item => formatImageCsvEntry(item.imageUrl, item.color));
+  const incoming = urls.map(url => formatImageCsvEntry(url, color));
+  return Array.from(new Set([...current, ...incoming])).join(", ");
 }
 
 function appendCsvToken(currentValue: string, token: string) {
@@ -580,6 +609,22 @@ export default function Admin() {
             </div>
             <div style={styles.mediaField}>
               <input style={styles.input} placeholder="Outras imagens (CSV)" value={newProduct.imagesCsv} onChange={e => setNewProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
+              <select
+                style={styles.select}
+                value={newProduct.galleryColor}
+                onChange={e => setNewProduct(prev => ({ ...prev, galleryColor: e.target.value }))}
+              >
+                <option value="">Galeria sem cor específica</option>
+                {newProduct.colorsCsv
+                  .split(",")
+                  .map(item => item.trim())
+                  .filter(Boolean)
+                  .map(color => (
+                    <option key={color} value={color}>
+                      Vincular à cor {color}
+                    </option>
+                  ))}
+              </select>
               <div style={styles.mediaActions}>
                 <button
                   style={styles.secondaryBtn}
@@ -599,11 +644,15 @@ export default function Admin() {
                 onChange={async e => {
                   const urls = await uploadAdminImages(e.target.files, "multiple", "create-gallery");
                   if (urls.length > 0) {
-                    setNewProduct(prev => ({ ...prev, imagesCsv: joinCsvUrls(prev.imagesCsv, urls) }));
+                    setNewProduct(prev => ({
+                      ...prev,
+                      imagesCsv: joinImageCsvEntries(prev.imagesCsv, urls, prev.galleryColor || null),
+                    }));
                   }
                   e.currentTarget.value = "";
                 }}
               />
+              <span style={styles.mediaHint}>Use `url|cor` para vincular uma imagem a uma cor específica do produto.</span>
             </div>
             <div style={styles.mediaField}>
               <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
@@ -636,10 +685,7 @@ export default function Admin() {
                 return;
               }
 
-              const images = newProduct.imagesCsv
-                .split(",")
-                .map(item => item.trim())
-                .filter(Boolean);
+              const images = parseImageCsvEntries(newProduct.imagesCsv);
               const optionColors = newProduct.colorsCsv
                 .split(",")
                 .map(item => item.trim())
@@ -672,8 +718,8 @@ export default function Admin() {
                 imageUrl: normalizeAdminImageValue(newProduct.imageUrl) || undefined,
                 optionColors,
                 optionSizes,
-                sizeType: newProduct.sizeType as "alpha" | "numeric" | "custom",
-                images,
+                  sizeType: newProduct.sizeType as "alpha" | "numeric" | "custom",
+                  images,
                 variants,
                 description: newProduct.description.trim() || undefined,
               });
@@ -733,11 +779,12 @@ export default function Admin() {
                   price: centsToMoneyInput(selected.price),
                   stock: String(selected.stock ?? 0),
                   imageUrl: normalizeAdminImageValue(selected.imageUrl),
+                  galleryColor: "",
                   colorsCsv: selectedColors.join(", "),
                   sizesCsv: selectedSizes.join(", "),
                   sizeType: selected.sizeType ?? "alpha",
                   imagesCsv: (selected.images ?? [])
-                    .map(item => normalizeAdminImageValue(typeof item === "string" ? item : item?.imageUrl ?? ""))
+                    .map(item => formatImageCsvEntry(typeof item === "string" ? item : item?.imageUrl ?? "", typeof item === "string" ? null : item?.color ?? null))
                     .filter(Boolean)
                     .join(", "),
                   variantsCsv: (selected.variants ?? [])
@@ -839,6 +886,22 @@ export default function Admin() {
                 </div>
                 <div style={styles.mediaField}>
                   <input style={styles.input} placeholder="Outras imagens (CSV)" value={editProduct.imagesCsv} onChange={e => setEditProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
+                  <select
+                    style={styles.select}
+                    value={editProduct.galleryColor}
+                    onChange={e => setEditProduct(prev => ({ ...prev, galleryColor: e.target.value }))}
+                  >
+                    <option value="">Galeria sem cor específica</option>
+                    {editProduct.colorsCsv
+                      .split(",")
+                      .map(item => item.trim())
+                      .filter(Boolean)
+                      .map(color => (
+                        <option key={color} value={color}>
+                          Vincular à cor {color}
+                        </option>
+                      ))}
+                  </select>
                   <div style={styles.mediaActions}>
                     <button
                       style={styles.secondaryBtn}
@@ -858,11 +921,15 @@ export default function Admin() {
                     onChange={async e => {
                       const urls = await uploadAdminImages(e.target.files, "multiple", "edit-gallery");
                       if (urls.length > 0) {
-                        setEditProduct(prev => ({ ...prev, imagesCsv: joinCsvUrls(prev.imagesCsv, urls) }));
+                        setEditProduct(prev => ({
+                          ...prev,
+                          imagesCsv: joinImageCsvEntries(prev.imagesCsv, urls, prev.galleryColor || null),
+                        }));
                       }
                       e.currentTarget.value = "";
                     }}
                   />
+                  <span style={styles.mediaHint}>Você também pode usar `url|cor` para trocar a imagem conforme a cor escolhida.</span>
                 </div>
                 <div style={styles.mediaField}>
                   <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
@@ -897,10 +964,7 @@ export default function Admin() {
                         return;
                       }
 
-                    const images = editProduct.imagesCsv
-                      .split(",")
-                      .map(item => item.trim())
-                      .filter(Boolean);
+                    const images = parseImageCsvEntries(editProduct.imagesCsv);
                     const optionColors = editProduct.colorsCsv
                       .split(",")
                       .map(item => item.trim())

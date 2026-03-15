@@ -139,22 +139,24 @@ export default function PromoCarousel() {
             </span>
           </div>
           <div className="l4-home-hero-carousel-bottom">
-            <div className="l4-home-hero-carousel-copy">
-              <h3>{promo.title}</h3>
-              <p>{promo.description}</p>
+            <div className="l4-home-hero-carousel-copy-wrap">
+              <div className="l4-home-hero-carousel-copy">
+                <h3>{promo.title}</h3>
+                <p>{promo.description}</p>
+              </div>
+              <a
+                href={(promo.linkUrl || "/produtos").trim() || "/produtos"}
+                className="l4-home-hero-carousel-link"
+                aria-label={promo.ctaLabel}
+              >
+                {promo.ctaLabel}
+              </a>
             </div>
             <div className="l4-home-hero-carousel-discount">
               <strong>{promo.discount}</strong>
               <span>{promo.discountLabel}</span>
             </div>
           </div>
-          <a
-            href={(promo.linkUrl || "/produtos").trim() || "/produtos"}
-            className="l4-home-hero-carousel-link"
-            aria-label={promo.ctaLabel}
-          >
-            {promo.ctaLabel}
-          </a>
         </div>
       </div>
       <div className="l4-home-hero-carousel-controls">

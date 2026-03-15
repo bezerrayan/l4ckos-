@@ -240,6 +240,7 @@ export const productImages = mysqlTable("productImages", {
   id: int("id").autoincrement().primaryKey(),
   productId: int("productId").notNull(),
   imageUrl: varchar("imageUrl", { length: 500 }).notNull(),
+  color: varchar("color", { length: 60 }),
   alt: varchar("alt", { length: 255 }),
   order: int("order").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

@@ -9,12 +9,10 @@ import { useCart } from "../contexts/CartContext";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
-import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
-import logoPreta from "../images/logo_preta.jpeg";
 import camisaFallback from "../images/camisa.png";
 import { getCategoryLabel } from "../lib/productCategories";
 
@@ -34,12 +32,6 @@ const COLOR_HEX_BY_NAME: Record<string, string> = {
   roxo: "#7c3aed",
   laranja: "#ea580c",
 };
-
-const EXTRA_IMAGES = [
-  camisaFallback,
-  logoPrincipalPreta,
-  logoPreta,
-];
 
 const purchaseHighlights = [
   "Selecione cor e tamanho antes de concluir a compra.",
@@ -71,6 +63,15 @@ function parseJsonList(raw: unknown): string[] {
   } catch {
     return [];
   }
+}
+
+function normalizeColorToken(value: string | null | undefined) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-");
 }
 
 export default function ProductDetail() {
@@ -105,9 +106,11 @@ export default function ProductDetail() {
         optionSizes: parseJsonList((productQuery.data as any).optionSizes),
         sizeType: String((productQuery.data as any).sizeType ?? "alpha"),
         images:
-          Array.isArray((productQuery.data as any).images) &&
-          (productQuery.data as any).images.length > 0
-            ? ((productQuery.data as any).images as string[]).map((img) => resolveProductImageUrl(img))
+          Array.isArray((productQuery.data as any).images) && (productQuery.data as any).images.length > 0
+            ? ((productQuery.data as any).images as Array<any>).map((img) => ({
+                imageUrl: resolveProductImageUrl(typeof img === "string" ? img : img?.imageUrl),
+                color: typeof img === "string" ? null : String(img?.color ?? "").trim() || null,
+              }))
             : [],
       }
     : null;
@@ -154,7 +157,20 @@ export default function ProductDetail() {
     );
   }
 
-  const galleryImages = Array.from(new Set([product.image, ...(product.images || [])].filter(Boolean)));
+  const galleryImages = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          [
+            { imageUrl: product.image, color: null },
+            ...(product.images || []),
+          ]
+            .filter(item => item?.imageUrl)
+            .map(item => [item.imageUrl, item]),
+        ).values(),
+      ),
+    [product.image, product.images],
+  );
   const colorOptions = (product.optionColors?.length ? product.optionColors : DEFAULT_COLORS).map(name => ({
     name,
     hex: COLOR_HEX_BY_NAME[name.toLowerCase()] ?? "#d1d5db",
@@ -168,6 +184,14 @@ export default function ProductDetail() {
   }).format(product.price);
   if (!selectedColor) missingSelections.push("cor");
   if (!selectedSize) missingSelections.push("tamanho");
+
+  useEffect(() => {
+    if (!selectedColor || galleryImages.length === 0) return;
+    const colorMatch = galleryImages.find(item => normalizeColorToken(item.color) === normalizeColorToken(selectedColor));
+    if (colorMatch?.imageUrl) {
+      setSelectedImage(colorMatch.imageUrl);
+    }
+  }, [selectedColor, galleryImages]);
 
   const handleAddToCart = () => {
     if (product.stock <= 0) {
@@ -250,19 +274,19 @@ export default function ProductDetail() {
 
           <div style={styles.galleryRow as CSSProperties}>
             {galleryImages.map((image, idx) => {
-              const active = (selectedImage || product.image) === image;
+              const active = (selectedImage || product.image) === image.imageUrl;
               return (
                 <button
-                  key={`${image}-${idx}`}
+                  key={`${image.imageUrl}-${idx}`}
                   type="button"
-                  onClick={() => setSelectedImage(image)}
+                  onClick={() => setSelectedImage(image.imageUrl)}
                   style={{
                     ...styles.thumbButton,
                     ...(active ? styles.thumbButtonActive : {}),
                   } as CSSProperties}
                 >
                   <img
-                    src={image}
+                    src={image.imageUrl}
                     alt={`Foto ${idx + 1}`}
                     style={styles.thumbImage as CSSProperties}
                     onError={(event) => {
