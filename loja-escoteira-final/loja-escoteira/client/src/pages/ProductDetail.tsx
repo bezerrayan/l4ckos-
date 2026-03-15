@@ -257,7 +257,12 @@ export default function ProductDetail() {
     <div>
       <button
         onClick={handleGoBack}
-        style={{ ...styles.backButton, marginBottom: isMobile ? 18 : styles.backButton.marginBottom } as CSSProperties}
+        style={{
+          ...styles.backButton,
+          marginBottom: isMobile ? 18 : styles.backButton.marginBottom,
+          padding: isMobile ? "10px 16px" : styles.backButton.padding,
+          borderRadius: isMobile ? 10 : styles.backButton.borderRadius,
+        } as CSSProperties}
       >
         Voltar
       </button>
@@ -335,18 +340,20 @@ export default function ProductDetail() {
             <h1 style={{ ...styles.productTitle, fontSize: isMobile ? 24 : styles.productTitle.fontSize } as CSSProperties}>{product.name}</h1>
             <div style={styles.headerMetaRow as CSSProperties}>
               <span style={styles.badge as CSSProperties}>{getCategoryLabel(product.category) || "Produto oficial"}</span>
-              <button
-                onClick={handleAddToFavorites}
-                style={{
-                  ...styles.favoriteQuickBtn,
-                  width: isMobile ? "100%" : "auto",
-                  justifyContent: "center",
-                  background: isFav ? "#dc2626" : "#ffffff",
-                  color: isFav ? "#ffffff" : "#dc2626",
-                  borderColor: "#dc2626",
-                } as CSSProperties}
-              >
-                {isFav ? "Nos favoritos" : "Favoritar"}
+                <button
+                  onClick={handleAddToFavorites}
+                  style={{
+                    ...styles.favoriteQuickBtn,
+                    width: isMobile ? "auto" : "auto",
+                    minWidth: isMobile ? 140 : undefined,
+                    justifyContent: "center",
+                    background: isFav ? "#dc2626" : "#ffffff",
+                    color: isFav ? "#ffffff" : "#dc2626",
+                    borderColor: "#dc2626",
+                    alignSelf: isMobile ? "flex-start" : "auto",
+                  } as CSSProperties}
+                >
+                  {isFav ? "Nos favoritos" : "Favoritar"}
               </button>
             </div>
           </div>
@@ -402,6 +409,7 @@ export default function ProductDetail() {
               style={{
                 ...styles.sizeGrid,
                 gridTemplateColumns: isMobile ? (product.sizeType === "numeric" ? "repeat(4, 1fr)" : "repeat(3, 1fr)") : styles.sizeGrid.gridTemplateColumns,
+                gap: isMobile ? 10 : styles.sizeGrid.gap,
               } as CSSProperties}
             >
               {sizeOptions.map((size) => (
@@ -465,7 +473,7 @@ export default function ProductDetail() {
               bottom: "auto",
               zIndex: 0,
               marginBottom: isMobile ? 20 : styles.actionButtons.marginBottom,
-              padding: isMobile ? "0 0 2px" : 0,
+              padding: isMobile ? "0" : 0,
               background: isMobile ? "#080808" : "transparent",
               borderTop: "none",
               boxShadow: "none",
@@ -539,13 +547,13 @@ const styles: Record<string, CSSProperties> = {
   backButton: {
     display: "inline-block",
     padding: "10px 20px",
-    background: "#e8e8e8",
-    border: "none",
-    borderRadius: 6,
+    background: "#161616",
+    border: "1px solid #2f2f2f",
+    borderRadius: 8,
     cursor: "pointer",
     fontSize: 14,
     fontWeight: 600,
-    color: "#1a1a1a",
+    color: "#f0ede8",
     marginBottom: 32,
     transition: "all 0.2s ease",
   },
@@ -802,9 +810,9 @@ const styles: Record<string, CSSProperties> = {
     boxShadow: "0 4px 12px rgba(26,26,26,0.2)",
   },
   favoriteQuickBtn: {
-    padding: "8px 12px",
+    padding: "10px 14px",
     border: "1px solid #dc2626",
-    borderRadius: 8,
+    borderRadius: 10,
     fontSize: 13,
     fontWeight: 700,
     cursor: "pointer",
