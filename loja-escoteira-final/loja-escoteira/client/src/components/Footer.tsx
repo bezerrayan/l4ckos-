@@ -12,7 +12,7 @@ export default function Footer() {
         <div>
           <img src={logoBranco} alt="L4ckos" className="l4-footer-logo" />
           <p className="l4-footer-text">
-            Sua loja premium de qualidade e confiança. Produtos para aventura, trilha e movimento escoteiro.
+            Seleção de peças e equipamentos para trilha, campo e rotina escoteira, com comunicação direta e foco no que realmente importa para o cliente.
           </p>
           <div className="l4-footer-socials" aria-label="Redes sociais">
             <a href="https://instagram.com/l4ckos" target="_blank" rel="noreferrer" aria-label="Instagram L4ckos">
@@ -62,7 +62,7 @@ export default function Footer() {
 
       <div className="l4-footer-bottom">
         <span>© {year} L4ckos. Todos os direitos reservados.</span>
-        <span>PIX • Cartão • Boleto</span>
+        <span>PIX • Cartão • Checkout com cálculo de frete</span>
       </div>
     </footer>
   );

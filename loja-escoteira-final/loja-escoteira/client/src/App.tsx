@@ -28,7 +28,21 @@ const PedidoDetalhe = lazy(() => import("./pages/PedidoDetalhe"));
 const ComingSoon = lazy(() => import("./pages/ComingSoon"));
 
 function RouteFallback() {
-  return <div className="l4-page-shell" style={{ minHeight: "50vh" }} />;
+  return (
+    <div
+      className="l4-page-shell"
+      style={{
+        minHeight: "50vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#9ca3af",
+        fontSize: 14,
+      }}
+    >
+      Carregando página...
+    </div>
+  );
 }
 
 function AdminRoute() {

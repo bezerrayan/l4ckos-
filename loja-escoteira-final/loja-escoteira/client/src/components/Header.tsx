@@ -1,5 +1,5 @@
 ﻿import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
@@ -28,6 +28,10 @@ export default function Header() {
   const displayName = firstName(user?.name, user?.email);
   const mobileCategoryLinks = PRODUCT_CATEGORIES.slice(0, 6);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   const navItems = [
     { to: "/", label: "Início", active: location.pathname === "/" },
     {
@@ -46,7 +50,13 @@ export default function Header() {
   return (
     <header className="l4-header">
       <div className="l4-header-inner">
-        <button className="l4-header-menu-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
+        <button
+          className="l4-header-menu-btn"
+          onClick={() => setMenuOpen(v => !v)}
+          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={menuOpen}
+          aria-controls="l4-header-nav"
+        >
           {menuOpen ? "×" : "☰"}
         </button>
 
@@ -75,7 +85,7 @@ export default function Header() {
           <ShoppingCart size={16} strokeWidth={2} />
         </Link>
 
-        <nav className={`l4-header-nav ${isMobile ? "mobile" : ""} ${menuOpen ? "open" : ""}`}>
+        <nav id="l4-header-nav" className={`l4-header-nav ${isMobile ? "mobile" : ""} ${menuOpen ? "open" : ""}`}>
           {navItems.map(item => (
             <Link key={item.to} to={item.to} className={`l4-header-link ${item.active ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
               {item.label}

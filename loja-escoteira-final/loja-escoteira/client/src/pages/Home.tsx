@@ -115,16 +115,16 @@ export default function Home() {
 
       <div className="l4-home-marquee">
         <div className="l4-home-marquee-track">
-          <span>STREETWEAR</span>
+          <span>OUTDOOR</span>
           <span>L4CKOS</span>
-          <span>NOVO DROP</span>
-          <span>LIMITED EDITION</span>
-          <span>URBAN CULTURE</span>
-          <span>STREETWEAR</span>
+          <span>NOVAS PEÇAS</span>
+          <span>EQUIPAMENTOS</span>
+          <span>ESCOTISMO</span>
+          <span>OUTDOOR</span>
           <span>L4CKOS</span>
-          <span>NOVO DROP</span>
-          <span>LIMITED EDITION</span>
-          <span>URBAN CULTURE</span>
+          <span>NOVAS PEÇAS</span>
+          <span>EQUIPAMENTOS</span>
+          <span>ESCOTISMO</span>
         </div>
       </div>
 
@@ -203,7 +203,7 @@ export default function Home() {
       <section className="l4-home-section">
         <div className="l4-home-section-header">
           <div>
-            <div className="l4-home-section-tag">// Confianca</div>
+            <div className="l4-home-section-tag">// Confiança</div>
             <h2 className="l4-home-section-title">POR QUE COMPRAR</h2>
           </div>
         </div>
@@ -221,10 +221,10 @@ export default function Home() {
       <section className="l4-home-newsletter">
         <div>
           <h3>FIQUE POR DENTRO</h3>
-          <p>Receba novidades, lançamentos e comunicações oficiais da loja em primeira mão.</p>
+          <p>Receba novidades, reposições e comunicações oficiais da loja em primeira mão.</p>
         </div>
         <Link to="/contato" className="l4-btn-primary">
-          Falar com a loja
+          Tirar dúvidas
         </Link>
       </section>
     </div>

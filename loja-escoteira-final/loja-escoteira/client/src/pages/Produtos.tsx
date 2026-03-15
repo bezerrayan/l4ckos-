@@ -88,7 +88,7 @@ export default function Produtos() {
         }}
       >
         <div>
-          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nossa coleção</h1>
+          <h1 style={{ ...styles.title, fontSize: isMobile ? 30 : styles.title.fontSize }}>Nosso catálogo</h1>
           <p style={{ ...styles.subtitle, fontSize: isMobile ? 15 : styles.subtitle.fontSize }}>
             {activeCategoryLabel
               ? `Você está vendo a categoria ${activeCategoryLabel}. Explore os itens relacionados e filtre com mais rapidez.`
@@ -99,7 +99,7 @@ export default function Produtos() {
 
       {activeCategoryLabel ? (
         <section style={styles.categoryHero}>
-          <div style={styles.categoryHeroTag}>Categoria em destaque</div>
+          <div style={styles.categoryHeroTag}>Categoria selecionada</div>
           <h2 style={styles.categoryHeroTitle}>{activeCategoryMeta?.headline || activeCategoryLabel}</h2>
           <p style={styles.categoryHeroText}>
             {activeCategoryMeta?.description || `Veja os produtos publicados em ${activeCategoryLabel} e encontre opções relacionadas a essa linha.`}
@@ -136,7 +136,7 @@ export default function Produtos() {
       <div style={{ ...styles.searchContainer, marginBottom: isMobile ? 30 : styles.searchContainer.marginBottom }}>
         <input
           type="text"
-          placeholder="Buscar por nome ou categoria..."
+          placeholder="Buscar por produto, categoria ou palavra-chave..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={styles.searchInput as CSSProperties}

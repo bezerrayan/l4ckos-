@@ -47,6 +47,12 @@
   height: 36px;
   font-size: 18px;
   border-radius: 8px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.l4-header-menu-btn:hover {
+  background: #191919;
+  border-color: #3a3a3a;
 }
 
 .l4-header-cart-btn {
@@ -189,6 +195,9 @@
     background: rgba(8, 8, 8, 0.98);
     border-top: 1px solid #242424;
     border-bottom: 1px solid #242424;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.34);
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
   }
 
   .l4-header-nav.mobile.open {
