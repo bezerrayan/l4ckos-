@@ -147,6 +147,13 @@ export default function ProductDetail() {
           ),
     [product],
   );
+  const activeGalleryImages = useMemo(() => {
+    if (!selectedColor) return galleryImages;
+    const matches = galleryImages.filter(
+      item => normalizeColorToken(item.color) === normalizeColorToken(selectedColor),
+    );
+    return matches.length > 0 ? matches : galleryImages;
+  }, [galleryImages, selectedColor]);
   const handleGoBack = () => {
     const from = (location.state as any)?.from;
     if (from === "/" || from === "/produtos") {
@@ -157,12 +164,14 @@ export default function ProductDetail() {
   };
 
   useEffect(() => {
-    if (!selectedColor || galleryImages.length === 0) return;
-    const colorMatch = galleryImages.find(item => normalizeColorToken(item.color) === normalizeColorToken(selectedColor));
-    if (colorMatch?.imageUrl) {
-      setSelectedImage(colorMatch.imageUrl);
+    if (activeGalleryImages.length === 0) return;
+    const currentImageVisible = selectedImage
+      ? activeGalleryImages.some(item => item.imageUrl === selectedImage)
+      : false;
+    if (!currentImageVisible && activeGalleryImages[0]?.imageUrl) {
+      setSelectedImage(activeGalleryImages[0].imageUrl);
     }
-  }, [selectedColor, galleryImages]);
+  }, [activeGalleryImages, selectedImage]);
 
   if (!product) {
     if (productQuery.isLoading) {
@@ -183,9 +192,7 @@ export default function ProductDetail() {
 
   const normalizedGalleryImages = Array.from(
     new Map(
-      Array.from(
-        galleryImages.map(item => [item.imageUrl, item]),
-      ),
+      Array.from(activeGalleryImages.map(item => [item.imageUrl, item])),
     ).values(),
   );
   const colorOptions = (product.optionColors?.length ? product.optionColors : DEFAULT_COLORS).map(name => ({
@@ -270,7 +277,13 @@ export default function ProductDetail() {
         } as CSSProperties}
       >
         <div style={styles.leftColumn as CSSProperties}>
-          <div style={styles.imageContainer as CSSProperties}>
+          <div
+            style={{
+              ...styles.imageContainer,
+              padding: isMobile ? 12 : styles.imageContainer.padding,
+              borderRadius: isMobile ? 16 : styles.imageContainer.borderRadius,
+            } as CSSProperties}
+          >
             <img
               src={selectedImage || product.image}
               alt={product.name}
@@ -281,7 +294,14 @@ export default function ProductDetail() {
             />
           </div>
 
-          <div style={styles.galleryRow as CSSProperties}>
+          <div
+            style={{
+              ...styles.galleryRow,
+              flexWrap: isMobile ? "nowrap" : styles.galleryRow.flexWrap,
+              overflowX: isMobile ? "auto" : "visible",
+              paddingBottom: isMobile ? 6 : 0,
+            } as CSSProperties}
+          >
             {normalizedGalleryImages.map((image, idx) => {
               const active = (selectedImage || product.image) === image.imageUrl;
               return (
@@ -291,6 +311,9 @@ export default function ProductDetail() {
                   onClick={() => setSelectedImage(image.imageUrl)}
                   style={{
                     ...styles.thumbButton,
+                    width: isMobile ? 64 : styles.thumbButton.width,
+                    height: isMobile ? 64 : styles.thumbButton.height,
+                    flex: isMobile ? "0 0 auto" : undefined,
                     ...(active ? styles.thumbButtonActive : {}),
                   } as CSSProperties}
                 >
@@ -322,6 +345,8 @@ export default function ProductDetail() {
                 onClick={handleAddToFavorites}
                 style={{
                   ...styles.favoriteQuickBtn,
+                  width: isMobile ? "100%" : "auto",
+                  justifyContent: "center",
                   background: isFav ? "#dc2626" : "#ffffff",
                   color: isFav ? "#ffffff" : "#dc2626",
                   borderColor: "#dc2626",
@@ -439,17 +464,17 @@ export default function ProductDetail() {
           <div
             style={{
               ...styles.actionButtons,
-              flexDirection: isMobile ? "row" : "row",
-              position: isMobile ? "fixed" : styles.actionButtons.position,
-              left: isMobile ? 0 : styles.actionButtons.left,
-              right: isMobile ? 0 : styles.actionButtons.right,
-              bottom: isMobile ? 0 : styles.actionButtons.bottom,
-              zIndex: isMobile ? 95 : styles.actionButtons.zIndex,
-              marginBottom: isMobile ? 0 : styles.actionButtons.marginBottom,
-              padding: isMobile ? "10px 14px calc(10px + env(safe-area-inset-bottom, 0px))" : styles.actionButtons.padding,
-              background: isMobile ? "#ffffff" : styles.actionButtons.background,
-              borderTop: isMobile ? "1px solid #e5e7eb" : styles.actionButtons.borderTop,
-              boxShadow: isMobile ? "0 -6px 16px rgba(0,0,0,0.08)" : styles.actionButtons.boxShadow,
+              flexDirection: "row",
+              position: "static",
+              left: "auto",
+              right: "auto",
+              bottom: "auto",
+              zIndex: 0,
+              marginBottom: isMobile ? 20 : styles.actionButtons.marginBottom,
+              padding: 0,
+              background: "transparent",
+              borderTop: "none",
+              boxShadow: "none",
             } as CSSProperties}
           >
             <button
