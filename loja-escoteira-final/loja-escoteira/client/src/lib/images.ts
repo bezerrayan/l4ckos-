@@ -1,9 +1,6 @@
-import { API_ORIGIN, apiUrl } from "../const";
+import { apiUrl } from "../const";
 
 function shouldProxyImageUrl(url: URL) {
-  const apiHost = new URL(API_ORIGIN).host;
-  if (url.host === apiHost) return false;
-
   if (typeof window !== "undefined" && url.host === window.location.host) {
     return false;
   }

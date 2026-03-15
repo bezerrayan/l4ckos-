@@ -321,6 +321,7 @@ async function startServer() {
       const buffer = Buffer.from(await response.arrayBuffer());
       res.setHeader("Content-Type", contentType);
       res.setHeader("Cache-Control", "public, max-age=86400");
+      res.setHeader("Content-Disposition", "inline");
       res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.status(200).send(buffer);
@@ -340,6 +341,7 @@ async function startServer() {
     (req, res, next) => {
       res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
       res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Content-Disposition", "inline");
       next();
     },
     express.static(path.resolve(process.cwd(), "uploads"))
