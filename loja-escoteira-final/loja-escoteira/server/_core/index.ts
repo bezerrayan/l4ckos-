@@ -61,6 +61,61 @@ function isPrivateHostname(hostname: string) {
   return false;
 }
 
+type CepLookupResult = {
+  erro?: boolean;
+  logradouro?: string;
+  bairro?: string;
+  localidade?: string;
+  uf?: string;
+};
+
+async function fetchJsonWithTimeout(url: string, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function lookupCep(cep: string): Promise<CepLookupResult | null> {
+  const viaCepData = (await fetchJsonWithTimeout(`https://viacep.com.br/ws/${cep}/json/`)) as
+    | { erro?: boolean; logradouro?: string; bairro?: string; localidade?: string; uf?: string }
+    | null;
+
+  if (viaCepData && !viaCepData.erro) {
+    return viaCepData;
+  }
+
+  const brasilApiData = (await fetchJsonWithTimeout(`https://brasilapi.com.br/api/cep/v1/${cep}`)) as
+    | { street?: string; neighborhood?: string; city?: string; state?: string }
+    | null;
+
+  if (!brasilApiData) {
+    return viaCepData?.erro ? { erro: true } : null;
+  }
+
+  return {
+    logradouro: brasilApiData.street || "",
+    bairro: brasilApiData.neighborhood || "",
+    localidade: brasilApiData.city || "",
+    uf: brasilApiData.state || "",
+  };
+}
+
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -331,13 +386,12 @@ async function startServer() {
         return;
       }
 
-      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-      if (!response.ok) {
+      const data = await lookupCep(cep);
+      if (!data) {
         res.status(502).json({ error: "Falha ao consultar CEP" });
         return;
       }
 
-      const data = await response.json();
       res.json(data);
     } catch (error) {
       console.error("[CEP] Failed request", error);

@@ -267,7 +267,8 @@ export default function Pagamento() {
         credentials: "include",
       });
       if (!response.ok) {
-        throw new Error("Falha ao consultar CEP.");
+        const errorPayload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(errorPayload?.error || "Falha ao consultar CEP.");
       }
 
       const data = (await response.json()) as {
@@ -291,6 +292,7 @@ export default function Pagamento() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Não foi possível consultar o CEP.";
       setShippingError(message.includes("Load failed") ? "Não foi possível consultar o CEP agora." : message);
+      await handleCalculateShipping();
     } finally {
       setAddressLoading(false);
     }
