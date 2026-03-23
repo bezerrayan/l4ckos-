@@ -142,6 +142,7 @@ export default function Pagamento() {
   const paymentStatus = (paymentOrderQuery.data as any)?.status as string | undefined;
   const isPaymentConfirmed =
     paymentStatus === "paid" || paymentStatus === "processing" || paymentStatus === "shipped" || paymentStatus === "delivered";
+  const paymentOrderTotal = Number((paymentOrderQuery.data as any)?.totalPrice ?? 0);
 
   const estimatedDateRange = useMemo(() => {
     if (!selectedShipping) return "";
@@ -422,7 +423,9 @@ export default function Pagamento() {
           </span>
         </h1>
         <p style={styles.subtitle}>
-          {cart.items.length === 0
+          {paymentData
+            ? `Pedido #${paymentData.orderId} em acompanhamento`
+            : cart.items.length === 0
             ? "Seu carrinho está vazio."
             : `${cart.items.length} item${cart.items.length !== 1 ? "s" : ""} para finalizar`}
         </p>
@@ -946,6 +949,46 @@ export default function Pagamento() {
                 <li>- Prazo exibido antes da finalização e sujeito à aprovação do pagamento</li>
                 <li>- Trocas e devoluções conforme nossa política publicada no site</li>
               </ul>
+            </div>
+          </div>
+        </div>
+      ) : paymentData ? (
+        <div style={styles.orderStateShell}>
+          <div style={styles.orderStateCard}>
+            <p style={styles.orderStateEyebrow}>Pedido #{paymentData.orderId}</p>
+            <h2 style={styles.orderStateTitle}>
+              {isPaymentConfirmed ? "Pagamento confirmado" : "Cobrança gerada com sucesso"}
+            </h2>
+            <p style={styles.orderStateText}>
+              {isPaymentConfirmed
+                ? "Recebemos a confirmação do pagamento e seu pedido já entrou no fluxo da loja. Você pode acompanhar tudo na área de pedidos."
+                : "Sua cobrança foi criada. Finalize o pagamento para liberar a separação do pedido."}
+            </p>
+
+            <div style={styles.orderStateMetaGrid}>
+              <div style={styles.orderStateMetaCard}>
+                <span style={styles.orderStateMetaLabel}>Status</span>
+                <strong style={styles.orderStateMetaValue}>{getOrderStatusLabel(paymentStatus)}</strong>
+              </div>
+              <div style={styles.orderStateMetaCard}>
+                <span style={styles.orderStateMetaLabel}>Total</span>
+                <strong style={styles.orderStateMetaValue}>
+                  {paymentOrderTotal > 0 ? formatPrice(paymentOrderTotal) : "Aguardando atualização"}
+                </strong>
+              </div>
+              <div style={styles.orderStateMetaCard}>
+                <span style={styles.orderStateMetaLabel}>Método</span>
+                <strong style={styles.orderStateMetaValue}>{paymentData.method}</strong>
+              </div>
+            </div>
+
+            <div style={styles.orderStateActions}>
+              <Link to="/meus-pedidos" style={styles.primaryActionLink}>
+                Ver meus pedidos
+              </Link>
+              <Link to={`/acompanhar-pedido?pedido=${paymentData.orderId}`} style={styles.secondaryActionLink}>
+                Acompanhar pedido
+              </Link>
             </div>
           </div>
         </div>
@@ -1532,6 +1575,69 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 700,
     textDecoration: "none",
   },
+  orderStateShell: {
+    display: "flex",
+    justifyContent: "center",
+  },
+  orderStateCard: {
+    width: "100%",
+    maxWidth: 980,
+    display: "grid",
+    gap: 20,
+    padding: "32px 28px",
+    borderRadius: 18,
+    border: "1px solid #2b2b2b",
+    background: "linear-gradient(180deg, #111111 0%, #171717 100%)",
+    boxShadow: "0 24px 60px rgba(0, 0, 0, 0.32)",
+  },
+  orderStateEyebrow: {
+    margin: 0,
+    fontSize: 13,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "#888888",
+  },
+  orderStateTitle: {
+    margin: 0,
+    fontSize: 34,
+    lineHeight: 1.1,
+    color: "#f5f1e8",
+  },
+  orderStateText: {
+    margin: 0,
+    maxWidth: 720,
+    fontSize: 16,
+    lineHeight: 1.7,
+    color: "#b7b7b7",
+  },
+  orderStateMetaGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: 14,
+  },
+  orderStateMetaCard: {
+    display: "grid",
+    gap: 8,
+    padding: "16px 18px",
+    borderRadius: 14,
+    border: "1px solid #262626",
+    background: "#0d0d0d",
+  },
+  orderStateMetaLabel: {
+    fontSize: 12,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: "#7a7a7a",
+  },
+  orderStateMetaValue: {
+    fontSize: 18,
+    color: "#f5f1e8",
+  },
+  orderStateActions: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 12,
+  },
   continueShopping: {
     display: "block",
     textAlign: "center",
@@ -1570,8 +1676,9 @@ const styles: Record<string, CSSProperties> = {
   emptyState: {
     textAlign: "center",
     padding: "80px 40px",
-    background: "#f8fafc",
+    background: "linear-gradient(180deg, #111111 0%, #191919 100%)",
     borderRadius: 16,
+    border: "1px solid #2b2b2b",
   },
   emptyIcon: {
     fontSize: 80,
@@ -1580,12 +1687,12 @@ const styles: Record<string, CSSProperties> = {
   emptyTitle: {
     fontSize: 24,
     fontWeight: 700,
-    color: "#1a1a1a",
+    color: "#f5f1e8",
     marginBottom: 12,
   },
   emptyText: {
     fontSize: 16,
-    color: "#6b7280",
+    color: "#9a9a9a",
     marginBottom: 32,
   },
   emptyButton: {
