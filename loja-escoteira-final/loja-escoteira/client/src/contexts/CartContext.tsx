@@ -3,7 +3,7 @@
  * Fornece: items, addToCart, removeFromCart, clearCart, updateQuantity, total
  */
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
 import type { CartItem, Cart, SelectedOptions } from "../types/cart";
 import type { Product } from "../types/product";
 import { calculateCartTotal, calculateItemCount } from "../types/cart";
@@ -21,11 +21,28 @@ type CartContextType = {
 // ============= CRIAR CONTEXTO =============
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const CART_STORAGE_KEY = "loja-escoteira:cart";
 
 // ============= PROVIDER =============
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+
+    try {
+      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+      if (!raw) {
+        return [];
+      }
+
+      const parsed = JSON.parse(raw) as CartItem[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
 
   const normalizeOptions = (selectedOptions?: SelectedOptions) => {
     if (!selectedOptions) return "";
@@ -100,6 +117,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = useCallback(() => {
     setItems([]);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      if (items.length === 0) {
+        window.localStorage.removeItem(CART_STORAGE_KEY);
+        return;
+      }
+
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // Ignore storage errors to avoid breaking checkout flow.
+    }
+  }, [items]);
 
   const value: CartContextType = {
     cart,

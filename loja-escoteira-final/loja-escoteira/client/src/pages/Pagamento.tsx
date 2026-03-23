@@ -6,7 +6,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { formatPrice } from "../lib/utils";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useCreateAsaasCharge } from "../hooks/useOrders";
 import { useUser } from "../contexts/UserContext";
@@ -80,11 +80,29 @@ function buildShippingOptions(_cep: string, _subtotal: number, _itemCount: numbe
   ];
 }
 
+function getOrderStatusLabel(status?: string | null) {
+  switch (status) {
+    case "paid":
+      return "Pagamento confirmado";
+    case "processing":
+      return "Pedido em separação";
+    case "shipped":
+      return "Pedido enviado";
+    case "delivered":
+      return "Pedido entregue";
+    case "canceled":
+      return "Pedido cancelado";
+    default:
+      return "Aguardando pagamento";
+  }
+}
+
 export default function Pagamento() {
   const isMobile = useIsMobile();
-  const { cart, removeFromCart, updateQuantity } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user, isAuthenticated } = useUser();
   const createAsaasCharge = useCreateAsaasCharge();
+  const clearedOrdersRef = useRef<Set<number>>(new Set());
   const [checkoutMethod, setCheckoutMethod] = useState<CheckoutMethod>("PIX");
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -121,6 +139,9 @@ export default function Pagamento() {
     () => shippingOptions.find(option => option.id === selectedShippingId) ?? null,
     [shippingOptions, selectedShippingId],
   );
+  const paymentStatus = (paymentOrderQuery.data as any)?.status as string | undefined;
+  const isPaymentConfirmed =
+    paymentStatus === "paid" || paymentStatus === "processing" || paymentStatus === "shipped" || paymentStatus === "delivered";
 
   const estimatedDateRange = useMemo(() => {
     if (!selectedShipping) return "";
@@ -140,6 +161,15 @@ export default function Pagamento() {
     setCustomerName(user.name || "");
     setCustomerEmail(user.email || "");
   }, [user]);
+
+  useEffect(() => {
+    if (!paymentData?.orderId || !isPaymentConfirmed || clearedOrdersRef.current.has(paymentData.orderId)) {
+      return;
+    }
+
+    clearCart();
+    clearedOrdersRef.current.add(paymentData.orderId);
+  }, [clearCart, isPaymentConfirmed, paymentData?.orderId]);
 
   useEffect(() => {
     if (couponDiscount <= 0) return;
@@ -810,70 +840,96 @@ export default function Pagamento() {
                     Cobrança {paymentData.method} gerada para o pedido #{paymentData.orderId}
                   </p>
                   <p style={styles.shippingOptionText}>
-                    Status atual do pedido: <strong>{(paymentOrderQuery.data as any)?.status ?? "pending"}</strong>
+                    Status atual do pedido: <strong>{getOrderStatusLabel(paymentStatus)}</strong>
                   </p>
 
-                  {paymentData.method === "PIX" && paymentData.pixQrCode ? (
-                    <img
-                      src={getPixQrCodeSource(paymentData.pixQrCode)}
-                      alt="QR Code PIX"
-                      style={styles.pixQrImage}
-                    />
-                  ) : null}
-
-                  {paymentData.method === "PIX" && paymentData.pixCopyPaste ? (
+                  {isPaymentConfirmed ? (
+                    <div style={styles.paymentConfirmedBox}>
+                      <div style={styles.paymentConfirmedIcon} aria-hidden="true">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </div>
+                      <div style={styles.paymentConfirmedContent}>
+                        <p style={styles.paymentConfirmedTitle}>Pagamento confirmado com sucesso</p>
+                        <p style={styles.paymentConfirmedText}>
+                          Seu pedido já entrou no fluxo da loja. Você pode acompanhar os próximos passos em Meus pedidos ou consultar este pedido diretamente pela página de acompanhamento.
+                        </p>
+                      </div>
+                      <div style={styles.paymentConfirmedActions}>
+                        <Link to="/meus-pedidos" style={styles.primaryActionLink}>
+                          Ver meus pedidos
+                        </Link>
+                        <Link to={`/acompanhar-pedido?pedido=${paymentData.orderId}`} style={styles.secondaryActionLink}>
+                          Acompanhar pedido #{paymentData.orderId}
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
                     <>
-                      <textarea
-                        style={styles.pixCopyTextarea}
-                        readOnly
-                        value={paymentData.pixCopyPaste}
-                      />
-                      <button
-                        style={styles.pixCopyButton}
-                        onClick={() => {
-                          void handleCopyText(paymentData.pixCopyPaste);
-                        }}
-                      >
-                        Copiar código PIX
-                      </button>
+                      {paymentData.method === "PIX" && paymentData.pixQrCode ? (
+                        <img
+                          src={getPixQrCodeSource(paymentData.pixQrCode)}
+                          alt="QR Code PIX"
+                          style={styles.pixQrImage}
+                        />
+                      ) : null}
+
+                      {paymentData.method === "PIX" && paymentData.pixCopyPaste ? (
+                        <>
+                          <textarea
+                            style={styles.pixCopyTextarea}
+                            readOnly
+                            value={paymentData.pixCopyPaste}
+                          />
+                          <button
+                            style={styles.pixCopyButton}
+                            onClick={() => {
+                              void handleCopyText(paymentData.pixCopyPaste);
+                            }}
+                          >
+                            Copiar código PIX
+                          </button>
+                        </>
+                      ) : null}
+
+                      {paymentData.method === "BOLETO" && paymentData.digitableLine ? (
+                        <>
+                          <textarea
+                            style={styles.pixCopyTextarea}
+                            readOnly
+                            value={paymentData.digitableLine}
+                          />
+                          <button
+                            style={styles.pixCopyButton}
+                            onClick={() => {
+                              void handleCopyText(paymentData.digitableLine);
+                            }}
+                          >
+                            Copiar linha digitável
+                          </button>
+                        </>
+                      ) : null}
+
+                      {paymentData.method === "CARD" ? (
+                        <p style={styles.pixTitle}>
+                          Para pagar no cartão, abra o link da fatura e escolha cartão na tela do Asaas.
+                        </p>
+                      ) : null}
+
+                      {paymentData.invoiceUrl ? (
+                        <a href={paymentData.invoiceUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
+                          Abrir fatura no Asaas
+                        </a>
+                      ) : null}
+
+                      {paymentData.method === "BOLETO" && paymentData.bankSlipUrl ? (
+                        <a href={paymentData.bankSlipUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
+                          Abrir boleto
+                        </a>
+                      ) : null}
                     </>
-                  ) : null}
-
-                  {paymentData.method === "BOLETO" && paymentData.digitableLine ? (
-                    <>
-                      <textarea
-                        style={styles.pixCopyTextarea}
-                        readOnly
-                        value={paymentData.digitableLine}
-                      />
-                      <button
-                        style={styles.pixCopyButton}
-                        onClick={() => {
-                          void handleCopyText(paymentData.digitableLine);
-                        }}
-                      >
-                        Copiar linha digitável
-                      </button>
-                    </>
-                  ) : null}
-
-                  {paymentData.method === "CARD" ? (
-                    <p style={styles.pixTitle}>
-                      Para pagar no cartão, abra o link da fatura e escolha cartão na tela do Asaas.
-                    </p>
-                  ) : null}
-
-                  {paymentData.invoiceUrl ? (
-                    <a href={paymentData.invoiceUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
-                      Abrir fatura no Asaas
-                    </a>
-                  ) : null}
-
-                  {paymentData.method === "BOLETO" && paymentData.bankSlipUrl ? (
-                    <a href={paymentData.bankSlipUrl} target="_blank" rel="noreferrer" style={styles.pixInvoiceLink}>
-                      Abrir boleto
-                    </a>
-                  ) : null}
+                  )}
                 </div>
               ) : null}
 
@@ -1411,6 +1467,70 @@ const styles: Record<string, CSSProperties> = {
     color: "#065f46",
     fontWeight: 700,
     textDecoration: "underline",
+  },
+  paymentConfirmedBox: {
+    display: "grid",
+    gap: 14,
+    marginTop: 14,
+    padding: 18,
+    borderRadius: 12,
+    border: "1px solid #86efac",
+    background: "#f0fdf4",
+  },
+  paymentConfirmedIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: "50%",
+    display: "grid",
+    placeItems: "center",
+    background: "#166534",
+    color: "#ffffff",
+  },
+  paymentConfirmedContent: {
+    display: "grid",
+    gap: 8,
+  },
+  paymentConfirmedTitle: {
+    margin: 0,
+    fontSize: 20,
+    fontWeight: 800,
+    color: "#14532d",
+  },
+  paymentConfirmedText: {
+    margin: 0,
+    fontSize: 14,
+    lineHeight: 1.6,
+    color: "#166534",
+  },
+  paymentConfirmedActions: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  primaryActionLink: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    padding: "0 18px",
+    borderRadius: 10,
+    background: "#166534",
+    color: "#ffffff",
+    fontWeight: 700,
+    textDecoration: "none",
+  },
+  secondaryActionLink: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    padding: "0 18px",
+    borderRadius: 10,
+    border: "1px solid #86efac",
+    background: "#ffffff",
+    color: "#166534",
+    fontWeight: 700,
+    textDecoration: "none",
   },
   continueShopping: {
     display: "block",
