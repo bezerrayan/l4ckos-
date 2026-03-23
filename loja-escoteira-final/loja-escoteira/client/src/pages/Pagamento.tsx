@@ -620,10 +620,12 @@ export default function Pagamento() {
                   <input
                     style={styles.checkoutInput}
                     placeholder="CEP (somente números)"
+                    inputMode="numeric"
+                    autoComplete="postal-code"
                     value={formatCep(cep)}
-                    onChange={event => setCep(event.target.value)}
+                    onChange={event => setCep(sanitizeCep(event.target.value))}
                   />
-                  <button style={styles.shippingCalcButton} onClick={handleLookupCep} disabled={addressLoading}>
+                  <button type="button" style={styles.shippingCalcButton} onClick={handleLookupCep} disabled={addressLoading}>
                     {addressLoading ? "Calculando..." : "Buscar e calcular"}
                   </button>
                 </div>
