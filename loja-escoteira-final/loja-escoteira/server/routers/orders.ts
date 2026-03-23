@@ -11,10 +11,12 @@ import {
   getOrdersByUserId,
   getApplicableCouponByCode,
   incrementCouponUsage,
+  markOrderPaid,
   reserveStockForOrder,
 } from "../db";
 import { createAsaasChargeForOrder } from "../services/asaas";
 import { quoteShippingDetailed } from "../services/shippingService";
+import { listAsaasPaymentsByExternalReference } from "../services/asaasService";
 
 const checkoutItemSchema = z.object({
   productId: z.number().int().positive(),
@@ -99,11 +101,41 @@ async function resolveOrderPricing(input: {
   };
 }
 
+const ASAAS_PAID_STATUSES = new Set([
+  "RECEIVED",
+  "CONFIRMED",
+  "RECEIVED_IN_CASH",
+  "REFUNDED_PARTIALLY",
+]);
+
+async function syncOrderPaymentIfNeeded(order: Awaited<ReturnType<typeof getOrderByIdAndUser>>) {
+  if (!order) return order;
+  if (!["pending", "processing"].includes(String(order.status))) {
+    return order;
+  }
+
+  try {
+    const payments = await listAsaasPaymentsByExternalReference(String(order.id));
+    const hasPaidPayment = payments.some(payment => ASAAS_PAID_STATUSES.has(String(payment.status ?? "").toUpperCase()));
+
+    if (!hasPaidPayment) {
+      return order;
+    }
+
+    await markOrderPaid(order.id);
+    const refreshed = await getOrderByIdAndUser(order.id, order.userId);
+    return refreshed ?? order;
+  } catch {
+    return order;
+  }
+}
+
 export const ordersRouter = router({
   // List user orders
   list: protectedProcedure.query(async ({ ctx }) => {
     const orders = await getOrdersByUserId(ctx.user.id);
-    return orders;
+    const syncedOrders = await Promise.all(orders.map(order => syncOrderPaymentIfNeeded(order)));
+    return syncedOrders;
   }),
 
   // Track order by order number or tracking code
@@ -123,27 +155,31 @@ export const ordersRouter = router({
         ? await getOrderByIdAndUser(input.orderId, ctx.user.id)
         : await getOrderByTrackingCodeAndUser(input.trackingCode ?? "", ctx.user.id);
 
-      if (!order) {
+      const syncedOrder = await syncOrderPaymentIfNeeded(order);
+
+      if (!syncedOrder) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Pedido nao encontrado para este usuario",
         });
       }
 
-      return order;
+      const items = await getOrderReservationItems(syncedOrder.id);
+      return { ...syncedOrder, items };
     }),
 
   detail: protectedProcedure.input(z.number().int().positive()).query(async ({ input, ctx }) => {
     const order = await getOrderByIdAndUser(input, ctx.user.id);
-    if (!order) {
+    const syncedOrder = await syncOrderPaymentIfNeeded(order);
+    if (!syncedOrder) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Pedido nao encontrado para este usuario",
       });
     }
 
-    const items = await getOrderReservationItems(order.id);
-    return { ...order, items };
+    const items = await getOrderReservationItems(syncedOrder.id);
+    return { ...syncedOrder, items };
   }),
 
   // Create order only

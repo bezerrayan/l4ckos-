@@ -113,7 +113,7 @@ export default function Pagamento() {
     refetchInterval: data => {
       const status = (data as any)?.status;
       if (!status) return 10000;
-      return status === "processing" || status === "shipped" || status === "delivered" ? false : 10000;
+      return status === "paid" || status === "processing" || status === "shipped" || status === "delivered" ? false : 10000;
     },
   });
 

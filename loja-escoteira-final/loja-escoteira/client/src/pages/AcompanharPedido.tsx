@@ -3,19 +3,49 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useTrackOrder } from "../hooks/useOrders";
 import { useUser } from "../contexts/UserContext";
 
-type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+type OrderStatus = "pending" | "processing" | "paid" | "shipped" | "delivered" | "cancelled";
+
+type TrackedOrderItem = {
+  id: number;
+  productId: number;
+  quantity: number;
+  status?: string | null;
+  expiresAt?: string | Date | null;
+  productName?: string | null;
+  productImage?: string | null;
+  productPrice?: number | null;
+};
 
 const statusLabel: Record<OrderStatus, string> = {
   pending: "Aguardando pagamento",
-  processing: "Pedido confirmado e em separação",
-  shipped: "Pedido enviado para transporte",
-  delivered: "Entrega concluída",
+  processing: "Pedido em separacao",
+  paid: "Pagamento confirmado",
+  shipped: "Pedido em transporte",
+  delivered: "Entrega concluida",
   cancelled: "Pedido cancelado",
+};
+
+const statusDescription: Record<OrderStatus, string> = {
+  pending: "Estamos aguardando a confirmacao do pagamento para liberar a separacao.",
+  processing: "Pagamento recebido. Seu pedido esta em preparacao pela equipe.",
+  paid: "Pagamento compensado com sucesso. O pedido segue para separacao.",
+  shipped: "Seu pedido foi despachado e esta a caminho do endereco informado.",
+  delivered: "Entrega concluida. Esperamos que tudo tenha chegado corretamente.",
+  cancelled: "Este pedido foi cancelado. Se precisar, fale com o suporte.",
+};
+
+const statusTone: Record<OrderStatus, { bg: string; color: string; border: string }> = {
+  pending: { bg: "rgba(180, 83, 9, 0.14)", color: "#fbbf24", border: "rgba(180, 83, 9, 0.28)" },
+  processing: { bg: "rgba(15, 118, 110, 0.14)", color: "#5eead4", border: "rgba(15, 118, 110, 0.28)" },
+  paid: { bg: "rgba(21, 128, 61, 0.14)", color: "#86efac", border: "rgba(21, 128, 61, 0.28)" },
+  shipped: { bg: "rgba(29, 78, 216, 0.14)", color: "#93c5fd", border: "rgba(29, 78, 216, 0.28)" },
+  delivered: { bg: "rgba(22, 101, 52, 0.14)", color: "#bbf7d0", border: "rgba(22, 101, 52, 0.28)" },
+  cancelled: { bg: "rgba(185, 28, 28, 0.14)", color: "#fca5a5", border: "rgba(185, 28, 28, 0.28)" },
 };
 
 const timelineSteps: Array<{ key: Exclude<OrderStatus, "cancelled">; label: string }> = [
   { key: "pending", label: "Pagamento" },
-  { key: "processing", label: "Separação" },
+  { key: "processing", label: "Separacao" },
   { key: "shipped", label: "Transporte" },
   { key: "delivered", label: "Entrega" },
 ];
@@ -40,6 +70,10 @@ function formatDate(value: unknown) {
   });
 }
 
+function resolveItemSubtotal(item: TrackedOrderItem) {
+  return Number(item.productPrice || 0) * Number(item.quantity || 0);
+}
+
 export default function AcompanharPedido() {
   const { isAuthenticated } = useUser();
   const [params] = useSearchParams();
@@ -54,12 +88,27 @@ export default function AcompanharPedido() {
   const query = useTrackOrder(payload);
 
   const currentStatus = (query.data?.status as OrderStatus | undefined) ?? "pending";
-  const timelineIndex = timelineSteps.findIndex(step => step.key === currentStatus);
+  const timelineIndex = timelineSteps.findIndex(step => {
+    if (currentStatus === "paid" && step.key === "processing") return true;
+    return step.key === currentStatus;
+  });
 
   const searchPlaceholder = useMemo(
     () => (searchMode === "pedido" ? "Ex: 1024" : "Ex: BR123456789"),
     [searchMode],
   );
+
+  const orderItems: TrackedOrderItem[] = (query.data?.items ?? []).map(item => ({
+    id: item.id,
+    productId: item.productId,
+    quantity: item.quantity,
+    status: item.status,
+    expiresAt: item.expiresAt,
+    productName: item.productName,
+    productImage: item.productImage,
+    productPrice: item.productPrice,
+  }));
+  const totalUnits = orderItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -90,10 +139,18 @@ export default function AcompanharPedido() {
 
   return (
     <section style={styles.wrapper}>
-      <h1 style={styles.title}>Acompanhar pedido</h1>
-      <p style={styles.muted}>
-        Consulte o status usando o número do pedido ou o código de rastreio vinculado à sua conta.
-      </p>
+      <div style={styles.hero}>
+        <div>
+          <p style={styles.eyebrow}>Pos-venda</p>
+          <h1 style={styles.title}>Acompanhar pedido</h1>
+          <p style={styles.muted}>
+            Consulte status, itens, rastreio e ultima atualizacao do pedido vinculado a sua conta.
+          </p>
+        </div>
+        <div style={styles.heroHint}>
+          Os pedidos em aberto atualizam automaticamente enquanto o pagamento ou a separacao estiverem em andamento.
+        </div>
+      </div>
 
       <form style={styles.form} onSubmit={handleSubmit}>
         <div style={styles.modeRow}>
@@ -102,14 +159,14 @@ export default function AcompanharPedido() {
             onClick={() => setSearchMode("pedido")}
             style={{ ...styles.modeButton, ...(searchMode === "pedido" ? styles.modeButtonActive : {}) }}
           >
-            Número do pedido
+            Numero do pedido
           </button>
           <button
             type="button"
             onClick={() => setSearchMode("codigo")}
             style={{ ...styles.modeButton, ...(searchMode === "codigo" ? styles.modeButtonActive : {}) }}
           >
-            Código de rastreio
+            Codigo de rastreio
           </button>
         </div>
 
@@ -127,43 +184,64 @@ export default function AcompanharPedido() {
       </form>
 
       {query.isLoading ? <p style={styles.muted}>Buscando pedido...</p> : null}
-      {query.isError ? <p style={styles.error}>Não foi possível localizar este pedido na sua conta.</p> : null}
+      {query.isError ? <p style={styles.error}>Nao foi possivel localizar este pedido na sua conta.</p> : null}
 
       {query.data ? (
         <article style={styles.card}>
           <div style={styles.cardHead}>
             <div>
-              <h2 style={styles.cardTitle}>Pedido #{query.data.id}</h2>
-              <p style={styles.meta}>Criado em {formatDate(query.data.createdAt)}</p>
+              <p style={styles.cardLabel}>Pedido #{query.data.id}</p>
+              <h2 style={styles.cardTitle}>{statusLabel[currentStatus]}</h2>
+              <p style={styles.cardDescription}>{statusDescription[currentStatus]}</p>
             </div>
-            <span style={styles.badge}>{statusLabel[currentStatus]}</span>
+            <span
+              style={{
+                ...styles.badge,
+                background: statusTone[currentStatus].bg,
+                color: statusTone[currentStatus].color,
+                borderColor: statusTone[currentStatus].border,
+              }}
+            >
+              {statusLabel[currentStatus]}
+            </span>
           </div>
 
-          <div style={styles.grid}>
-            <div>
-              <p style={styles.metaLabel}>Total</p>
+          <div style={styles.summaryGrid}>
+            <div style={styles.summaryCard}>
+              <p style={styles.metaLabel}>Total do pedido</p>
               <p style={styles.metaStrong}>{formatMoney(Number(query.data.totalPrice))}</p>
             </div>
-            <div>
-              <p style={styles.metaLabel}>Rastreio</p>
-              <p style={styles.metaStrong}>{query.data.trackingCode || "Ainda não informado"}</p>
+            <div style={styles.summaryCard}>
+              <p style={styles.metaLabel}>Itens</p>
+              <p style={styles.metaStrong}>
+                {orderItems.length} produto{orderItems.length === 1 ? "" : "s"} • {totalUnits} unidade{totalUnits === 1 ? "" : "s"}
+              </p>
             </div>
-            <div>
-              <p style={styles.metaLabel}>Atualizado em</p>
+            <div style={styles.summaryCard}>
+              <p style={styles.metaLabel}>Criado em</p>
+              <p style={styles.metaStrong}>{formatDate(query.data.createdAt)}</p>
+            </div>
+            <div style={styles.summaryCard}>
+              <p style={styles.metaLabel}>Ultima atualizacao</p>
               <p style={styles.metaStrong}>{formatDate(query.data.updatedAt)}</p>
+            </div>
+            <div style={styles.summaryCard}>
+              <p style={styles.metaLabel}>Rastreio</p>
+              <p style={styles.metaStrong}>{query.data.trackingCode || "Ainda nao informado"}</p>
             </div>
           </div>
 
           {currentStatus !== "cancelled" ? (
             <div style={styles.timeline}>
               {timelineSteps.map((step, index) => {
-                const active = timelineIndex >= index;
+                const normalizedTimelineIndex = currentStatus === "paid" ? 1 : timelineIndex;
+                const active = normalizedTimelineIndex >= index;
                 return (
                   <div key={step.key} style={styles.step}>
                     <div style={{ ...styles.dot, ...(active ? styles.dotActive : {}) }} />
                     <p style={{ ...styles.stepLabel, ...(active ? styles.stepLabelActive : {}) }}>{step.label}</p>
                     {index < timelineSteps.length - 1 ? (
-                      <div style={{ ...styles.line, ...(timelineIndex > index ? styles.lineActive : {}) }} />
+                      <div style={{ ...styles.line, ...((normalizedTimelineIndex ?? -1) > index ? styles.lineActive : {}) }} />
                     ) : null}
                   </div>
                 );
@@ -173,10 +251,53 @@ export default function AcompanharPedido() {
             <p style={styles.cancelled}>Este pedido foi cancelado. Se precisar, fale com o suporte pelos canais oficiais.</p>
           )}
 
+          <div style={styles.section}>
+            <div style={styles.sectionHead}>
+              <h3 style={styles.sectionTitle}>Itens do pedido</h3>
+              <span style={styles.sectionHint}>Tudo o que foi selecionado nesta compra.</span>
+            </div>
+
+            {orderItems.length > 0 ? (
+              <div style={styles.itemsList}>
+                {orderItems.map(item => (
+                  <div key={item.id} style={styles.itemCard}>
+                    <div style={styles.itemIdentity}>
+                      <div style={styles.itemImageWrap}>
+                        {item.productImage ? (
+                          <img src={item.productImage} alt={item.productName || `Produto ${item.productId}`} style={styles.itemImage} />
+                        ) : (
+                          <div style={styles.itemImageFallback}>SEM IMAGEM</div>
+                        )}
+                      </div>
+                      <div style={styles.itemCopy}>
+                        <p style={styles.itemName}>{item.productName || `Produto #${item.productId}`}</p>
+                        <p style={styles.itemMeta}>Codigo interno: #{item.productId}</p>
+                        <p style={styles.itemMeta}>Quantidade: {item.quantity}</p>
+                      </div>
+                    </div>
+                    <div style={styles.itemValues}>
+                      <p style={styles.itemPrice}>{formatMoney(resolveItemSubtotal(item))}</p>
+                      <p style={styles.itemMeta}>
+                        {item.productPrice ? `${formatMoney(Number(item.productPrice))} por unidade` : "Valor unitario indisponivel"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={styles.emptyBox}>
+                Os itens deste pedido ainda nao puderam ser carregados. Atualize novamente em instantes.
+              </div>
+            )}
+          </div>
+
           <div style={styles.actions}>
             <Link to="/meus-pedidos" style={styles.secondaryButton}>
               Ver meus pedidos
             </Link>
+            <button type="button" style={styles.primaryButton} onClick={() => void query.refetch()}>
+              Atualizar agora
+            </button>
           </div>
         </article>
       ) : null}
@@ -186,11 +307,34 @@ export default function AcompanharPedido() {
 
 const styles: Record<string, CSSProperties> = {
   wrapper: {
-    maxWidth: 980,
+    maxWidth: 1080,
     margin: "0 auto",
     display: "grid",
-    gap: 14,
+    gap: 16,
     color: "#f0ede8",
+  },
+  hero: {
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr) minmax(240px, 320px)",
+    gap: 16,
+    alignItems: "end",
+  },
+  eyebrow: {
+    margin: "0 0 8px 0",
+    color: "#c7a76c",
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 1.6,
+    fontWeight: 800,
+  },
+  heroHint: {
+    border: "1px solid #2b2b2b",
+    borderRadius: 12,
+    background: "linear-gradient(135deg, #111111 0%, #161616 100%)",
+    padding: 14,
+    color: "#cbd5e1",
+    fontSize: 13,
+    lineHeight: 1.7,
   },
   title: {
     margin: 0,
@@ -202,20 +346,21 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
     color: "#a1a1aa",
     fontSize: 15,
+    lineHeight: 1.6,
   },
   error: {
     margin: 0,
-    color: "#b91c1c",
-    fontWeight: 600,
+    color: "#fca5a5",
+    fontWeight: 700,
     fontSize: 14,
   },
   form: {
     display: "grid",
     gap: 10,
     background: "#111111",
-    borderRadius: 12,
+    borderRadius: 14,
     border: "1px solid #2b2b2b",
-    padding: 14,
+    padding: 16,
   },
   modeRow: {
     display: "flex",
@@ -243,68 +388,88 @@ const styles: Record<string, CSSProperties> = {
   },
   input: {
     border: "1px solid #2f2f2f",
-    borderRadius: 8,
+    borderRadius: 10,
     fontSize: 15,
-    padding: "10px 12px",
+    padding: "12px 14px",
     outline: "none",
     background: "#0b0b0b",
     color: "#f0ede8",
   },
   card: {
-    background: "#101010",
+    background: "linear-gradient(180deg, #101010 0%, #0b0b0b 100%)",
     border: "1px solid #2b2b2b",
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 18,
     display: "grid",
-    gap: 14,
+    gap: 18,
+    boxShadow: "0 18px 40px rgba(0, 0, 0, 0.32)",
   },
   cardHead: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    gap: 12,
+    gap: 16,
     flexWrap: "wrap",
   },
-  cardTitle: {
+  cardLabel: {
     margin: 0,
-    fontSize: 21,
-    color: "#f0ede8",
-  },
-  meta: {
-    margin: "4px 0 0",
     color: "#a1a1aa",
-    fontSize: 13,
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 1.4,
+    fontWeight: 700,
+  },
+  cardTitle: {
+    margin: "6px 0 0 0",
+    fontSize: 28,
+    color: "#f0ede8",
+    fontWeight: 900,
+    lineHeight: 1.05,
+  },
+  cardDescription: {
+    margin: "8px 0 0 0",
+    color: "#cbd5e1",
+    fontSize: 14,
+    lineHeight: 1.7,
+    maxWidth: 720,
   },
   badge: {
     borderRadius: 999,
-    background: "#1e293b",
-    color: "#93c5fd",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: 12,
-    padding: "7px 11px",
+    padding: "9px 12px",
+    border: "1px solid transparent",
   },
-  grid: {
+  summaryGrid: {
     display: "grid",
     gap: 12,
     gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+  },
+  summaryCard: {
+    border: "1px solid #252525",
+    borderRadius: 12,
+    background: "#111111",
+    padding: 14,
   },
   metaLabel: {
     margin: 0,
     color: "#a1a1aa",
     fontSize: 12,
     textTransform: "uppercase",
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
   metaStrong: {
-    margin: "4px 0 0",
+    margin: "6px 0 0",
     color: "#f0ede8",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: 15,
+    lineHeight: 1.5,
   },
   timeline: {
     display: "grid",
     gridTemplateColumns: "repeat(4, minmax(90px, 1fr))",
     gap: 10,
+    paddingTop: 8,
   },
   step: {
     position: "relative",
@@ -321,6 +486,7 @@ const styles: Record<string, CSSProperties> = {
   },
   dotActive: {
     background: "#2563eb",
+    boxShadow: "0 0 0 4px rgba(37, 99, 235, 0.16)",
   },
   line: {
     position: "absolute",
@@ -338,23 +504,134 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "center",
     fontSize: 12,
     color: "#a1a1aa",
-    fontWeight: 600,
+    fontWeight: 700,
   },
   stepLabelActive: {
     color: "#93c5fd",
   },
   cancelled: {
     margin: 0,
-    borderRadius: 8,
-    padding: "10px 12px",
-    background: "#fee2e2",
-    color: "#b91c1c",
+    borderRadius: 10,
+    padding: "12px 14px",
+    background: "rgba(127, 29, 29, 0.18)",
+    border: "1px solid rgba(185, 28, 28, 0.28)",
+    color: "#fca5a5",
     fontWeight: 700,
     fontSize: 13,
   },
+  section: {
+    display: "grid",
+    gap: 12,
+  },
+  sectionHead: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    flexWrap: "wrap",
+  },
+  sectionTitle: {
+    margin: 0,
+    color: "#f0ede8",
+    fontSize: 20,
+    fontWeight: 800,
+  },
+  sectionHint: {
+    color: "#9ca3af",
+    fontSize: 13,
+  },
+  itemsList: {
+    display: "grid",
+    gap: 10,
+  },
+  itemCard: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 14,
+    flexWrap: "wrap",
+    border: "1px solid #252525",
+    borderRadius: 14,
+    background: "#101010",
+    padding: 14,
+  },
+  itemIdentity: {
+    display: "flex",
+    gap: 12,
+    alignItems: "center",
+    minWidth: 0,
+    flex: 1,
+  },
+  itemImageWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 12,
+    overflow: "hidden",
+    border: "1px solid #262626",
+    background: "#0a0a0a",
+    flexShrink: 0,
+  },
+  itemImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+  },
+  itemImageFallback: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#6b7280",
+    fontSize: 10,
+    fontWeight: 700,
+    textAlign: "center",
+    padding: 8,
+  },
+  itemCopy: {
+    minWidth: 0,
+    display: "grid",
+    gap: 4,
+  },
+  itemName: {
+    margin: 0,
+    color: "#f0ede8",
+    fontWeight: 800,
+    fontSize: 15,
+  },
+  itemMeta: {
+    margin: 0,
+    color: "#9ca3af",
+    fontSize: 13,
+    lineHeight: 1.5,
+  },
+  itemValues: {
+    display: "grid",
+    gap: 4,
+    minWidth: 150,
+    justifyItems: "end",
+    alignSelf: "center",
+  },
+  itemPrice: {
+    margin: 0,
+    color: "#f0ede8",
+    fontWeight: 900,
+    fontSize: 17,
+  },
+  emptyBox: {
+    border: "1px dashed #303030",
+    borderRadius: 12,
+    background: "#0f0f0f",
+    color: "#9ca3af",
+    padding: 14,
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
   actions: {
     display: "flex",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
+    gap: 10,
+    flexWrap: "wrap",
   },
   primaryButton: {
     display: "inline-flex",
@@ -363,10 +640,10 @@ const styles: Record<string, CSSProperties> = {
     background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
     color: "white",
     border: "none",
-    borderRadius: 8,
-    fontWeight: 700,
+    borderRadius: 10,
+    fontWeight: 800,
     fontSize: 14,
-    padding: "10px 14px",
+    padding: "11px 15px",
     textDecoration: "none",
     cursor: "pointer",
   },
@@ -376,11 +653,12 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: "center",
     border: "1px solid #2f2f2f",
     color: "#f0ede8",
-    borderRadius: 8,
+    borderRadius: 10,
     fontWeight: 700,
     fontSize: 14,
-    padding: "10px 14px",
+    padding: "11px 15px",
     textDecoration: "none",
     background: "#0f0f0f",
+    cursor: "pointer",
   },
 };

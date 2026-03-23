@@ -4,7 +4,16 @@ import { trpc } from "../lib/trpc";
  * Hook para listar pedidos do usuário
  */
 export function useOrders() {
-  return trpc.orders.list.useQuery();
+  return trpc.orders.list.useQuery(undefined, {
+    refetchOnWindowFocus: true,
+    refetchInterval: query => {
+      const orders = (query.state.data ?? []).filter(
+        (order): order is NonNullable<typeof order> => Boolean(order),
+      );
+      const hasOpenOrder = orders.some(order => ["pending", "processing"].includes(String(order.status)));
+      return hasOpenOrder ? 10000 : false;
+    },
+  });
 }
 
 /**
@@ -28,6 +37,12 @@ export function useTrackOrder(input?: { orderId?: number; trackingCode?: string 
   return trpc.orders.track.useQuery(input ?? { orderId: 1 }, {
     enabled: Boolean(input?.orderId || input?.trackingCode),
     retry: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: query => {
+      const data = query.state.data as { status?: string } | undefined;
+      const status = String(data?.status ?? "");
+      return status === "pending" || status === "processing" ? 8000 : false;
+    },
   });
 }
 
@@ -38,5 +53,11 @@ export function useOrderDetail(orderId?: number) {
   return trpc.orders.detail.useQuery(orderId ?? 0, {
     enabled: Boolean(orderId),
     retry: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: query => {
+      const data = query.state.data as { status?: string } | undefined;
+      const status = String(data?.status ?? "");
+      return status === "pending" || status === "processing" ? 8000 : false;
+    },
   });
 }

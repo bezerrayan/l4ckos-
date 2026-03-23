@@ -19,9 +19,15 @@ type AsaasCheckoutResponse = {
 type AsaasPaymentResponse = {
   id: string;
   externalReference?: string | null;
+  status?: string | null;
+  confirmedDate?: string | null;
   checkout?: {
     id?: string | null;
   } | null;
+};
+
+type AsaasPaymentsListResponse = {
+  data?: AsaasPaymentResponse[];
 };
 
 function getAsaasConfig() {
@@ -117,6 +123,27 @@ export async function getAsaasPayment(paymentId: string) {
     }
     const { data } = await client.get<AsaasPaymentResponse>(`/payments/${encodeURIComponent(normalizedId)}`);
     return data;
+  } catch (error) {
+    throw mapAsaasError(error);
+  }
+}
+
+export async function listAsaasPaymentsByExternalReference(externalReference: string) {
+  try {
+    const client = buildClient();
+    const normalizedReference = String(externalReference || "").trim();
+    if (!normalizedReference) {
+      throw new Error("Invalid external reference");
+    }
+
+    const { data } = await client.get<AsaasPaymentsListResponse>("/payments", {
+      params: {
+        externalReference: normalizedReference,
+        limit: 20,
+      },
+    });
+
+    return Array.isArray(data?.data) ? data.data : [];
   } catch (error) {
     throw mapAsaasError(error);
   }

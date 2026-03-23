@@ -3,11 +3,12 @@ import type { CSSProperties } from "react";
 import { useOrderDetail } from "../hooks/useOrders";
 import { formatPrice } from "../lib/utils";
 
-type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+type OrderStatus = "pending" | "processing" | "paid" | "shipped" | "delivered" | "cancelled";
 
 const statusText: Record<OrderStatus, string> = {
   pending: "Aguardando pagamento",
-  processing: "Pago e em separação",
+  processing: "Pago e em separacao",
+  paid: "Pagamento confirmado",
   shipped: "Enviado",
   delivered: "Entregue",
   cancelled: "Cancelado",
@@ -35,7 +36,7 @@ export default function PedidoDetalhe() {
       </div>
 
       {query.isLoading ? <p style={styles.muted}>Carregando pedido...</p> : null}
-      {query.isError ? <p style={styles.error}>Não foi possível carregar este pedido agora.</p> : null}
+      {query.isError ? <p style={styles.error}>Nao foi possivel carregar este pedido agora.</p> : null}
 
       {query.data ? (
         <article style={styles.card}>
@@ -54,10 +55,10 @@ export default function PedidoDetalhe() {
             </div>
             <div>
               <p style={styles.metaLabel}>Rastreio</p>
-              <p style={styles.metaValue}>{query.data.trackingCode || "Não informado"}</p>
+              <p style={styles.metaValue}>{query.data.trackingCode || "Nao informado"}</p>
             </div>
             <div>
-              <p style={styles.metaLabel}>Última atualização</p>
+              <p style={styles.metaLabel}>Ultima atualizacao</p>
               <p style={styles.metaValue}>{formatDate(query.data.updatedAt)}</p>
             </div>
           </div>
@@ -76,7 +77,7 @@ export default function PedidoDetalhe() {
               ))}
             </div>
           ) : (
-            <p style={styles.muted}>Os itens deste pedido não estão disponíveis no momento.</p>
+            <p style={styles.muted}>Os itens deste pedido nao estao disponiveis no momento.</p>
           )}
         </article>
       ) : null}

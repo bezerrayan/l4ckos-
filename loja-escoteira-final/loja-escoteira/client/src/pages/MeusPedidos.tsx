@@ -3,11 +3,12 @@ import type { CSSProperties } from "react";
 import { useUser } from "../contexts/UserContext";
 import { useOrders } from "../hooks/useOrders";
 
-type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+type OrderStatus = "pending" | "processing" | "paid" | "shipped" | "delivered" | "cancelled";
 
 const statusLabel: Record<OrderStatus, string> = {
   pending: "Aguardando pagamento",
-  processing: "Em separação",
+  processing: "Em separacao",
+  paid: "Pagamento confirmado",
   shipped: "Em transporte",
   delivered: "Entregue",
   cancelled: "Cancelado",
@@ -16,6 +17,7 @@ const statusLabel: Record<OrderStatus, string> = {
 const statusColor: Record<OrderStatus, string> = {
   pending: "#b45309",
   processing: "#0f766e",
+  paid: "#15803d",
   shipped: "#1d4ed8",
   delivered: "#166534",
   cancelled: "#b91c1c",
@@ -49,7 +51,7 @@ export default function MeusPedidos() {
     return (
       <section style={styles.wrapper}>
         <h1 style={styles.title}>Meus pedidos</h1>
-        <p style={styles.muted}>Você precisa entrar para ver seu histórico de compras.</p>
+        <p style={styles.muted}>Voce precisa entrar para ver seu historico de compras.</p>
         <Link to="/login" style={styles.primaryButton}>
           Entrar na conta
         </Link>
@@ -57,7 +59,10 @@ export default function MeusPedidos() {
     );
   }
 
-  const orders = (ordersQuery.data ?? []).slice().sort((a, b) => Number(b.id) - Number(a.id));
+  const orders = (ordersQuery.data ?? [])
+    .filter((order): order is NonNullable<typeof order> => Boolean(order))
+    .slice()
+    .sort((a, b) => Number(b.id) - Number(a.id));
 
   return (
     <section style={styles.wrapper}>
@@ -72,10 +77,10 @@ export default function MeusPedidos() {
       </div>
 
       {ordersQuery.isLoading ? <p style={styles.muted}>Carregando pedidos...</p> : null}
-      {ordersQuery.isError ? <p style={styles.error}>Não foi possível carregar seus pedidos agora.</p> : null}
+      {ordersQuery.isError ? <p style={styles.error}>Nao foi possivel carregar seus pedidos agora.</p> : null}
 
       {!ordersQuery.isLoading && !ordersQuery.isError && orders.length === 0 ? (
-        <p style={styles.muted}>Você ainda não possui pedidos concluídos na sua conta.</p>
+        <p style={styles.muted}>Voce ainda nao possui pedidos concluidos na sua conta.</p>
       ) : null}
 
       <div style={styles.list}>
@@ -100,7 +105,7 @@ export default function MeusPedidos() {
                 </div>
                 <div>
                   <p style={styles.metaLabel}>Rastreio</p>
-                  <p style={styles.metaStrong}>{order.trackingCode || "Ainda não informado"}</p>
+                  <p style={styles.metaStrong}>{order.trackingCode || "Ainda nao informado"}</p>
                 </div>
               </div>
 
