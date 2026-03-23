@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -215,6 +215,16 @@ export async function getProductById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getProductsByIds(ids: number[]) {
+  const db = await getDb();
+  if (!db || ids.length === 0) return [];
+
+  const uniqueIds = Array.from(new Set(ids.filter(id => Number.isInteger(id) && id > 0)));
+  if (uniqueIds.length === 0) return [];
+
+  return await db.select().from(products).where(inArray(products.id, uniqueIds));
+}
+
 export async function getProductByIdWithDetails(id: number) {
   const db = await getDb();
   if (!db) return undefined;
@@ -345,6 +355,12 @@ export async function removeFromCart(id: number) {
   return await db.delete(cartItems).where(eq(cartItems.id, id));
 }
 
+export async function removeFromCartByUser(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return await db.delete(cartItems).where(and(eq(cartItems.id, id), eq(cartItems.userId, userId)));
+}
+
 export async function clearCart(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -363,15 +379,8 @@ export async function createOrderWithId(userId: number, totalPrice: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.insert(orders).values({ userId, totalPrice });
-  const insertedOrder = await db
-    .select({ id: orders.id })
-    .from(orders)
-    .where(eq(orders.userId, userId))
-    .orderBy(desc(orders.id))
-    .limit(1);
-
-  const insertId = Number(insertedOrder[0]?.id ?? 0);
+  const result = await db.insert(orders).values({ userId, totalPrice });
+  const insertId = Number((result as any)?.[0]?.insertId ?? 0);
 
   if (!insertId) {
     throw new Error("Failed to create order id");
@@ -542,6 +551,53 @@ export async function updateOrderStatus(
   return await db.update(orders).set({ status }).where(eq(orders.id, orderId));
 }
 
+export async function markOrderPaid(orderId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return await db.transaction(async tx => {
+    const current = await tx.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    const order = current[0];
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    if (order.status === "paid" || order.status === "shipped" || order.status === "delivered") {
+      return { updated: false, status: order.status } as const;
+    }
+
+    await tx.update(orders).set({ status: "paid" }).where(eq(orders.id, orderId));
+
+    const now = new Date();
+    const activeReservations = await tx
+      .select()
+      .from(stockReservations)
+      .where(
+        and(
+          eq(stockReservations.orderId, orderId),
+          eq(stockReservations.status, "active"),
+          gte(stockReservations.expiresAt, now),
+        ),
+      );
+
+    for (const reservation of activeReservations) {
+      await tx
+        .update(products)
+        .set({
+          stock: sql`${products.stock} - ${reservation.quantity}`,
+        })
+        .where(eq(products.id, reservation.productId));
+    }
+
+    await tx
+      .update(stockReservations)
+      .set({ status: "consumed" })
+      .where(and(eq(stockReservations.orderId, orderId), eq(stockReservations.status, "active")));
+
+    return { updated: true, status: "paid" } as const;
+  });
+}
+
 export async function getAllUsers() {
   const db = await getDb();
   if (!db) return [];
@@ -578,7 +634,7 @@ export async function addFavorite(userId: number, productId: number) {
 export async function removeFavorite(userId: number, productId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  return await db.delete(favorites).where(eq(favorites.userId, userId));
+  return await db.delete(favorites).where(and(eq(favorites.userId, userId), eq(favorites.productId, productId)));
 }
 
 type ProfileAddressInput = {
@@ -765,6 +821,25 @@ export async function setUserFlags(
       ...(flags.isBlocked !== undefined ? { isBlocked: flags.isBlocked ? 1 : 0 } : {}),
     })
     .where(eq(users.id, userId));
+}
+
+export async function rotateUserSessionVersion(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const current = await db
+    .select({ sessionVersion: users.sessionVersion })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  const nextVersion = Number(current[0]?.sessionVersion ?? 0) + 1;
+  if (nextVersion <= 0) {
+    throw new Error("Failed to rotate session version");
+  }
+
+  await db.update(users).set({ sessionVersion: nextVersion }).where(eq(users.id, userId));
+  return nextVersion;
 }
 
 export async function getUsersWithStats() {

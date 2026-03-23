@@ -406,7 +406,7 @@ export default function Admin() {
         sent: data.sent,
         failed: data.failed,
         message: data.message,
-        failures: data.failures,
+        failures: [...data.failures],
       });
       showToast({ message: data.message, duration: 3200 });
     },
@@ -474,6 +474,8 @@ export default function Admin() {
   const customers = useMemo(() => [...(customersQuery.data ?? [])].sort((a, b) => b.id - a.id), [customersQuery.data]);
   const products = useMemo(() => [...(productsQuery.data ?? [])].sort((a, b) => b.id - a.id), [productsQuery.data]);
   const orders = useMemo(() => [...(ordersQuery.data ?? [])].sort((a, b) => b.id - a.id), [ordersQuery.data]);
+  const wideFieldStyle = { ...styles.mediaField, gridColumn: "1 / -1" } as CSSProperties;
+  const mediumFieldStyle = { ...styles.mediaField, gridColumn: "span 2" } as CSSProperties;
 
   if (!isAuthenticated) {
     return (
@@ -564,14 +566,14 @@ export default function Admin() {
               <p style={styles.productAdminText}>Preencha as informações principais, organize a categoria e publique o item com uma estrutura mais clara.</p>
             </div>
           </div>
-          <div style={styles.formGrid}>
-            <input style={styles.input} placeholder="Nome do produto" value={newProduct.name} onChange={e => setNewProduct(prev => ({ ...prev, name: e.target.value }))} />
-            <select style={styles.select} value={newProduct.category} onChange={e => setNewProduct(prev => ({ ...prev, category: e.target.value }))}>
-              <option value="">Selecione a categoria</option>
-              {PRODUCT_CATEGORIES.map(cat => (
-                <option key={cat.value} value={cat.value}>{cat.label}</option>
-              ))}
-            </select>
+            <div style={styles.formGrid}>
+              <input style={styles.input} placeholder="Nome do produto" value={newProduct.name} onChange={e => setNewProduct(prev => ({ ...prev, name: e.target.value }))} />
+              <select style={styles.select} value={newProduct.category} onChange={e => setNewProduct(prev => ({ ...prev, category: e.target.value }))}>
+                <option value="">Selecione a categoria</option>
+                {PRODUCT_CATEGORIES.map(cat => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
+              </select>
             <div style={styles.categoryPreviewBox}>
               <span style={styles.categoryPreviewLabel}>Prévia da categoria</span>
               <strong style={styles.categoryPreviewValue}>{newProduct.category ? getCategoryLabel(newProduct.category) : "Selecione uma categoria"}</strong>
@@ -579,7 +581,7 @@ export default function Admin() {
             </div>
             <input style={styles.input} placeholder="Preço (R$)" value={newProduct.price} onChange={e => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
             <input style={styles.input} placeholder="Estoque disponível" value={newProduct.stock} onChange={e => setNewProduct(prev => ({ ...prev, stock: e.target.value }))} />
-            <div style={styles.mediaField}>
+            <div style={mediumFieldStyle}>
               <input style={styles.input} placeholder="Cores (CSV: preto, branco, verde)" value={newProduct.colorsCsv} onChange={e => setNewProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
               <div style={styles.quickPickRow}>
                 {productColorSuggestions.map(color => (
@@ -594,7 +596,7 @@ export default function Admin() {
               <option value="numeric">Tamanho numérico (36, 38, 40...)</option>
               <option value="custom">Tamanho customizado</option>
             </select>
-            <div style={styles.mediaField}>
+            <div style={mediumFieldStyle}>
               <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={newProduct.sizesCsv} onChange={e => setNewProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
               <div style={styles.quickPickRow}>
                 {(newProduct.sizeType === "numeric" ? numericSizeSuggestions : alphaSizeSuggestions).map(size => (
@@ -604,7 +606,7 @@ export default function Admin() {
                 ))}
               </div>
             </div>
-            <div style={styles.mediaField}>
+            <div style={mediumFieldStyle}>
               <input style={styles.input} placeholder="Imagem principal" value={newProduct.imageUrl} onChange={e => setNewProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
               <div style={styles.mediaActions}>
                 <button
@@ -636,7 +638,7 @@ export default function Admin() {
                 </div>
               ) : null}
             </div>
-            <div style={styles.mediaField}>
+            <div style={wideFieldStyle}>
               <input style={styles.input} placeholder="Outras imagens (CSV)" value={newProduct.imagesCsv} onChange={e => setNewProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
               <select
                 style={styles.select}
@@ -720,7 +722,7 @@ export default function Admin() {
                 </div>
               ) : null}
             </div>
-            <div style={styles.mediaField}>
+            <div style={wideFieldStyle}>
               <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={newProduct.variantsCsv} onChange={e => setNewProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
               <div style={styles.mediaActions}>
                 <button
@@ -738,7 +740,7 @@ export default function Admin() {
               </div>
               <span style={styles.mediaHint}>Exemplo: Camiseta P|CAM-P|89.90|10; Camiseta M|CAM-M|89.90|8</span>
             </div>
-            <input style={styles.input} placeholder="Descrição curta" value={newProduct.description} onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))} />
+            <input style={{ ...styles.input, gridColumn: "1 / -1" }} placeholder="Descrição curta" value={newProduct.description} onChange={e => setNewProduct(prev => ({ ...prev, description: e.target.value }))} />
           </div>
           <div style={styles.productAdminActions}>
           <button
@@ -893,7 +895,7 @@ export default function Admin() {
                 </div>
                 <input style={styles.input} placeholder="Preço (R$)" value={editProduct.price} onChange={e => setEditProduct(prev => ({ ...prev, price: e.target.value }))} />
                 <input style={styles.input} placeholder="Estoque disponível" value={editProduct.stock} onChange={e => setEditProduct(prev => ({ ...prev, stock: e.target.value }))} />
-                <div style={styles.mediaField}>
+                <div style={mediumFieldStyle}>
                   <input style={styles.input} placeholder="Cores (CSV: preto, branco, verde)" value={editProduct.colorsCsv} onChange={e => setEditProduct(prev => ({ ...prev, colorsCsv: e.target.value }))} />
                   <div style={styles.quickPickRow}>
                     {productColorSuggestions.map(color => (
@@ -908,7 +910,7 @@ export default function Admin() {
                   <option value="numeric">Tamanho numérico (36, 38, 40...)</option>
                   <option value="custom">Tamanho customizado</option>
                 </select>
-                <div style={styles.mediaField}>
+                <div style={mediumFieldStyle}>
                   <input style={styles.input} placeholder="Tamanhos (CSV: PP, P, M, G, GG ou 36, 38, 40)" value={editProduct.sizesCsv} onChange={e => setEditProduct(prev => ({ ...prev, sizesCsv: e.target.value }))} />
                   <div style={styles.quickPickRow}>
                     {(editProduct.sizeType === "numeric" ? numericSizeSuggestions : alphaSizeSuggestions).map(size => (
@@ -918,7 +920,7 @@ export default function Admin() {
                     ))}
                   </div>
                 </div>
-                <div style={styles.mediaField}>
+                <div style={mediumFieldStyle}>
                   <input style={styles.input} placeholder="Imagem principal" value={editProduct.imageUrl} onChange={e => setEditProduct(prev => ({ ...prev, imageUrl: e.target.value }))} />
                   <div style={styles.mediaActions}>
                     <button
@@ -950,7 +952,7 @@ export default function Admin() {
                     </div>
                   ) : null}
                 </div>
-                <div style={styles.mediaField}>
+                <div style={wideFieldStyle}>
                   <input style={styles.input} placeholder="Outras imagens (CSV)" value={editProduct.imagesCsv} onChange={e => setEditProduct(prev => ({ ...prev, imagesCsv: e.target.value }))} />
                   <select
                     style={styles.select}
@@ -1034,7 +1036,7 @@ export default function Admin() {
                     </div>
                   ) : null}
                 </div>
-                <div style={styles.mediaField}>
+                <div style={wideFieldStyle}>
                   <input style={styles.input} placeholder="Variantes (nome|sku|preço|estoque;...)" value={editProduct.variantsCsv} onChange={e => setEditProduct(prev => ({ ...prev, variantsCsv: e.target.value }))} />
                   <div style={styles.mediaActions}>
                     <button
@@ -1052,7 +1054,7 @@ export default function Admin() {
                   </div>
                   <span style={styles.mediaHint}>Exemplo: Camiseta P|CAM-P|89.90|10; Camiseta M|CAM-M|89.90|8</span>
                 </div>
-                <input style={styles.input} placeholder="Descrição curta" value={editProduct.description} onChange={e => setEditProduct(prev => ({ ...prev, description: e.target.value }))} />
+                <input style={{ ...styles.input, gridColumn: "1 / -1" }} placeholder="Descrição curta" value={editProduct.description} onChange={e => setEditProduct(prev => ({ ...prev, description: e.target.value }))} />
               </div>
               <div style={styles.productAdminActions}>
                 <button
@@ -1886,7 +1888,7 @@ export default function Admin() {
                   return;
                 }
                 if (!window.confirm("Restaurar backup substitui dados atuais. Continuar?")) return;
-                backupRestoreMutation.mutate({ fileName: restoreFileName.trim() });
+                backupRestoreMutation.mutate({ fileName: restoreFileName.trim(), confirmation: "RESTORE" });
               }}
             >
               Restaurar
@@ -2033,8 +2035,8 @@ const styles: Record<string, CSSProperties> = {
   },
   formGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 12,
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: 10,
     alignItems: "stretch",
   },
   productAdminActions: {
@@ -2065,13 +2067,13 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: "center",
     alignItems: "flex-start",
     textAlign: "left",
-    gap: 8,
-    padding: 16,
+    gap: 6,
+    padding: 14,
     border: "1px solid #2f2f2f",
     borderRadius: 12,
     background: "linear-gradient(135deg, #121212 0%, #181818 100%)",
     minHeight: 0,
-    gridColumn: "1 / -1",
+    gridColumn: "span 2",
   },
   categoryPreviewLabel: {
     fontSize: 11,
@@ -2094,7 +2096,11 @@ const styles: Record<string, CSSProperties> = {
   mediaField: {
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+    border: "1px solid #242424",
+    background: "#101010",
   },
   mediaActions: {
     display: "flex",
@@ -2359,18 +2365,18 @@ const styles: Record<string, CSSProperties> = {
     background: "#0f0f0f",
     color: "#f0ede8",
     borderRadius: 8,
-    padding: "12px 14px",
+    padding: "10px 12px",
     textAlign: "left",
-    minHeight: 46,
+    minHeight: 42,
   },
   select: {
     border: "1px solid #2f2f2f",
     background: "#0f0f0f",
     color: "#f0ede8",
     borderRadius: 8,
-    padding: "12px 14px",
+    padding: "10px 12px",
     textAlign: "left",
-    minHeight: 46,
+    minHeight: 42,
   },
   tableWrap: {
     overflowX: "auto",
@@ -2526,9 +2532,9 @@ const styles: Record<string, CSSProperties> = {
     background: "#111111",
     color: "#f0ede8",
     borderRadius: 8,
-    padding: "12px 16px",
+    padding: "10px 14px",
     cursor: "pointer",
-    minWidth: 140,
+    minWidth: 128,
     fontWeight: 700,
   },
   dangerBtn: {

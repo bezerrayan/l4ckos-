@@ -1,4 +1,4 @@
-﻿import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME } from "@shared/const";
 import { parse as parseCookieHeader } from "cookie";
 import type { Express, Request, Response } from "express";
 import { randomBytes } from "node:crypto";
@@ -105,7 +105,7 @@ export function registerOAuthRoutes(app: Express) {
     if (!hasConfiguredGoogleCredentials()) {
       const status = getGoogleCredentialStatus();
       res.status(500).json({
-        error: "Google OAuth nÃ£o configurado. Preencha GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env",
+        error: "Google OAuth nao configurado. Preencha GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no .env",
         status,
       });
       return;
@@ -161,7 +161,7 @@ export function registerOAuthRoutes(app: Express) {
       if (!hasConfiguredGoogleCredentials()) {
         const status = getGoogleCredentialStatus();
         res.status(500).json({
-          error: "Google OAuth nÃ£o configurado no servidor. Verifique GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET",
+          error: "Google OAuth nao configurado no servidor. Verifique GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET",
           status,
         });
         return;
@@ -225,7 +225,6 @@ export function registerOAuthRoutes(app: Express) {
       }
 
       callbackStage = "upsert_user";
-      callbackStage = "upsert_user";
       const normalizedEmail = String(userInfo.email ?? "").trim().toLowerCase();
       const googleRole =
         openId === ENV.ownerOpenId || (normalizedEmail && ENV.adminEmails.includes(normalizedEmail))
@@ -249,15 +248,18 @@ export function registerOAuthRoutes(app: Express) {
         throw persistenceError;
       }
 
+      const nextSessionVersion = await db.rotateUserSessionVersion(persistedUser.id);
+
       callbackStage = "create_session";
       const sessionToken = await sdk.createSessionToken(openId, {
         name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS,
+        expiresInMs: ENV.sessionTtlMs,
+        sessionVersion: nextSessionVersion,
       });
 
       callbackStage = "set_cookie_redirect";
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ENV.sessionTtlMs });
       res.clearCookie("oauth_state", { ...cookieOptions, maxAge: -1 });
 
       const decodedState = decodeState(state);

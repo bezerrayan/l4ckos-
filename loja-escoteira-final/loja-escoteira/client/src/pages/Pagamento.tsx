@@ -308,7 +308,14 @@ export default function Pagamento() {
     try {
       const result = await validateCoupon.mutateAsync({
         code: normalized,
-        totalPrice: Number(orderBaseTotal.toFixed(2)),
+        items: cart.items.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+        shipping: {
+          cep: sanitizeCep(cep),
+          optionId: selectedShippingId || "",
+        },
       });
       setCouponDiscount(Number(result.discountAmount.toFixed(2)));
       setAppliedCouponCode(result.code);
@@ -343,19 +350,16 @@ export default function Pagamento() {
     }
 
     try {
-      const description = cart.items
-        .slice(0, 2)
-        .map(item => item.product.name)
-        .join(" + ");
-
       const result = await createAsaasCharge.mutateAsync({
         method: checkoutMethod,
-        totalPrice: Number(orderTotal.toFixed(2)),
-        description: `${description || "Pedido Loja Escoteira"} | Frete: ${selectedShipping.label}`,
         items: cart.items.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,
         })),
+        shipping: {
+          cep: sanitizeCep(cep),
+          optionId: selectedShipping.id,
+        },
         customer: {
           name: customerName.trim(),
           email: customerEmail.trim(),

@@ -12,6 +12,8 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { validateEnvOnStartup } from "./env";
+import { securityLog } from "./security";
 import uploadRouter from "../routers/upload";
 import paymentRoutes from "../routes/paymentRoutes";
 import webhookRoutes from "../routes/webhookRoutes";
@@ -124,6 +126,9 @@ async function listenWithRetry(
 }
 
 async function startServer() {
+  const envIssues = validateEnvOnStartup();
+  envIssues.forEach(issue => securityLog("warn", "startup.env_issue", { issue }));
+
   const app = express();
   const server = createServer(app);
   const isProduction = process.env.NODE_ENV === "production";
@@ -171,8 +176,24 @@ async function startServer() {
 
   app.use(
     helmet({
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+      frameguard: { action: "deny" },
+      noSniff: true,
+      crossOriginEmbedderPolicy: false,
       contentSecurityPolicy: isProduction
-        ? undefined
+        ? {
+            useDefaults: true,
+            directives: {
+              defaultSrc: ["'self'"],
+              imgSrc: ["'self'", "data:", "blob:", "https:"],
+              styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+              scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
+              connectSrc: ["'self'", "https:", "wss:"],
+              frameAncestors: ["'none'"],
+              objectSrc: ["'none'"],
+              baseUri: ["'self'"],
+            },
+          }
         : false,
       hsts: isProduction
         ? {
@@ -217,6 +238,17 @@ async function startServer() {
   });
   app.use("/api/oauth/login", authLimiter);
   app.use("/api/trpc/auth.localLogin", authLimiter);
+  app.use("/api/trpc/auth.localSignup", authLimiter);
+
+  const publicWriteLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: isProduction ? 20 : 80,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many requests. Try again later." },
+  });
+  app.use("/api/contact", publicWriteLimiter);
+  app.use("/api/waitlist", publicWriteLimiter);
 
   // Additional protection for admin-only API routes.
   const adminApiLimiter = rateLimit({
@@ -231,6 +263,34 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api/") || req.path.startsWith("/webhook/")) {
+      res.setHeader("Cache-Control", "no-store");
+    }
+    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
+    next();
+  });
+
+  app.use((req, res, next) => {
+    const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
+    const isMultipart = String(req.headers["content-type"] || "").toLowerCase().startsWith("multipart/form-data");
+    const isJson = String(req.headers["content-type"] || "").toLowerCase().startsWith("application/json");
+    const isFormEncoded = String(req.headers["content-type"] || "").toLowerCase().startsWith("application/x-www-form-urlencoded");
+    const isWebhookRoute = req.path === "/api/webhooks/asaas" || req.path === "/webhook/asaas";
+
+    if (!isMutating || !req.path.startsWith("/api/") || isWebhookRoute) {
+      next();
+      return;
+    }
+
+    if (isMultipart || isJson || isFormEncoded) {
+      next();
+      return;
+    }
+
+    res.status(415).json({ error: "Unsupported content type" });
+  });
 
   app.use((req, res, next) => {
     const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
@@ -339,9 +399,10 @@ async function startServer() {
   app.use(
     "/uploads",
     (req, res, next) => {
-      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Cross-Origin-Resource-Policy", "same-site");
       res.setHeader("Content-Disposition", "inline");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Cache-Control", "public, max-age=3600, immutable");
       next();
     },
     express.static(path.resolve(process.cwd(), "uploads"))

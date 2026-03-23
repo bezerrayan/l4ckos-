@@ -174,7 +174,7 @@ export default function ComingSoon() {
             <div className="l4-coming-v2-soon-panel">
               <div className="l4-coming-v2-soon-badge">EM BREVE</div>
               <p>
-                Estamos preparando a abertura com calma para entregar um lançamento forte, confiável e com benefícios reais
+                Estamos preparando a abertura com calma para entregar um lançamento forte, confiável e com benefícios  reais
                 para quem entrou primeiro.
               </p>
               <span>O contador aparece automaticamente quando estivermos na reta final.</span>

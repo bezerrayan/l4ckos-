@@ -16,6 +16,7 @@ export type SessionPayload = {
   openId: string;
   appId: string;
   name: string;
+  sessionVersion: number;
 };
 
 class SDKServer {
@@ -48,7 +49,7 @@ class SDKServer {
 
   async createSessionToken(
     openId: string,
-    options: { expiresInMs?: number; name?: string } = {}
+    options: { expiresInMs?: number; name?: string; sessionVersion?: number } = {}
   ): Promise<string> {
     const appId = ENV.appId?.trim() || "loja-escoteira";
 
@@ -57,6 +58,7 @@ class SDKServer {
         openId,
         appId,
         name: options.name || "",
+        sessionVersion: options.sessionVersion ?? 1,
       },
       options
     );
@@ -75,6 +77,7 @@ class SDKServer {
       openId: payload.openId,
       appId: payload.appId,
       name: payload.name,
+      sessionVersion: payload.sessionVersion,
     })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .setExpirationTime(expirationSeconds)
@@ -83,7 +86,7 @@ class SDKServer {
 
   async verifySession(
     cookieValue: string | undefined | null
-  ): Promise<{ openId: string; appId: string; name: string } | null> {
+  ): Promise<{ openId: string; appId: string; name: string; sessionVersion: number } | null> {
     if (!cookieValue) {
       return null;
     }
@@ -93,12 +96,13 @@ class SDKServer {
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
       });
-      const { openId, appId, name } = payload as Record<string, unknown>;
+      const { openId, appId, name, sessionVersion } = payload as Record<string, unknown>;
 
       if (
         !isNonEmptyString(openId) ||
         !isNonEmptyString(appId) ||
-        !isString(name)
+        !isString(name) ||
+        !Number.isInteger(sessionVersion)
       ) {
         return null;
       }
@@ -107,6 +111,7 @@ class SDKServer {
         openId,
         appId,
         name,
+        sessionVersion: Number(sessionVersion),
       };
     } catch {
       return null;
@@ -125,6 +130,10 @@ class SDKServer {
     const user = await db.getUserByOpenId(session.openId);
     if (!user) {
       throw ForbiddenError("User not found");
+    }
+
+    if (user.sessionVersion !== session.sessionVersion) {
+      throw ForbiddenError("Session invalidated");
     }
 
     await db.upsertUser({

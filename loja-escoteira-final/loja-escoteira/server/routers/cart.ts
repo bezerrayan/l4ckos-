@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
-import { getCartItems, addToCart, removeFromCart, clearCart, getProductById } from "../db";
+import { getCartItems, addToCart, removeFromCartByUser, clearCart, getProductById } from "../db";
 
 export const cartRouter = router({
   // Listar itens do carrinho do usuário autenticado
@@ -24,9 +24,9 @@ export const cartRouter = router({
   // Adicionar item ao carrinho
   add: protectedProcedure
     .input(
-      z.object({
-        productId: z.number(),
-        quantity: z.number().positive(),
+        z.object({
+        productId: z.number().int().positive(),
+        quantity: z.number().int().positive().max(99),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -36,9 +36,9 @@ export const cartRouter = router({
 
   // Remover item do carrinho
   remove: protectedProcedure
-    .input(z.number())
-    .mutation(async ({ input }) => {
-      await removeFromCart(input);
+    .input(z.number().int().positive())
+    .mutation(async ({ input, ctx }) => {
+      await removeFromCartByUser(ctx.user.id, input);
       return { success: true };
     }),
 

@@ -1,5 +1,4 @@
 import { COOKIE_NAME } from "@shared/const";
-import { ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
@@ -13,10 +12,12 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { sdk } from "./_core/sdk";
-import { ENV } from "./_core/env";
+import { ENV, isEmailAllowedForProductionLocalAuth } from "./_core/env";
+import { securityLog } from "./_core/security";
 import {
   getLocalAuthCredentialByEmail,
   getUserByOpenId,
+  rotateUserSessionVersion,
   upsertLocalAuthCredential,
   upsertUser,
 } from "./db";
@@ -31,6 +32,9 @@ const loginAttemptStore = new Map<string, LoginAttemptState>();
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_BLOCK_MS = 15 * 60 * 1000;
+const PASSWORD_MIN_LENGTH = 10;
+const PASSWORD_MAX_LENGTH = 120;
+const PASSWORD_HASH_ROUNDS = 12;
 
 function isAdminEmail(email: string) {
   return ENV.adminEmails.includes(email.trim().toLowerCase());
@@ -99,7 +103,7 @@ export const appRouter = router({
       .input(
         z.object({
           email: z.string().email(),
-          password: z.string().min(6).max(120),
+          password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -108,6 +112,10 @@ export const appRouter = router({
         }
 
         const normalizedEmail = input.email.trim().toLowerCase();
+        if (ENV.isProduction && !isEmailAllowedForProductionLocalAuth(normalizedEmail)) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Local login disabled for this account" });
+        }
+
         const requestIp = ctx.req.ip || "unknown";
         const emailIpKey = `local-login:email-ip:${normalizedEmail}:${requestIp}`;
         const ipKey = `local-login:ip:${requestIp}`;
@@ -116,6 +124,7 @@ export const appRouter = router({
 
         const credential = await getLocalAuthCredentialByEmail(normalizedEmail);
         if (!credential) {
+          securityLog("warn", "auth.local_login_failed", { email: normalizedEmail, requestIp, reason: "missing_user" });
           registerLoginAttemptFailure(emailIpKey);
           registerLoginAttemptFailure(ipKey);
           throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais invalidas" });
@@ -123,6 +132,7 @@ export const appRouter = router({
 
         const passwordOk = await bcrypt.compare(input.password, credential.passwordHash);
         if (!passwordOk) {
+          securityLog("warn", "auth.local_login_failed", { email: normalizedEmail, requestIp, reason: "invalid_password" });
           registerLoginAttemptFailure(emailIpKey);
           registerLoginAttemptFailure(ipKey);
           throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais invalidas" });
@@ -151,18 +161,27 @@ export const appRouter = router({
 
         const user = await getUserByOpenId(localOpenId);
         if (user?.isBlocked === 1 && user.role !== "admin") {
+          securityLog("warn", "auth.local_login_blocked_user", { email: normalizedEmail, requestIp, userId: user?.id });
           throw new TRPCError({ code: "FORBIDDEN", message: "Usuario bloqueado" });
         }
 
+        if (!user) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Falha ao carregar usuario" });
+        }
+
+        const nextSessionVersion = await rotateUserSessionVersion(user.id);
+
         const sessionToken = await sdk.createSessionToken(localOpenId, {
           name: inferredName,
-          expiresInMs: ONE_YEAR_MS,
+          expiresInMs: ENV.sessionTtlMs,
+          sessionVersion: nextSessionVersion,
         });
 
         const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ENV.sessionTtlMs });
 
         clearLoginAttemptLimit(emailIpKey, ipKey);
+        securityLog("info", "auth.local_login_succeeded", { email: normalizedEmail, requestIp, userId: user.id });
         return { success: true, user: user ?? null } as const;
       }),
     localSignup: publicProcedure
@@ -170,16 +189,26 @@ export const appRouter = router({
         z.object({
           name: z.string().min(1).max(255),
           email: z.string().email(),
-          password: z.string().min(6).max(120),
+          password: z.string()
+            .min(PASSWORD_MIN_LENGTH)
+            .max(PASSWORD_MAX_LENGTH)
+            .regex(/[a-z]/, "A senha deve conter letra minuscula")
+            .regex(/[A-Z]/, "A senha deve conter letra maiuscula")
+            .regex(/\d/, "A senha deve conter numero")
+            .regex(/[^A-Za-z0-9]/, "A senha deve conter caractere especial"),
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        if (ENV.isProduction && !ENV.allowLocalAuthInProduction) {
+        if (ENV.isProduction && (!ENV.allowLocalAuthInProduction || !ENV.allowPublicLocalSignupInProduction)) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Local signup disabled in production" });
         }
 
         const normalizedEmail = input.email.trim().toLowerCase();
         const requestIp = ctx.req.ip || "unknown";
+        if (ENV.isProduction && !isEmailAllowedForProductionLocalAuth(normalizedEmail)) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Local signup disabled for this account" });
+        }
+
         assertLoginAttemptLimit(`local-signup:${normalizedEmail}:${requestIp}`);
         const localOpenId = `local:${normalizedEmail}`;
         const normalizedName = input.name.trim();
@@ -199,24 +228,39 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Falha ao criar usuario" });
         }
 
-        const passwordHash = await bcrypt.hash(input.password, 10);
+        const passwordHash = await bcrypt.hash(input.password, PASSWORD_HASH_ROUNDS);
         await upsertLocalAuthCredential({
           userId: user.id,
           email: normalizedEmail,
           passwordHash,
         });
 
+        const nextSessionVersion = await rotateUserSessionVersion(user.id);
+
         const sessionToken = await sdk.createSessionToken(localOpenId, {
           name: normalizedName,
-          expiresInMs: ONE_YEAR_MS,
+          expiresInMs: ENV.sessionTtlMs,
+          sessionVersion: nextSessionVersion,
         });
 
         const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ENV.sessionTtlMs });
+        securityLog("info", "auth.local_signup_succeeded", { email: normalizedEmail, requestIp, userId: user.id });
 
         return { success: true, user: user ?? null } as const;
       }),
-    logout: publicProcedure.mutation(({ ctx }) => {
+    logout: publicProcedure.mutation(async ({ ctx }) => {
+      if (ctx.user) {
+        try {
+          await rotateUserSessionVersion(ctx.user.id);
+        } catch (error) {
+          securityLog("warn", "auth.logout_session_rotation_failed", {
+            userId: ctx.user.id,
+            reason: error instanceof Error ? error.message : "unknown",
+          });
+        }
+        securityLog("info", "auth.logout", { userId: ctx.user.id, requestIp: ctx.req.ip || "unknown" });
+      }
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return {

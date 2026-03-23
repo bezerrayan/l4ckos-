@@ -4,6 +4,7 @@ import { router, protectedProcedure } from "../_core/trpc";
 import {
   createOrder,
   createOrderWithId,
+  getProductsByIds,
   getOrderByIdAndUser,
   getOrderReservationItems,
   getOrderByTrackingCodeAndUser,
@@ -13,6 +14,90 @@ import {
   reserveStockForOrder,
 } from "../db";
 import { createAsaasChargeForOrder } from "../services/asaas";
+import { quoteShippingDetailed } from "../services/shippingService";
+
+const checkoutItemSchema = z.object({
+  productId: z.number().int().positive(),
+  quantity: z.number().int().positive().max(99),
+});
+
+const shippingSelectionSchema = z.object({
+  cep: z.string().trim().regex(/^\d{8}$/),
+  optionId: z.string().trim().min(1).max(120),
+});
+
+async function resolveOrderPricing(input: {
+  items: Array<{ productId: number; quantity: number }>;
+  shipping: { cep: string; optionId: string };
+  couponCode?: string;
+}) {
+  const productIds = input.items.map(item => item.productId);
+  const products = await getProductsByIds(productIds);
+  const productsById = new Map(products.map(product => [product.id, product]));
+
+  let itemsSubtotalCents = 0;
+  for (const item of input.items) {
+    const product = productsById.get(item.productId);
+    if (!product) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: `Produto ${item.productId} nao encontrado` });
+    }
+
+    if (Number(product.stock ?? 0) < item.quantity) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: `Estoque insuficiente para ${product.name}` });
+    }
+
+    itemsSubtotalCents += Number(product.price) * item.quantity;
+  }
+
+  const shippingQuote = await quoteShippingDetailed({
+    cep: input.shipping.cep,
+    itemCount: input.items.reduce((sum, item) => sum + item.quantity, 0),
+    subtotal: Number((itemsSubtotalCents / 100).toFixed(2)),
+  });
+
+  const shippingOption = shippingQuote.options.find(option => option.id === input.shipping.optionId);
+  if (!shippingOption) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Opcao de frete invalida" });
+  }
+
+  const shippingCents = Math.round(Number(shippingOption.price) * 100);
+  const grossTotalCents = itemsSubtotalCents + shippingCents;
+
+  let appliedCouponId: number | null = null;
+  let discountCents = 0;
+  if (input.couponCode) {
+    const coupon = await getApplicableCouponByCode(input.couponCode);
+    if (!coupon) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "Cupom invalido ou expirado" });
+    }
+
+    const grossTotal = grossTotalCents / 100;
+    const rawDiscount =
+      coupon.type === "percent"
+        ? Number(((grossTotal * coupon.value) / 100).toFixed(2))
+        : Number(coupon.value.toFixed(2));
+
+    discountCents = Math.min(grossTotalCents, Math.round(rawDiscount * 100));
+    appliedCouponId = coupon.id;
+  }
+
+  const description = input.items
+    .slice(0, 2)
+    .map(item => productsById.get(item.productId)?.name)
+    .filter(Boolean)
+    .join(" + ");
+
+  return {
+    itemsSubtotalCents,
+    shippingCents,
+    grossTotalCents,
+    discountCents,
+    finalTotalCents: Math.max(0, grossTotalCents - discountCents),
+    appliedCouponId,
+    shippingOption,
+    description: `${description || "Pedido Loja Escoteira"} | Frete: ${shippingOption.label}`,
+  };
+}
 
 export const ordersRouter = router({
   // List user orders
@@ -78,30 +163,28 @@ export const ordersRouter = router({
     .input(
       z.object({
         code: z.string().trim().min(2).max(64),
-        totalPrice: z.number().positive(),
+        items: z.array(checkoutItemSchema).min(1),
+        shipping: shippingSelectionSchema,
       }),
     )
     .mutation(async ({ input }) => {
+      const pricing = await resolveOrderPricing({
+        items: input.items,
+        shipping: input.shipping,
+        couponCode: input.code,
+      });
+
       const coupon = await getApplicableCouponByCode(input.code);
       if (!coupon) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Cupom invalido ou expirado" });
       }
 
-      const total = input.totalPrice;
-      let discount = 0;
-      if (coupon.type === "percent") {
-        discount = Number(((total * coupon.value) / 100).toFixed(2));
-      } else {
-        discount = Number(coupon.value.toFixed(2));
-      }
-
-      const normalizedDiscount = Math.max(0, Math.min(total, discount));
       return {
         couponId: coupon.id,
         code: coupon.code,
         type: coupon.type,
-        discountAmount: normalizedDiscount,
-        finalTotal: Number((total - normalizedDiscount).toFixed(2)),
+        discountAmount: Number((pricing.discountCents / 100).toFixed(2)),
+        finalTotal: Number((pricing.finalTotalCents / 100).toFixed(2)),
       } as const;
     }),
 
@@ -109,16 +192,8 @@ export const ordersRouter = router({
     .input(
       z.object({
         method: z.enum(["PIX", "BOLETO", "CARD"]),
-        totalPrice: z.number().positive(),
-        description: z.string().min(3).max(255),
-        items: z
-          .array(
-            z.object({
-              productId: z.number().int().positive(),
-              quantity: z.number().int().positive().max(99),
-            }),
-          )
-          .min(1),
+        items: z.array(checkoutItemSchema).min(1),
+        shipping: shippingSelectionSchema,
         dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
         customer: z.object({
           name: z.string().min(3).max(255),
@@ -137,23 +212,13 @@ export const ordersRouter = router({
       let orderId = 0;
 
       try {
-        let finalTotal = Number(input.totalPrice.toFixed(2));
-        let appliedCouponId: number | null = null;
+        const pricing = await resolveOrderPricing({
+          items: input.items,
+          shipping: input.shipping,
+          couponCode: input.couponCode,
+        });
 
-        if (input.couponCode) {
-          const coupon = await getApplicableCouponByCode(input.couponCode);
-          if (!coupon) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Cupom invalido ou expirado" });
-          }
-          const discount =
-            coupon.type === "percent"
-              ? Number(((finalTotal * coupon.value) / 100).toFixed(2))
-              : Number(coupon.value.toFixed(2));
-          finalTotal = Number(Math.max(0, finalTotal - Math.min(finalTotal, discount)).toFixed(2));
-          appliedCouponId = coupon.id;
-        }
-
-        orderId = await createOrderWithId(ctx.user.id, finalTotal);
+        orderId = await createOrderWithId(ctx.user.id, pricing.finalTotalCents);
         await reserveStockForOrder({
           userId: ctx.user.id,
           orderId,
@@ -163,8 +228,8 @@ export const ordersRouter = router({
         const payment = await createAsaasChargeForOrder({
           orderId,
           method: input.method,
-          value: finalTotal,
-          description: input.description,
+          value: Number((pricing.finalTotalCents / 100).toFixed(2)),
+          description: pricing.description,
           dueDate: input.dueDate,
           customer: {
             name: input.customer.name,
@@ -173,8 +238,8 @@ export const ordersRouter = router({
           },
         });
 
-        if (appliedCouponId) {
-          await incrementCouponUsage(appliedCouponId);
+        if (pricing.appliedCouponId) {
+          await incrementCouponUsage(pricing.appliedCouponId);
         }
 
         return {

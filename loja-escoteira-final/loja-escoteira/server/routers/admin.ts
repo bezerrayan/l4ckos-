@@ -44,6 +44,7 @@ const orderStatusSchema = z.enum([
   "delivered",
   "cancelled",
 ]);
+const backupFileNameSchema = z.string().trim().regex(/^[A-Za-z0-9._-]+\.json$/);
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -173,7 +174,7 @@ export const adminRouter = router({
       const result = await createProduct(productData);
       const insertedId = Number((result as any)?.[0]?.insertId ?? 0);
       if (insertedId > 0) {
-        const allImages = [...images];
+        const allImages: Array<string | { imageUrl: string; color?: string | null; alt?: string | null }> = [...images];
         if (productData.imageUrl) allImages.unshift(productData.imageUrl);
         await replaceProductImages(insertedId, allImages);
         await replaceProductVariants(insertedId, variants);
@@ -507,10 +508,14 @@ export const adminRouter = router({
   }),
 
   backupRestore: adminProcedure
-    .input(z.object({ fileName: z.string().min(1) }))
+    .input(z.object({ fileName: backupFileNameSchema, confirmation: z.literal("RESTORE") }))
     .mutation(async ({ ctx, input }) => {
       const dir = process.env.BACKUP_DIR || "backups";
-      const filePath = path.join(dir, input.fileName);
+      const baseDir = path.resolve(dir);
+      const filePath = path.resolve(baseDir, input.fileName);
+      if (!filePath.startsWith(baseDir + path.sep) && filePath !== path.join(baseDir, input.fileName)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Nome de arquivo invalido" });
+      }
       const raw = await readFile(filePath, "utf-8");
       const payload = JSON.parse(raw) as Parameters<typeof restoreBackupPayload>[0];
       await restoreBackupPayload(payload);

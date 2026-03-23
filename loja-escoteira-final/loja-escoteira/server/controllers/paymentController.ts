@@ -2,10 +2,10 @@ import type { Request, Response } from "express";
 import {
   getOrderByAsaasCheckoutId,
   getOrderByIdAndUser,
+  markOrderPaid,
   getUserById,
   getUserPhoneById,
   setOrderAsaasCheckoutId,
-  updateOrderStatus,
   updateUserAsaasCustomerId,
 } from "../db";
 import {
@@ -14,6 +14,7 @@ import {
   getAsaasPayment,
   validateAsaasWebhookSignature,
 } from "../services/asaasService";
+import { securityLog } from "../_core/security";
 
 type AuthenticatedRequest = Request & {
   authUser?: {
@@ -22,6 +23,27 @@ type AuthenticatedRequest = Request & {
 };
 
 const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED", "PAYMENT_OVERDUE_RECEIVED"]);
+
+function isTrustedRedirectUrl(redirectUrl: string) {
+  try {
+    const url = new URL(redirectUrl);
+    const configuredOrigins = String(process.env.CORS_ORIGINS ?? "")
+      .split(",")
+      .map(item => item.trim())
+      .filter(Boolean);
+
+    return configuredOrigins.some(origin => {
+      try {
+        const allowed = new URL(origin);
+        return allowed.host === url.host;
+      } catch {
+        return false;
+      }
+    });
+  } catch {
+    return false;
+  }
+}
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
@@ -139,6 +161,11 @@ export async function createCheckoutHandler(req: Request, res: Response) {
       return;
     }
 
+    if (!isTrustedRedirectUrl(redirectUrl)) {
+      res.status(400).json({ error: "Invalid redirectUrl" });
+      return;
+    }
+
     const { asaasCustomerId } = await ensureAsaasCustomerForUser({
       userId,
       cpf: body.cpf,
@@ -177,7 +204,8 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
   try {
     const signatureValid = validateAsaasWebhookSignature(req.headers as Record<string, unknown>);
     if (!signatureValid) {
-      console.warn("[Asaas webhook] Invalid signature", {
+      securityLog("warn", "payment.asaas_webhook_invalid_signature", {
+        requestIp: req.ip || "unknown",
         hasTokenHeader: Boolean((req.headers as Record<string, unknown>)["asaas-access-token"]),
       });
       res.status(401).json({ error: "Invalid webhook signature" });
@@ -234,8 +262,15 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
       return;
     }
 
-    await updateOrderStatus(orderId, "paid");
-    console.log("[Asaas webhook] Order updated", { event, orderId, paymentId, checkoutId });
+    const result = await markOrderPaid(orderId);
+    securityLog("info", "payment.asaas_webhook_processed", {
+      requestIp: req.ip || "unknown",
+      event,
+      orderId,
+      paymentId,
+      checkoutId,
+      updated: result.updated,
+    });
 
     res.status(200).json({ handled: true, event, orderId });
   } catch (error) {
