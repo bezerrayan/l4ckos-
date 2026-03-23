@@ -1,12 +1,20 @@
 ﻿import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
 import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import { PRODUCT_CATEGORIES, getCategoryLabel, normalizeCategoryValue } from "../lib/productCategories";
 import { formatPrice } from "../lib/utils";
+import {
+  AdminEmptyState,
+  AdminPageHeader,
+  AdminQuickActions,
+  AdminStatCard,
+  AdminStatsGrid,
+  AdminSurface,
+} from "../components/admin/AdminUI";
 
 type Section =
   | "overview"
@@ -230,6 +238,14 @@ function getOrderStatusTone(status: string): CSSProperties {
     default:
       return { background: "rgba(180, 83, 9, 0.14)", border: "1px solid rgba(180, 83, 9, 0.28)", color: "#fbbf24" };
   }
+}
+
+function OverviewIcon({ children }: { children: ReactNode }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {children}
+    </svg>
+  );
 }
 
 export default function Admin() {
@@ -511,6 +527,16 @@ export default function Admin() {
   const customers = useMemo(() => [...(customersQuery.data ?? [])].sort((a, b) => b.id - a.id), [customersQuery.data]);
   const products = useMemo(() => [...(productsQuery.data ?? [])].sort((a, b) => b.id - a.id), [productsQuery.data]);
   const orders = useMemo(() => [...(ordersQuery.data ?? [])].sort((a, b) => b.id - a.id), [ordersQuery.data]);
+  const recentAudit = useMemo(() => (auditQuery.data ?? []).slice(0, 5), [auditQuery.data]);
+  const quickActions = useMemo(
+    () => [
+      { label: "Novo produto", caption: "Cadastre ou atualize o catálogo", onClick: () => setSection("products") },
+      { label: "Pedidos", caption: "Acompanhe status e rastreio", onClick: () => setSection("orders") },
+      { label: "Clientes", caption: "Revise VIP, bloqueios e perfis", onClick: () => setSection("customers") },
+      { label: "Cupons", caption: "Gerencie promoções e descontos", onClick: () => setSection("coupons") },
+    ],
+    [],
+  );
   const wideFieldStyle = { ...styles.mediaField, gridColumn: "1 / -1" } as CSSProperties;
   const mediumFieldStyle = { ...styles.mediaField, gridColumn: "span 2" } as CSSProperties;
 
@@ -536,8 +562,14 @@ export default function Admin() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Painel Administrativo</h1>
-      <p style={styles.muted}>Gestão central de catálogo, pedidos, clientes, cupons, relatórios, auditoria e backups.</p>
+      <AdminPageHeader
+        title="Painel Administrativo"
+        subtitle="Monitore o sistema, acompanhe pedidos, organize o catálogo e mantenha as operações críticas sob controle em um único lugar."
+        actions={[
+          { label: "Ver pedidos", onClick: () => setSection("orders") },
+          { label: "Abrir produtos", onClick: () => setSection("products") },
+        ]}
+      />
 
       <div style={styles.tabs}>
         {[
@@ -562,11 +594,104 @@ export default function Admin() {
       </div>
 
       {section === "overview" && (
-        <div style={styles.grid}>
-          <div style={styles.kpiCard}><strong>Vendas Hoje</strong><span>R$ {((dashboardQuery.data?.salesToday ?? 0) / 100).toFixed(2)}</span></div>
-          <div style={styles.kpiCard}><strong>Pedidos Pendentes</strong><span>{dashboardQuery.data?.pendingOrders ?? 0}</span></div>
-          <div style={styles.kpiCard}><strong>Estoque Baixo</strong><span>{dashboardQuery.data?.lowStockCount ?? 0}</span></div>
-          <div style={styles.kpiCard}><strong>Pedidos Hoje</strong><span>{dashboardQuery.data?.ordersToday ?? 0}</span></div>
+        <div style={styles.dashboardStack}>
+          <AdminStatsGrid>
+            <AdminStatCard
+              label="Vendas de hoje"
+              value={formatPrice((dashboardQuery.data?.salesToday ?? 0) / 100)}
+              hint="Considera pedidos entregues no dia."
+              tone="success"
+              icon={<OverviewIcon><path d="M12 20V10"></path><path d="m18 20-6-6-6 6"></path><path d="M6 4h12"></path></OverviewIcon>}
+            />
+            <AdminStatCard
+              label="Pedidos pendentes"
+              value={String(dashboardQuery.data?.pendingOrders ?? 0)}
+              hint="Pedidos aguardando pagamento."
+              tone="warning"
+              icon={<OverviewIcon><circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path></OverviewIcon>}
+            />
+            <AdminStatCard
+              label="Pedidos hoje"
+              value={String(dashboardQuery.data?.ordersToday ?? 0)}
+              hint="Criados desde 00:00."
+              tone="info"
+              icon={<OverviewIcon><path d="M3 6h18"></path><path d="M8 6V3"></path><path d="M16 6V3"></path><rect x="3" y="6" width="18" height="15" rx="2"></rect></OverviewIcon>}
+            />
+            <AdminStatCard
+              label="Clientes"
+              value={String(dashboardQuery.data?.usersCount ?? 0)}
+              hint="Usuários com conta no sistema."
+              icon={<OverviewIcon><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></OverviewIcon>}
+            />
+            <AdminStatCard
+              label="Produtos ativos"
+              value={String(dashboardQuery.data?.productsCount ?? 0)}
+              hint="Itens disponíveis no catálogo."
+              icon={<OverviewIcon><path d="M6 7 3 9v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9l-3-2"></path><path d="M3 9h18"></path><path d="M8 12h8"></path><path d="M9 7V5a3 3 0 0 1 6 0v2"></path></OverviewIcon>}
+            />
+            <AdminStatCard
+              label="Estoque baixo"
+              value={String(dashboardQuery.data?.lowStockCount ?? 0)}
+              hint="Produtos com 5 unidades ou menos."
+              tone="warning"
+              icon={<OverviewIcon><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></OverviewIcon>}
+            />
+          </AdminStatsGrid>
+
+          <div style={styles.dashboardColumns}>
+            <AdminSurface
+              title="Ações rápidas"
+              description="Atalhos para as rotinas mais frequentes do painel."
+            >
+              <AdminQuickActions actions={quickActions} />
+            </AdminSurface>
+
+            <AdminSurface
+              title="Status do sistema"
+              description="Resumo rápido da saúde operacional com base nos dados disponíveis hoje."
+            >
+              <div style={styles.systemStatusList}>
+                <div style={styles.systemStatusRow}>
+                  <span style={styles.systemStatusLabel}>Pedidos em aberto</span>
+                  <strong style={styles.systemStatusValue}>{dashboardQuery.data?.pendingOrders ?? 0}</strong>
+                </div>
+                <div style={styles.systemStatusRow}>
+                  <span style={styles.systemStatusLabel}>Catálogo publicado</span>
+                  <strong style={styles.systemStatusValue}>{dashboardQuery.data?.productsCount ?? 0} itens</strong>
+                </div>
+                <div style={styles.systemStatusRow}>
+                  <span style={styles.systemStatusLabel}>Cadastros ativos</span>
+                  <strong style={styles.systemStatusValue}>{dashboardQuery.data?.usersCount ?? 0} usuários</strong>
+                </div>
+              </div>
+            </AdminSurface>
+          </div>
+
+          <AdminSurface
+            title="Atividade recente"
+            description="Últimos eventos registrados na trilha de auditoria administrativa."
+          >
+            {recentAudit.length === 0 ? (
+              <AdminEmptyState
+                title="Sem atividade recente"
+                description="Assim que o painel registrar ações administrativas, elas aparecerão aqui."
+              />
+            ) : (
+              <div style={styles.activityList}>
+                {recentAudit.map(item => (
+                  <div key={item.id} style={styles.activityItem}>
+                    <div style={styles.activityBullet} />
+                    <div style={styles.activityContent}>
+                      <strong style={styles.activityTitle}>{item.action}</strong>
+                      <span style={styles.activityMeta}>
+                        {item.entity} {item.entityId ? `#${item.entityId}` : ""} · {new Date(item.createdAt).toLocaleString("pt-BR")}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </AdminSurface>
         </div>
       )}
 
@@ -580,14 +705,20 @@ export default function Admin() {
                 {customers.map(row => (
                   <tr key={row.id}>
                     <td>{row.id}</td><td>{row.name || "-"}</td><td>{row.email || "-"}</td><td>{row.role}</td><td>{row.ordersCount}</td>
-                    <td>{row.isVip ? "Sim" : "Não"}</td><td>{row.isBlocked ? "Sim" : "Não"}</td>
-                    <td style={styles.actionsCell}>
-                      <button style={styles.smallBtn} onClick={() => setRoleMutation.mutate({ userId: row.id, role: row.role === "admin" ? "user" : "admin" })}>Role</button>
-                      <button style={styles.smallBtn} onClick={() => setFlagsMutation.mutate({ userId: row.id, isVip: !row.isVip })}>{row.isVip ? "Rem VIP" : "VIP"}</button>
-                      <button style={styles.dangerBtn} onClick={() => setFlagsMutation.mutate({ userId: row.id, isBlocked: !row.isBlocked })}>{row.isBlocked ? "Desbloq" : "Bloq"}</button>
-                    </td>
-                  </tr>
-                ))}
+                     <td>{row.isVip ? "Sim" : "Não"}</td><td>{row.isBlocked ? "Sim" : "Não"}</td>
+                     <td style={styles.actionsCell}>
+                       <button style={styles.smallBtn} onClick={() => setRoleMutation.mutate({ userId: row.id, role: row.role === "admin" ? "user" : "admin" })}>
+                         {row.role === "admin" ? "Remover admin" : "Tornar admin"}
+                       </button>
+                       <button style={styles.smallBtn} onClick={() => setFlagsMutation.mutate({ userId: row.id, isVip: !row.isVip })}>
+                         {row.isVip ? "Remover VIP" : "Marcar VIP"}
+                       </button>
+                       <button style={styles.dangerBtn} onClick={() => setFlagsMutation.mutate({ userId: row.id, isBlocked: !row.isBlocked })}>
+                         {row.isBlocked ? "Desbloquear" : "Bloquear"}
+                       </button>
+                     </td>
+                   </tr>
+                 ))}
               </tbody>
             </table>
           </div>
@@ -596,7 +727,7 @@ export default function Admin() {
 
       {section === "products" && (
         <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>CRUD de Produtos</h2>
+          <h2 style={styles.sectionTitle}>Produtos</h2>
           <div style={styles.productAdminHeader}>
             <div>
               <h3 style={styles.productAdminTitle}>Criar produto</h3>
@@ -1769,8 +1900,8 @@ export default function Admin() {
           <div style={styles.inlineRow}>
             <input style={styles.input} placeholder="Código" value={newCoupon.code} onChange={e => setNewCoupon(prev => ({ ...prev, code: e.target.value }))} />
             <select style={styles.select} value={newCoupon.type} onChange={e => setNewCoupon(prev => ({ ...prev, type: e.target.value }))}>
-              <option value="percent">percent</option>
-              <option value="fixed">fixed</option>
+              <option value="percent">Percentual</option>
+              <option value="fixed">Valor fixo</option>
             </select>
             <input style={styles.input} placeholder="Valor" value={newCoupon.value} onChange={e => setNewCoupon(prev => ({ ...prev, value: e.target.value }))} />
             <input style={styles.input} placeholder="Máx. usos" value={newCoupon.maxUses} onChange={e => setNewCoupon(prev => ({ ...prev, maxUses: e.target.value }))} />
@@ -1985,7 +2116,7 @@ const styles: Record<string, CSSProperties> = {
   container: {
     display: "flex",
     flexDirection: "column",
-    gap: 16,
+    gap: 22,
     overflowX: "hidden",
     color: "#f0ede8",
   },
@@ -2014,22 +2145,92 @@ const styles: Record<string, CSSProperties> = {
   },
   tabs: {
     display: "flex",
-    gap: 8,
+    gap: 10,
     flexWrap: "wrap",
-    justifyContent: "center",
+    justifyContent: "flex-start",
+    padding: 6,
+    borderRadius: 18,
+    border: "1px solid #202020",
+    background: "#0f0f0f",
   },
   tabBtn: {
-    border: "1px solid #2f2f2f",
-    background: "#111111",
-    color: "#d4d4d8",
-    borderRadius: 8,
-    padding: "8px 12px",
+    border: "1px solid transparent",
+    background: "transparent",
+    color: "#a1a1aa",
+    borderRadius: 12,
+    padding: "10px 14px",
     cursor: "pointer",
+    fontWeight: 700,
   },
   tabBtnActive: {
-    background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
+    background: "#171717",
     color: "#fff",
-    borderColor: "#3a3a3a",
+    borderColor: "#2a2a2a",
+  },
+  dashboardStack: {
+    display: "grid",
+    gap: 18,
+  },
+  dashboardColumns: {
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1.4fr) minmax(280px, 0.8fr)",
+    gap: 18,
+  },
+  systemStatusList: {
+    display: "grid",
+    gap: 12,
+  },
+  systemStatusRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 16,
+    padding: "14px 16px",
+    borderRadius: 14,
+    background: "#0c0c0c",
+    border: "1px solid #202020",
+  },
+  systemStatusLabel: {
+    color: "#9ca3af",
+    fontSize: 13,
+    lineHeight: 1.5,
+  },
+  systemStatusValue: {
+    color: "#f8f4ec",
+    fontSize: 16,
+  },
+  activityList: {
+    display: "grid",
+    gap: 12,
+  },
+  activityItem: {
+    display: "grid",
+    gridTemplateColumns: "10px 1fr",
+    gap: 12,
+    alignItems: "flex-start",
+    padding: "10px 0",
+    borderBottom: "1px solid #1f1f1f",
+  },
+  activityBullet: {
+    width: 10,
+    height: 10,
+    marginTop: 6,
+    borderRadius: "50%",
+    background: "#f0ede8",
+    opacity: 0.75,
+  },
+  activityContent: {
+    display: "grid",
+    gap: 4,
+  },
+  activityTitle: {
+    color: "#f8f4ec",
+    fontSize: 14,
+  },
+  activityMeta: {
+    color: "#8b949e",
+    fontSize: 12,
+    lineHeight: 1.5,
   },
   grid: {
     display: "grid",
@@ -2047,14 +2248,14 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "center",
   },
   card: {
-    border: "1px solid #2f2f2f",
-    borderRadius: 12,
+    border: "1px solid #202020",
+    borderRadius: 20,
     background: "#101010",
-    padding: 16,
+    padding: 22,
     display: "flex",
     flexDirection: "column",
-    gap: 12,
-    textAlign: "center",
+    gap: 16,
+    textAlign: "left",
   },
   launchCard: {
     border: "1px solid #2f2f2f",
@@ -2080,7 +2281,9 @@ const styles: Record<string, CSSProperties> = {
   sectionTitle: {
     margin: 0,
     color: "#f0ede8",
-    textAlign: "center",
+    textAlign: "left",
+    fontSize: 24,
+    lineHeight: 1.15,
   },
   productAdminHeader: {
     display: "flex",
@@ -2106,8 +2309,8 @@ const styles: Record<string, CSSProperties> = {
   },
   formGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: 10,
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 14,
     alignItems: "stretch",
   },
   productAdminActions: {
@@ -2127,10 +2330,10 @@ const styles: Record<string, CSSProperties> = {
   },
   inlineRow: {
     display: "flex",
-    gap: 8,
+    gap: 10,
     flexWrap: "wrap",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
   categoryPreviewBox: {
     display: "flex",
@@ -2432,22 +2635,24 @@ const styles: Record<string, CSSProperties> = {
     marginTop: 4,
   },
   input: {
-    border: "1px solid #2f2f2f",
-    background: "#0f0f0f",
+    border: "1px solid #27272a",
+    background: "#111111",
     color: "#f0ede8",
-    borderRadius: 8,
-    padding: "10px 12px",
+    borderRadius: 12,
+    padding: "12px 14px",
     textAlign: "left",
-    minHeight: 42,
+    minHeight: 46,
+    boxSizing: "border-box",
   },
   select: {
-    border: "1px solid #2f2f2f",
-    background: "#0f0f0f",
+    border: "1px solid #27272a",
+    background: "#111111",
     color: "#f0ede8",
-    borderRadius: 8,
-    padding: "10px 12px",
+    borderRadius: 12,
+    padding: "12px 14px",
     textAlign: "left",
-    minHeight: 42,
+    minHeight: 46,
+    boxSizing: "border-box",
   },
   tableWrap: {
     overflowX: "auto",
