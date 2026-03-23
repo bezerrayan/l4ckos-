@@ -259,6 +259,9 @@ export default function Admin() {
 
   const [section, setSection] = useState<Section>("overview");
   const [orderFilterStatus, setOrderFilterStatus] = useState<string>("");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [productSearch, setProductSearch] = useState("");
+  const [orderSearch, setOrderSearch] = useState("");
   const [reportFrom, setReportFrom] = useState("");
   const [reportTo, setReportTo] = useState("");
   const [restoreFileName, setRestoreFileName] = useState("");
@@ -528,9 +531,41 @@ export default function Admin() {
     { enabled: false },
   );
 
-  const customers = useMemo(() => [...(customersQuery.data ?? [])].sort((a, b) => b.id - a.id), [customersQuery.data]);
-  const products = useMemo(() => [...(productsQuery.data ?? [])].sort((a, b) => b.id - a.id), [productsQuery.data]);
-  const orders = useMemo(() => [...(ordersQuery.data ?? [])].sort((a, b) => b.id - a.id), [ordersQuery.data]);
+  const customers = useMemo(() => {
+    const normalizedSearch = customerSearch.trim().toLowerCase();
+    return [...(customersQuery.data ?? [])]
+      .filter(row => {
+        if (!normalizedSearch) return true;
+        return [row.name, row.email, String(row.id)]
+          .some(value => String(value ?? "").toLowerCase().includes(normalizedSearch));
+      })
+      .sort((a, b) => b.id - a.id);
+  }, [customerSearch, customersQuery.data]);
+  const products = useMemo(() => {
+    const normalizedSearch = productSearch.trim().toLowerCase();
+    return [...(productsQuery.data ?? [])]
+      .filter(row => {
+        if (!normalizedSearch) return true;
+        return [row.name, row.category, row.description, String(row.id)]
+          .some(value => String(value ?? "").toLowerCase().includes(normalizedSearch));
+      })
+      .sort((a, b) => b.id - a.id);
+  }, [productSearch, productsQuery.data]);
+  const orders = useMemo(() => {
+    const normalizedSearch = orderSearch.trim().toLowerCase();
+    return [...(ordersQuery.data ?? [])]
+      .filter(row => {
+        if (!normalizedSearch) return true;
+        return [
+          String(row.id),
+          row.customerName,
+          row.customerEmail,
+          row.trackingCode,
+          String(row.userId),
+        ].some(value => String(value ?? "").toLowerCase().includes(normalizedSearch));
+      })
+      .sort((a, b) => b.id - a.id);
+  }, [orderSearch, ordersQuery.data]);
   const selectedOrder = useMemo(
     () => orders.find(order => order.id === selectedOrderId) ?? orders[0] ?? null,
     [orders, selectedOrderId],
@@ -721,6 +756,17 @@ export default function Admin() {
           title="Clientes"
           description="Gerencie perfis, permissões e sinais operacionais dos usuários cadastrados."
         >
+          <div style={styles.inlineRow}>
+            <input
+              style={{ ...styles.input, minWidth: 260 }}
+              placeholder="Buscar por nome, e-mail ou ID"
+              value={customerSearch}
+              onChange={e => setCustomerSearch(e.target.value)}
+            />
+            <div style={styles.summaryPill}>Total: {customers.length}</div>
+            <div style={styles.summaryPill}>VIP: {customers.filter(row => row.isVip).length}</div>
+            <div style={styles.summaryPill}>Bloqueados: {customers.filter(row => row.isBlocked).length}</div>
+          </div>
           {customersQuery.isLoading ? (
             <div style={styles.loadingPanel}>Carregando clientes...</div>
           ) : customers.length === 0 ? (
@@ -760,6 +806,17 @@ export default function Admin() {
       {section === "products" && (
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Produtos</h2>
+          <div style={styles.inlineRow}>
+            <input
+              style={{ ...styles.input, minWidth: 280 }}
+              placeholder="Buscar produto por nome, categoria ou ID"
+              value={productSearch}
+              onChange={e => setProductSearch(e.target.value)}
+            />
+            <div style={styles.summaryPill}>Resultados: {products.length}</div>
+            <div style={styles.summaryPill}>Estoque baixo: {products.filter(row => Number(row.stock ?? 0) <= 5).length}</div>
+            <div style={styles.summaryPill}>Com variantes: {products.filter(row => (row.variants?.length ?? 0) > 0).length}</div>
+          </div>
           <div style={styles.productAdminHeader}>
             <div>
               <h3 style={styles.productAdminTitle}>Criar produto</h3>
@@ -1505,6 +1562,12 @@ export default function Admin() {
           description="Gerencie o fluxo de pedidos com uma visão compacta e um painel lateral para detalhes operacionais."
           aside={
             <div style={styles.inlineRow}>
+              <input
+                style={{ ...styles.input, minWidth: 260 }}
+                placeholder="Buscar pedido, cliente ou rastreio"
+                value={orderSearch}
+                onChange={e => setOrderSearch(e.target.value)}
+              />
               <label>Status:</label>
               <select style={styles.select} value={orderFilterStatus} onChange={e => setOrderFilterStatus(e.target.value)}>
                 <option value="">Todos</option>
@@ -1514,6 +1577,12 @@ export default function Admin() {
             </div>
           }
         >
+          <div style={styles.inlineRow}>
+            <div style={styles.summaryPill}>Resultados: {orders.length}</div>
+            <div style={styles.summaryPill}>Pendentes: {orders.filter(row => row.status === "pending").length}</div>
+            <div style={styles.summaryPill}>Pagos: {orders.filter(row => row.status === "paid").length}</div>
+            <div style={styles.summaryPill}>Em separação: {orders.filter(row => row.status === "processing").length}</div>
+          </div>
           {ordersQuery.isLoading ? (
             <div style={styles.loadingPanel}>Carregando pedidos...</div>
           ) : orders.length === 0 ? (
@@ -2369,6 +2438,20 @@ const styles: Record<string, CSSProperties> = {
     background: "#0d0d0d",
     color: "#9ca3af",
     textAlign: "center",
+  },
+  summaryPill: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 38,
+    padding: "0 14px",
+    borderRadius: 999,
+    border: "1px solid #262626",
+    background: "#121212",
+    color: "#f0ede8",
+    fontSize: 12,
+    fontWeight: 700,
+    whiteSpace: "nowrap",
   },
   grid: {
     display: "grid",
