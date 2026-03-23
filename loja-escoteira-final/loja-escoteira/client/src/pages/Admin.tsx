@@ -6,6 +6,7 @@ import { apiUrl } from "../const";
 import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import { PRODUCT_CATEGORIES, getCategoryLabel, normalizeCategoryValue } from "../lib/productCategories";
+import { formatPrice } from "../lib/utils";
 
 type Section =
   | "overview"
@@ -18,7 +19,7 @@ type Section =
   | "audit"
   | "backup";
 
-const orderStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
+const orderStatuses = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"] as const;
 const productColorSuggestions = ["preto", "branco", "verde", "azul-marinho", "cinza", "caqui"] as const;
 const alphaSizeSuggestions = ["PP", "P", "M", "G", "GG", "XG"] as const;
 const numericSizeSuggestions = ["36", "38", "40", "42", "44", "46"] as const;
@@ -193,6 +194,42 @@ function buildVariantDraft(name: string, colorsCsv: string, sizesCsv: string, pr
   }
 
   return "";
+}
+
+function getOrderStatusLabel(status: string) {
+  switch (status) {
+    case "pending":
+      return "Aguardando pagamento";
+    case "paid":
+      return "Pagamento confirmado";
+    case "processing":
+      return "Em separação";
+    case "shipped":
+      return "Enviado";
+    case "delivered":
+      return "Entregue";
+    case "cancelled":
+      return "Cancelado";
+    default:
+      return status;
+  }
+}
+
+function getOrderStatusTone(status: string): CSSProperties {
+  switch (status) {
+    case "paid":
+      return { background: "rgba(21, 128, 61, 0.14)", border: "1px solid rgba(21, 128, 61, 0.28)", color: "#86efac" };
+    case "processing":
+      return { background: "rgba(15, 118, 110, 0.14)", border: "1px solid rgba(15, 118, 110, 0.28)", color: "#5eead4" };
+    case "shipped":
+      return { background: "rgba(37, 99, 235, 0.14)", border: "1px solid rgba(37, 99, 235, 0.28)", color: "#93c5fd" };
+    case "delivered":
+      return { background: "rgba(126, 34, 206, 0.14)", border: "1px solid rgba(126, 34, 206, 0.28)", color: "#d8b4fe" };
+    case "cancelled":
+      return { background: "rgba(185, 28, 28, 0.14)", border: "1px solid rgba(185, 28, 28, 0.28)", color: "#fca5a5" };
+    default:
+      return { background: "rgba(180, 83, 9, 0.14)", border: "1px solid rgba(180, 83, 9, 0.28)", color: "#fbbf24" };
+  }
 }
 
 export default function Admin() {
@@ -499,15 +536,15 @@ export default function Admin() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Painel Administrativo Seguro</h1>
-      <p style={styles.muted}>Gestão completa de catálogo, pedidos, clientes, cupons, relatórios, auditoria e backup.</p>
+      <h1 style={styles.title}>Painel Administrativo</h1>
+      <p style={styles.muted}>Gestão central de catálogo, pedidos, clientes, cupons, relatórios, auditoria e backups.</p>
 
       <div style={styles.tabs}>
         {[
           { key: "overview", label: "KPIs" },
           { key: "customers", label: "Clientes" },
           { key: "products", label: "Produtos" },
-          { key: "promos", label: "Promocoes" },
+          { key: "promos", label: "Promoções" },
           { key: "orders", label: "Pedidos" },
           { key: "coupons", label: "Cupons" },
           { key: "reports", label: "Relatórios" },
@@ -1302,39 +1339,75 @@ export default function Admin() {
       {section === "orders" && (
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Pedidos</h2>
+          <p style={styles.muted}>
+            Acompanhe o fluxo real dos pedidos, confirme valores, valide o cliente e mantenha o rastreio sempre atualizado.
+          </p>
           <div style={styles.inlineRow}>
             <label>Status:</label>
             <select style={styles.select} value={orderFilterStatus} onChange={e => setOrderFilterStatus(e.target.value)}>
               <option value="">Todos</option>
-              {orderStatuses.map(status => <option key={status} value={status}>{status}</option>)}
+              {orderStatuses.map(status => <option key={status} value={status}>{getOrderStatusLabel(status)}</option>)}
             </select>
             <button style={styles.smallBtn} onClick={() => ordersQuery.refetch()}>Filtrar</button>
           </div>
           <div style={styles.tableWrap}>
             <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Status</th><th>Rastreio</th><th>Itens</th><th>Ações</th></tr></thead>
+              <thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Status</th><th>Rastreio</th><th>Itens</th><th>Ações</th></tr></thead>
               <tbody>
                 {orders.map(row => (
                   <tr key={row.id}>
-                    <td>{row.id}</td><td>{row.userId}</td><td>R$ {(row.totalPrice / 100).toFixed(2)}</td><td>{row.status}</td><td>{row.trackingCode || "-"}</td>
-                    <td>{row.items?.length ?? 0}</td>
+                    <td>
+                      <div style={styles.orderPrimaryText}>#{row.id}</div>
+                      <div style={styles.orderSecondaryText}>
+                        {new Date(row.createdAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={styles.orderPrimaryText}>{row.customerName || `Cliente #${row.userId}`}</div>
+                      <div style={styles.orderSecondaryText}>{row.customerEmail || "E-mail não informado"}</div>
+                    </td>
+                    <td>
+                      <div style={styles.orderPrimaryText}>{formatPrice(Number(row.totalPrice) / 100)}</div>
+                      <div style={styles.orderSecondaryText}>
+                        Atualizado em {new Date(row.updatedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                      </div>
+                    </td>
+                    <td>
+                      <span style={{ ...styles.statusBadge, ...getOrderStatusTone(String(row.status)) }}>
+                        {getOrderStatusLabel(String(row.status))}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={styles.orderPrimaryText}>{row.trackingCode || "Ainda não informado"}</div>
+                    </td>
+                    <td>
+                      <div style={styles.orderPrimaryText}>
+                        {(row.items ?? []).reduce((sum, item) => sum + Number(item.quantity ?? 0), 0)} item(ns)
+                      </div>
+                      <div style={styles.orderSecondaryText}>
+                        {(row.items ?? [])
+                          .slice(0, 2)
+                          .map(item => item.productName || `Produto #${item.productId}`)
+                          .join(", ") || "Itens ainda não detalhados"}
+                      </div>
+                    </td>
                     <td style={styles.actionsCell}>
                       <select
                         style={styles.select}
                         value={row.status}
                         onChange={e => updateOrderMutation.mutate({ orderId: row.id, status: e.target.value as any })}
                       >
-                        {orderStatuses.map(status => <option key={status} value={status}>{status}</option>)}
+                        {orderStatuses.map(status => <option key={status} value={status}>{getOrderStatusLabel(status)}</option>)}
                       </select>
                       <button
                         style={styles.smallBtn}
                         onClick={() => {
-                          const tracking = window.prompt("Número de rastreio:", row.trackingCode || "");
+                          const tracking = window.prompt("Código de rastreio:", row.trackingCode || "");
                           if (tracking === null) return;
                           updateOrderMutation.mutate({ orderId: row.id, trackingCode: tracking || null });
                         }}
                       >
-                        Rastreio
+                        Atualizar rastreio
                       </button>
                     </td>
                   </tr>
@@ -2394,6 +2467,30 @@ const styles: Record<string, CSSProperties> = {
     color: "#e5e7eb",
     textAlign: "center",
   },
+  statusBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 32,
+    padding: "0 12px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: "0.02em",
+    whiteSpace: "nowrap",
+  },
+  orderPrimaryText: {
+    color: "#f0ede8",
+    fontSize: 14,
+    fontWeight: 800,
+    lineHeight: 1.4,
+  },
+  orderSecondaryText: {
+    marginTop: 4,
+    color: "#9ca3af",
+    fontSize: 12,
+    lineHeight: 1.5,
+  },
   productTableCell: {
     display: "flex",
     flexDirection: "column",
@@ -2516,6 +2613,7 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 8,
     padding: "6px 10px",
     cursor: "pointer",
+    fontWeight: 700,
   },
   primaryBtn: {
     border: "1px solid #3a3a3a",

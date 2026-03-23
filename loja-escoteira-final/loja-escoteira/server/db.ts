@@ -882,9 +882,20 @@ export async function getOrdersByFilters(filters?: {
     ? await db.select().from(orders).where(and(...whereClauses)).orderBy(desc(orders.id))
     : await db.select().from(orders).orderBy(desc(orders.id));
 
-  const items = await db.select().from(orderItems);
-  const itemsByOrder = new Map<number, typeof items>();
-  for (const item of items) {
+  const usersRows = await db.select({ id: users.id, name: users.name, email: users.email }).from(users);
+  const reservations = await db
+    .select({
+      orderId: stockReservations.orderId,
+      productId: stockReservations.productId,
+      quantity: stockReservations.quantity,
+      productName: products.name,
+    })
+    .from(stockReservations)
+    .leftJoin(products, eq(products.id, stockReservations.productId));
+
+  const usersById = new Map(usersRows.map(user => [user.id, user]));
+  const itemsByOrder = new Map<number, typeof reservations>();
+  for (const item of reservations) {
     const current = itemsByOrder.get(item.orderId) ?? [];
     current.push(item);
     itemsByOrder.set(item.orderId, current);
@@ -892,6 +903,8 @@ export async function getOrdersByFilters(filters?: {
 
   return baseOrders.map(order => ({
     ...order,
+    customerName: usersById.get(order.userId)?.name || null,
+    customerEmail: usersById.get(order.userId)?.email || null,
     items: itemsByOrder.get(order.id) ?? [],
   }));
 }
