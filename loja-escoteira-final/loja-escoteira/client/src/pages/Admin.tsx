@@ -7,6 +7,7 @@ import { useUser } from "../contexts/UserContext";
 import { useToast } from "../contexts/ToastContext";
 import { PRODUCT_CATEGORIES, getCategoryLabel, normalizeCategoryValue } from "../lib/productCategories";
 import { formatPrice } from "../lib/utils";
+import { useIsMobile } from "../hooks/useIsMobile";
 import {
   AdminEmptyState,
   AdminPageHeader,
@@ -250,6 +251,8 @@ function OverviewIcon({ children }: { children: ReactNode }) {
 
 export default function Admin() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const isCompactAdmin = useIsMobile(1180);
   const { user, isAuthenticated } = useUser();
   const { showToast } = useToast();
   const utils = trpc.useUtils();
@@ -600,7 +603,15 @@ export default function Admin() {
 
       {section === "overview" && (
         <div style={styles.dashboardStack}>
-          <AdminStatsGrid>
+          <AdminStatsGrid
+            style={{
+              gridTemplateColumns: isMobile
+                ? "1fr"
+                : isCompactAdmin
+                  ? "repeat(2, minmax(0, 1fr))"
+                  : "repeat(3, minmax(0, 1fr))",
+            }}
+          >
             <AdminStatCard
               label="Vendas de hoje"
               value={formatPrice((dashboardQuery.data?.salesToday ?? 0) / 100)}
@@ -643,7 +654,12 @@ export default function Admin() {
             />
           </AdminStatsGrid>
 
-          <div style={styles.dashboardColumns}>
+          <div
+            style={{
+              ...styles.dashboardColumns,
+              gridTemplateColumns: isCompactAdmin ? "1fr" : styles.dashboardColumns.gridTemplateColumns,
+            }}
+          >
             <AdminSurface
               title="Ações rápidas"
               description="Atalhos para as rotinas mais frequentes do painel."
@@ -1506,7 +1522,12 @@ export default function Admin() {
               description="Ajuste o filtro ou aguarde novos pedidos aparecerem aqui."
             />
           ) : (
-            <div style={styles.orderAdminLayout}>
+            <div
+              style={{
+                ...styles.orderAdminLayout,
+                gridTemplateColumns: isCompactAdmin ? "1fr" : styles.orderAdminLayout.gridTemplateColumns,
+              }}
+            >
               <div style={styles.tableWrap}>
                 <table style={styles.table}>
                   <thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Status</th><th>Rastreio</th><th>Itens</th><th>Ações</th></tr></thead>

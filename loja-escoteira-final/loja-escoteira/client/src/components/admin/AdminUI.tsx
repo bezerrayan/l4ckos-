@@ -69,8 +69,8 @@ export function AdminPageHeader({
   );
 }
 
-export function AdminStatsGrid({ children }: { children: ReactNode }) {
-  return <div style={styles.statsGrid}>{children}</div>;
+export function AdminStatsGrid({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return <div style={{ ...styles.statsGrid, ...style }}>{children}</div>;
 }
 
 export function AdminStatCard({ label, value, icon, tone = "neutral", hint }: StatCardProps) {
