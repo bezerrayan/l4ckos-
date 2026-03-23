@@ -1615,8 +1615,8 @@ export default function Admin() {
       {section === "promos" && (
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Banners promocionais da Home</h2>
-          <p style={styles.muted}>
-            Esses banners alimentam o carrossel principal da home. A quantidade de cards exibida depende da quantidade de banners ativos que você cadastrar aqui.
+          <p style={{ ...styles.muted, textAlign: "left" }}>
+            Esses banners alimentam o carrossel principal da home. Use esta área para manter campanhas sazonais mais organizadas e consistentes.
           </p>
           <div style={styles.formGrid}>
             <input style={styles.input} placeholder="Badge" value={newPromo.badge} onChange={e => setNewPromo(prev => ({ ...prev, badge: e.target.value }))} />
@@ -1841,11 +1841,19 @@ export default function Admin() {
             ) : null}
           </div>
 
-          <div style={styles.tableWrap}>
-            <table style={styles.table}>
-              <thead><tr><th>Ordem</th><th>ID</th><th>Título</th><th>Imagem</th><th>Desconto</th><th>Ativo</th><th>Ações</th></tr></thead>
-              <tbody>
-                {(promoBannersQuery.data ?? []).map((row: any) => (
+          {promoBannersQuery.isLoading ? (
+            <div style={styles.loadingPanel}>Carregando banners...</div>
+          ) : !(promoBannersQuery.data ?? []).length ? (
+            <AdminEmptyState
+              title="Nenhum banner cadastrado"
+              description="Crie o primeiro banner promocional para alimentar o carrossel principal da home."
+            />
+          ) : (
+            <div style={styles.tableWrap}>
+              <table style={styles.table}>
+                <thead><tr><th>Ordem</th><th>ID</th><th>Título</th><th>Imagem</th><th>Desconto</th><th>Ativo</th><th>Ações</th></tr></thead>
+                <tbody>
+                  {(promoBannersQuery.data ?? []).map((row: any) => (
                   <tr
                     key={row.id}
                     draggable
@@ -1952,10 +1960,11 @@ export default function Admin() {
                       <button style={styles.dangerBtn} onClick={() => deletePromoBannerMutation.mutate({ id: row.id })}>Excluir</button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -2101,8 +2110,10 @@ export default function Admin() {
       )}
 
       {section === "reports" && (
-        <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Relatórios</h2>
+        <AdminSurface
+          title="Relatórios"
+          description="Exporte o consolidado de vendas por período para análise externa ou conferência operacional."
+        >
           <div style={styles.inlineRow}>
             <input type="datetime-local" style={styles.input} value={reportFrom} onChange={e => setReportFrom(e.target.value)} />
             <input type="datetime-local" style={styles.input} value={reportTo} onChange={e => setReportTo(e.target.value)} />
@@ -2126,38 +2137,51 @@ export default function Admin() {
               Exportar CSV
             </button>
           </div>
-        </div>
+        </AdminSurface>
       )}
 
       {section === "audit" && (
-        <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Logs de Auditoria</h2>
-          <div style={styles.tableWrap}>
-            <table style={styles.table}>
-              <thead><tr><th>Quando</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>ID</th><th>Meta</th></tr></thead>
-              <tbody>
-                {(auditQuery.data ?? []).map(log => (
-                  <tr key={log.id}>
-                    <td>{new Date(log.createdAt).toLocaleString("pt-BR")}</td>
-                    <td>{log.actorUserId}</td>
-                    <td>{log.action}</td>
-                    <td>{log.entity}</td>
-                    <td>{log.entityId || "-"}</td>
-                    <td>{log.metadata ? JSON.stringify(log.metadata).slice(0, 100) : "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <AdminSurface
+          title="Logs de auditoria"
+          description="Últimos registros administrativos para rastreabilidade, conferência e apoio à investigação."
+        >
+          {auditQuery.isLoading ? (
+            <div style={styles.loadingPanel}>Carregando auditoria...</div>
+          ) : !(auditQuery.data ?? []).length ? (
+            <AdminEmptyState
+              title="Sem logs disponíveis"
+              description="Os registros administrativos aparecerão aqui conforme ações forem executadas no painel."
+            />
+          ) : (
+            <div style={styles.tableWrap}>
+              <table style={styles.table}>
+                <thead><tr><th>Quando</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>ID</th><th>Meta</th></tr></thead>
+                <tbody>
+                  {(auditQuery.data ?? []).map(log => (
+                    <tr key={log.id}>
+                      <td>{new Date(log.createdAt).toLocaleString("pt-BR")}</td>
+                      <td>{log.actorUserId}</td>
+                      <td>{log.action}</td>
+                      <td>{log.entity}</td>
+                      <td>{log.entityId || "-"}</td>
+                      <td>{log.metadata ? JSON.stringify(log.metadata).slice(0, 100) : "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </AdminSurface>
       )}
 
       {section === "backup" && (
-        <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Backup e Restauração</h2>
+        <AdminSurface
+          title="Backup e restauração"
+          description="Use esta área com cautela. A restauração substitui dados atuais e deve ser feita apenas em casos controlados."
+        >
           <div style={styles.inlineRow}>
-            <button style={styles.primaryBtn} onClick={() => backupManualMutation.mutate()}>Backup Manual</button>
-            <input style={styles.input} placeholder="arquivo backup.json" value={restoreFileName} onChange={e => setRestoreFileName(e.target.value)} />
+            <button style={styles.primaryBtn} onClick={() => backupManualMutation.mutate()}>Backup manual</button>
+            <input style={styles.input} placeholder="arquivo-backup.json" value={restoreFileName} onChange={e => setRestoreFileName(e.target.value)} />
             <button
               style={styles.dangerBtn}
               onClick={() => {
@@ -2172,17 +2196,26 @@ export default function Admin() {
               Restaurar
             </button>
           </div>
-          <div style={styles.tableWrap}>
-            <table style={styles.table}>
-              <thead><tr><th>Arquivos disponíveis</th></tr></thead>
-              <tbody>
-                {(backupsQuery.data ?? []).map(file => (
-                  <tr key={file}><td>{file}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          {backupsQuery.isLoading ? (
+            <div style={styles.loadingPanel}>Carregando backups...</div>
+          ) : !(backupsQuery.data ?? []).length ? (
+            <AdminEmptyState
+              title="Nenhum backup disponível"
+              description="Crie um backup manual para que ele apareça listado aqui."
+            />
+          ) : (
+            <div style={styles.tableWrap}>
+              <table style={styles.table}>
+                <thead><tr><th>Arquivos disponíveis</th></tr></thead>
+                <tbody>
+                  {(backupsQuery.data ?? []).map(file => (
+                    <tr key={file}><td>{file}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </AdminSurface>
       )}
     </div>
   );
