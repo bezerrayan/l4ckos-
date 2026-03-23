@@ -1339,9 +1339,6 @@ export default function Admin() {
       {section === "orders" && (
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Pedidos</h2>
-          <p style={styles.muted}>
-            Acompanhe o fluxo real dos pedidos, confirme valores, valide o cliente e mantenha o rastreio sempre atualizado.
-          </p>
           <div style={styles.inlineRow}>
             <label>Status:</label>
             <select style={styles.select} value={orderFilterStatus} onChange={e => setOrderFilterStatus(e.target.value)}>
@@ -1363,14 +1360,13 @@ export default function Admin() {
                       </div>
                     </td>
                     <td>
-                      <div style={styles.orderPrimaryText}>{row.customerName || `Cliente #${row.userId}`}</div>
-                      <div style={styles.orderSecondaryText}>{row.customerEmail || "E-mail não informado"}</div>
+                      <div style={styles.orderPrimaryText}>{row.customerName || row.customerEmail || `Cliente #${row.userId}`}</div>
+                      {row.customerEmail && row.customerName ? (
+                        <div style={styles.orderSecondaryText}>{row.customerEmail}</div>
+                      ) : null}
                     </td>
                     <td>
                       <div style={styles.orderPrimaryText}>{formatPrice(Number(row.totalPrice) / 100)}</div>
-                      <div style={styles.orderSecondaryText}>
-                        Atualizado em {new Date(row.updatedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
-                      </div>
                     </td>
                     <td>
                       <span style={{ ...styles.statusBadge, ...getOrderStatusTone(String(row.status)) }}>
@@ -1378,18 +1374,20 @@ export default function Admin() {
                       </span>
                     </td>
                     <td>
-                      <div style={styles.orderPrimaryText}>{row.trackingCode || "Ainda não informado"}</div>
+                      <div style={styles.orderPrimaryText}>{row.trackingCode || "Pendente"}</div>
                     </td>
                     <td>
                       <div style={styles.orderPrimaryText}>
                         {(row.items ?? []).reduce((sum, item) => sum + Number(item.quantity ?? 0), 0)} item(ns)
                       </div>
-                      <div style={styles.orderSecondaryText}>
-                        {(row.items ?? [])
-                          .slice(0, 2)
-                          .map(item => item.productName || `Produto #${item.productId}`)
-                          .join(", ") || "Itens ainda não detalhados"}
-                      </div>
+                      {(row.items ?? []).length > 0 ? (
+                        <div style={styles.orderSecondaryText}>
+                          {(row.items ?? [])
+                            .slice(0, 1)
+                            .map(item => item.productName || `Produto #${item.productId}`)
+                            .join(", ")}
+                        </div>
+                      ) : null}
                     </td>
                     <td style={styles.actionsCell}>
                       <select
@@ -1407,7 +1405,7 @@ export default function Admin() {
                           updateOrderMutation.mutate({ orderId: row.id, trackingCode: tracking || null });
                         }}
                       >
-                        Atualizar rastreio
+                        Rastreio
                       </button>
                     </td>
                   </tr>
@@ -2472,9 +2470,9 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     justifyContent: "center",
     minHeight: 32,
-    padding: "0 12px",
+    padding: "0 10px",
     borderRadius: 999,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 700,
     letterSpacing: "0.02em",
     whiteSpace: "nowrap",
@@ -2482,14 +2480,14 @@ const styles: Record<string, CSSProperties> = {
   orderPrimaryText: {
     color: "#f0ede8",
     fontSize: 14,
-    fontWeight: 800,
+    fontWeight: 700,
     lineHeight: 1.4,
   },
   orderSecondaryText: {
-    marginTop: 4,
+    marginTop: 2,
     color: "#9ca3af",
-    fontSize: 12,
-    lineHeight: 1.5,
+    fontSize: 11,
+    lineHeight: 1.35,
   },
   productTableCell: {
     display: "flex",
@@ -2605,6 +2603,7 @@ const styles: Record<string, CSSProperties> = {
     gap: 6,
     flexWrap: "wrap",
     justifyContent: "center",
+    alignItems: "center",
   },
   smallBtn: {
     border: "1px solid #2f2f2f",
@@ -2614,6 +2613,7 @@ const styles: Record<string, CSSProperties> = {
     padding: "6px 10px",
     cursor: "pointer",
     fontWeight: 700,
+    whiteSpace: "nowrap",
   },
   primaryBtn: {
     border: "1px solid #3a3a3a",
