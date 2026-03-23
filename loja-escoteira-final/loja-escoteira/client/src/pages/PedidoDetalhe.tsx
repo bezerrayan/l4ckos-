@@ -1,8 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { useOrderDetail } from "../hooks/useOrders";
-import { formatPrice } from "../lib/utils";
-
 type OrderStatus = "pending" | "processing" | "paid" | "shipped" | "delivered" | "cancelled";
 
 const statusText: Record<OrderStatus, string> = {
@@ -19,6 +17,13 @@ function formatDate(value: unknown) {
   const date = new Date(value as string);
   if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleString("pt-BR");
+}
+
+function formatMoney(cents: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format((Number(cents) || 0) / 100);
 }
 
 export default function PedidoDetalhe() {
@@ -51,7 +56,7 @@ export default function PedidoDetalhe() {
           <div style={styles.metaGrid}>
             <div>
               <p style={styles.metaLabel}>Total pago</p>
-              <p style={styles.metaValue}>{formatPrice(Number(query.data.totalPrice))}</p>
+              <p style={styles.metaValue}>{formatMoney(Number(query.data.totalPrice))}</p>
             </div>
             <div>
               <p style={styles.metaLabel}>Rastreio</p>
@@ -69,10 +74,10 @@ export default function PedidoDetalhe() {
               {query.data.items.map(item => (
                 <div key={item.id} style={styles.itemRow}>
                   <div>
-                    <p style={styles.itemName}>{item.productName || `Produto #${item.productId}`}</p>
-                    <p style={styles.itemMeta}>Quantidade: {item.quantity}</p>
-                  </div>
-                  <p style={styles.itemPrice}>{formatPrice(Number(item.productPrice || 0) * Number(item.quantity || 0))}</p>
+                  <p style={styles.itemName}>{item.productName || `Produto #${item.productId}`}</p>
+                  <p style={styles.itemMeta}>Quantidade: {item.quantity}</p>
+                </div>
+                  <p style={styles.itemPrice}>{formatMoney(Number(item.productPrice || 0) * Number(item.quantity || 0))}</p>
                 </div>
               ))}
             </div>
