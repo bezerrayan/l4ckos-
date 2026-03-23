@@ -142,7 +142,7 @@ export default function Pagamento() {
   const paymentStatus = (paymentOrderQuery.data as any)?.status as string | undefined;
   const isPaymentConfirmed =
     paymentStatus === "paid" || paymentStatus === "processing" || paymentStatus === "shipped" || paymentStatus === "delivered";
-  const paymentOrderTotal = Number((paymentOrderQuery.data as any)?.totalPrice ?? 0);
+  const paymentOrderTotalCents = Number((paymentOrderQuery.data as any)?.totalPrice ?? 0);
 
   const estimatedDateRange = useMemo(() => {
     if (!selectedShipping) return "";
@@ -973,7 +973,7 @@ export default function Pagamento() {
               <div style={styles.orderStateMetaCard}>
                 <span style={styles.orderStateMetaLabel}>Total</span>
                 <strong style={styles.orderStateMetaValue}>
-                  {paymentOrderTotal > 0 ? formatPrice(paymentOrderTotal) : "Aguardando atualização"}
+                  {paymentOrderTotalCents > 0 ? formatPrice(paymentOrderTotalCents / 100) : "Aguardando atualização"}
                 </strong>
               </div>
               <div style={styles.orderStateMetaCard}>
