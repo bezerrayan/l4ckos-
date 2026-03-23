@@ -273,6 +273,7 @@ export default function Admin() {
     message: string;
     failures: Array<{ email: string; message: string }>;
   }>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [newProduct, setNewProduct] = useState({ ...emptyProductForm });
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editProduct, setEditProduct] = useState({ ...emptyProductForm });
@@ -527,6 +528,10 @@ export default function Admin() {
   const customers = useMemo(() => [...(customersQuery.data ?? [])].sort((a, b) => b.id - a.id), [customersQuery.data]);
   const products = useMemo(() => [...(productsQuery.data ?? [])].sort((a, b) => b.id - a.id), [productsQuery.data]);
   const orders = useMemo(() => [...(ordersQuery.data ?? [])].sort((a, b) => b.id - a.id), [ordersQuery.data]);
+  const selectedOrder = useMemo(
+    () => orders.find(order => order.id === selectedOrderId) ?? orders[0] ?? null,
+    [orders, selectedOrderId],
+  );
   const recentAudit = useMemo(() => (auditQuery.data ?? []).slice(0, 5), [auditQuery.data]);
   const quickActions = useMemo(
     () => [
@@ -696,33 +701,44 @@ export default function Admin() {
       )}
 
       {section === "customers" && (
-        <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Gestão de Clientes</h2>
-          <div style={styles.tableWrap}>
-            <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Nome</th><th>Email</th><th>Role</th><th>Pedidos</th><th>VIP</th><th>Bloqueado</th><th>Ações</th></tr></thead>
-              <tbody>
-                {customers.map(row => (
-                  <tr key={row.id}>
-                    <td>{row.id}</td><td>{row.name || "-"}</td><td>{row.email || "-"}</td><td>{row.role}</td><td>{row.ordersCount}</td>
-                     <td>{row.isVip ? "Sim" : "Não"}</td><td>{row.isBlocked ? "Sim" : "Não"}</td>
-                     <td style={styles.actionsCell}>
-                       <button style={styles.smallBtn} onClick={() => setRoleMutation.mutate({ userId: row.id, role: row.role === "admin" ? "user" : "admin" })}>
-                         {row.role === "admin" ? "Remover admin" : "Tornar admin"}
-                       </button>
-                       <button style={styles.smallBtn} onClick={() => setFlagsMutation.mutate({ userId: row.id, isVip: !row.isVip })}>
-                         {row.isVip ? "Remover VIP" : "Marcar VIP"}
-                       </button>
-                       <button style={styles.dangerBtn} onClick={() => setFlagsMutation.mutate({ userId: row.id, isBlocked: !row.isBlocked })}>
-                         {row.isBlocked ? "Desbloquear" : "Bloquear"}
-                       </button>
-                     </td>
-                   </tr>
-                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <AdminSurface
+          title="Clientes"
+          description="Gerencie perfis, permissões e sinais operacionais dos usuários cadastrados."
+        >
+          {customersQuery.isLoading ? (
+            <div style={styles.loadingPanel}>Carregando clientes...</div>
+          ) : customers.length === 0 ? (
+            <AdminEmptyState
+              title="Nenhum cliente encontrado"
+              description="Quando houver usuários cadastrados, eles aparecerão aqui com seus indicadores principais."
+            />
+          ) : (
+            <div style={styles.tableWrap}>
+              <table style={styles.table}>
+                <thead><tr><th>ID</th><th>Nome</th><th>Email</th><th>Role</th><th>Pedidos</th><th>VIP</th><th>Bloqueado</th><th>Ações</th></tr></thead>
+                <tbody>
+                  {customers.map(row => (
+                    <tr key={row.id}>
+                      <td>{row.id}</td><td>{row.name || "-"}</td><td>{row.email || "-"}</td><td>{row.role}</td><td>{row.ordersCount}</td>
+                      <td>{row.isVip ? "Sim" : "Não"}</td><td>{row.isBlocked ? "Sim" : "Não"}</td>
+                      <td style={styles.actionsCell}>
+                        <button style={styles.smallBtn} onClick={() => setRoleMutation.mutate({ userId: row.id, role: row.role === "admin" ? "user" : "admin" })}>
+                          {row.role === "admin" ? "Remover admin" : "Tornar admin"}
+                        </button>
+                        <button style={styles.smallBtn} onClick={() => setFlagsMutation.mutate({ userId: row.id, isVip: !row.isVip })}>
+                          {row.isVip ? "Remover VIP" : "Marcar VIP"}
+                        </button>
+                        <button style={styles.dangerBtn} onClick={() => setFlagsMutation.mutate({ userId: row.id, isBlocked: !row.isBlocked })}>
+                          {row.isBlocked ? "Desbloquear" : "Bloquear"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </AdminSurface>
       )}
 
       {section === "products" && (
@@ -1468,83 +1484,132 @@ export default function Admin() {
       )}
 
       {section === "orders" && (
-        <div style={styles.card}>
-          <h2 style={styles.sectionTitle}>Pedidos</h2>
-          <div style={styles.inlineRow}>
-            <label>Status:</label>
-            <select style={styles.select} value={orderFilterStatus} onChange={e => setOrderFilterStatus(e.target.value)}>
-              <option value="">Todos</option>
-              {orderStatuses.map(status => <option key={status} value={status}>{getOrderStatusLabel(status)}</option>)}
-            </select>
-            <button style={styles.smallBtn} onClick={() => ordersQuery.refetch()}>Filtrar</button>
-          </div>
-          <div style={styles.tableWrap}>
-            <table style={styles.table}>
-              <thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Status</th><th>Rastreio</th><th>Itens</th><th>Ações</th></tr></thead>
-              <tbody>
-                {orders.map(row => (
-                  <tr key={row.id}>
-                    <td>
-                      <div style={styles.orderPrimaryText}>#{row.id}</div>
-                      <div style={styles.orderSecondaryText}>
-                        {new Date(row.createdAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={styles.orderPrimaryText}>{row.customerName || row.customerEmail || `Cliente #${row.userId}`}</div>
-                      {row.customerEmail && row.customerName ? (
-                        <div style={styles.orderSecondaryText}>{row.customerEmail}</div>
-                      ) : null}
-                    </td>
-                    <td>
-                      <div style={styles.orderPrimaryText}>{formatPrice(Number(row.totalPrice) / 100)}</div>
-                    </td>
-                    <td>
-                      <span style={{ ...styles.statusBadge, ...getOrderStatusTone(String(row.status)) }}>
-                        {getOrderStatusLabel(String(row.status))}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={styles.orderPrimaryText}>{row.trackingCode || "Pendente"}</div>
-                    </td>
-                    <td>
-                      <div style={styles.orderPrimaryText}>
-                        {(row.items ?? []).reduce((sum, item) => sum + Number(item.quantity ?? 0), 0)} item(ns)
-                      </div>
-                      {(row.items ?? []).length > 0 ? (
-                        <div style={styles.orderSecondaryText}>
-                          {(row.items ?? [])
-                            .slice(0, 1)
-                            .map(item => item.productName || `Produto #${item.productId}`)
-                            .join(", ")}
+        <AdminSurface
+          title="Pedidos"
+          description="Gerencie o fluxo de pedidos com uma visão compacta e um painel lateral para detalhes operacionais."
+          aside={
+            <div style={styles.inlineRow}>
+              <label>Status:</label>
+              <select style={styles.select} value={orderFilterStatus} onChange={e => setOrderFilterStatus(e.target.value)}>
+                <option value="">Todos</option>
+                {orderStatuses.map(status => <option key={status} value={status}>{getOrderStatusLabel(status)}</option>)}
+              </select>
+              <button style={styles.smallBtn} onClick={() => ordersQuery.refetch()}>Filtrar</button>
+            </div>
+          }
+        >
+          {ordersQuery.isLoading ? (
+            <div style={styles.loadingPanel}>Carregando pedidos...</div>
+          ) : orders.length === 0 ? (
+            <AdminEmptyState
+              title="Nenhum pedido encontrado"
+              description="Ajuste o filtro ou aguarde novos pedidos aparecerem aqui."
+            />
+          ) : (
+            <div style={styles.orderAdminLayout}>
+              <div style={styles.tableWrap}>
+                <table style={styles.table}>
+                  <thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Status</th><th>Rastreio</th><th>Itens</th><th>Ações</th></tr></thead>
+                  <tbody>
+                    {orders.map(row => (
+                      <tr
+                        key={row.id}
+                        onClick={() => setSelectedOrderId(row.id)}
+                        style={selectedOrder?.id === row.id ? styles.activeTableRow : undefined}
+                      >
+                        <td>
+                          <div style={styles.orderPrimaryText}>#{row.id}</div>
+                          <div style={styles.orderSecondaryText}>
+                            {new Date(row.createdAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                          </div>
+                        </td>
+                        <td>
+                          <div style={styles.orderPrimaryText}>{row.customerName || row.customerEmail || `Cliente #${row.userId}`}</div>
+                          {row.customerEmail && row.customerName ? (
+                            <div style={styles.orderSecondaryText}>{row.customerEmail}</div>
+                          ) : null}
+                        </td>
+                        <td>
+                          <div style={styles.orderPrimaryText}>{formatPrice(Number(row.totalPrice) / 100)}</div>
+                        </td>
+                        <td>
+                          <span style={{ ...styles.statusBadge, ...getOrderStatusTone(String(row.status)) }}>
+                            {getOrderStatusLabel(String(row.status))}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={styles.orderPrimaryText}>{row.trackingCode || "Pendente"}</div>
+                        </td>
+                        <td>
+                          <div style={styles.orderPrimaryText}>
+                            {(row.items ?? []).reduce((sum, item) => sum + Number(item.quantity ?? 0), 0)} item(ns)
+                          </div>
+                          {(row.items ?? []).length > 0 ? (
+                            <div style={styles.orderSecondaryText}>
+                              {(row.items ?? [])
+                                .slice(0, 1)
+                                .map(item => item.productName || `Produto #${item.productId}`)
+                                .join(", ")}
+                            </div>
+                          ) : null}
+                        </td>
+                        <td style={styles.actionsCell} onClick={event => event.stopPropagation()}>
+                          <select
+                            style={styles.select}
+                            value={row.status}
+                            onChange={e => updateOrderMutation.mutate({ orderId: row.id, status: e.target.value as any })}
+                          >
+                            {orderStatuses.map(status => <option key={status} value={status}>{getOrderStatusLabel(status)}</option>)}
+                          </select>
+                          <button
+                            style={styles.smallBtn}
+                            onClick={() => {
+                              const tracking = window.prompt("Código de rastreio:", row.trackingCode || "");
+                              if (tracking === null) return;
+                              updateOrderMutation.mutate({ orderId: row.id, trackingCode: tracking || null });
+                            }}
+                          >
+                            Rastreio
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {selectedOrder ? (
+                <aside style={styles.orderDetailPanel}>
+                  <div style={styles.orderDetailHeader}>
+                    <strong style={styles.orderDetailTitle}>Pedido #{selectedOrder.id}</strong>
+                    <span style={{ ...styles.statusBadge, ...getOrderStatusTone(String(selectedOrder.status)) }}>
+                      {getOrderStatusLabel(String(selectedOrder.status))}
+                    </span>
+                  </div>
+                  <div style={styles.orderDetailMeta}>
+                    <span>Cliente: {selectedOrder.customerName || selectedOrder.customerEmail || `#${selectedOrder.userId}`}</span>
+                    <span>Total: {formatPrice(Number(selectedOrder.totalPrice) / 100)}</span>
+                    <span>Criado em {new Date(selectedOrder.createdAt).toLocaleString("pt-BR")}</span>
+                    <span>Rastreio: {selectedOrder.trackingCode || "Ainda não informado"}</span>
+                  </div>
+                  <div style={styles.orderDetailItems}>
+                    <strong style={styles.orderDetailSubtitle}>Itens reservados</strong>
+                    {(selectedOrder.items ?? []).length === 0 ? (
+                      <span style={styles.orderSecondaryText}>Este pedido ainda não possui itens detalhados na reserva.</span>
+                    ) : (
+                      (selectedOrder.items ?? []).map((item, index) => (
+                        <div key={`${selectedOrder.id}-${item.productId}-${index}`} style={styles.orderDetailItemRow}>
+                          <span style={styles.orderDetailItemName}>{item.productName || `Produto #${item.productId}`}</span>
+                          <span style={styles.orderSecondaryText}>Quantidade: {item.quantity}</span>
                         </div>
-                      ) : null}
-                    </td>
-                    <td style={styles.actionsCell}>
-                      <select
-                        style={styles.select}
-                        value={row.status}
-                        onChange={e => updateOrderMutation.mutate({ orderId: row.id, status: e.target.value as any })}
-                      >
-                        {orderStatuses.map(status => <option key={status} value={status}>{getOrderStatusLabel(status)}</option>)}
-                      </select>
-                      <button
-                        style={styles.smallBtn}
-                        onClick={() => {
-                          const tracking = window.prompt("Código de rastreio:", row.trackingCode || "");
-                          if (tracking === null) return;
-                          updateOrderMutation.mutate({ orderId: row.id, trackingCode: tracking || null });
-                        }}
-                      >
-                        Rastreio
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      ))
+                    )}
+                  </div>
+                </aside>
+              ) : null}
+            </div>
+          )}
+        </AdminSurface>
       )}
 
       {section === "promos" && (
@@ -1897,7 +1962,7 @@ export default function Admin() {
       {section === "coupons" && (
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Cupons e Descontos</h2>
-          <div style={styles.inlineRow}>
+          <div style={styles.formGrid}>
             <input style={styles.input} placeholder="Código" value={newCoupon.code} onChange={e => setNewCoupon(prev => ({ ...prev, code: e.target.value }))} />
             <select style={styles.select} value={newCoupon.type} onChange={e => setNewCoupon(prev => ({ ...prev, type: e.target.value }))}>
               <option value="percent">Percentual</option>
@@ -1905,6 +1970,8 @@ export default function Admin() {
             </select>
             <input style={styles.input} placeholder="Valor" value={newCoupon.value} onChange={e => setNewCoupon(prev => ({ ...prev, value: e.target.value }))} />
             <input style={styles.input} placeholder="Máx. usos" value={newCoupon.maxUses} onChange={e => setNewCoupon(prev => ({ ...prev, maxUses: e.target.value }))} />
+          </div>
+          <div style={styles.productAdminActions}>
             <button
               style={styles.primaryBtn}
               onClick={() => {
@@ -1916,22 +1983,31 @@ export default function Admin() {
                 });
               }}
             >
-              Criar Cupom
+              Criar cupom
             </button>
           </div>
-          <div style={styles.tableWrap}>
-            <table style={styles.table}>
-              <thead><tr><th>ID</th><th>Código</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Ativo</th><th>Ação</th></tr></thead>
-              <tbody>
-                {(couponsQuery.data ?? []).map(coupon => (
-                  <tr key={coupon.id}>
-                    <td>{coupon.id}</td><td>{coupon.code}</td><td>{coupon.type}</td><td>{coupon.value}</td><td>{coupon.usedCount}/{coupon.maxUses ?? "∞"}</td><td>{coupon.isActive ? "Sim" : "Não"}</td>
-                    <td><button style={styles.dangerBtn} onClick={() => couponDeleteMutation.mutate({ id: coupon.id })}>Excluir</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {couponsQuery.isLoading ? (
+            <div style={styles.loadingPanel}>Carregando cupons...</div>
+          ) : !(couponsQuery.data ?? []).length ? (
+            <AdminEmptyState
+              title="Nenhum cupom cadastrado"
+              description="Crie o primeiro cupom para liberar descontos promocionais no checkout."
+            />
+          ) : (
+            <div style={styles.tableWrap}>
+              <table style={styles.table}>
+                <thead><tr><th>ID</th><th>Código</th><th>Tipo</th><th>Valor</th><th>Usos</th><th>Ativo</th><th>Ação</th></tr></thead>
+                <tbody>
+                  {(couponsQuery.data ?? []).map(coupon => (
+                    <tr key={coupon.id}>
+                      <td>{coupon.id}</td><td>{coupon.code}</td><td>{coupon.type === "percent" ? "Percentual" : "Valor fixo"}</td><td>{coupon.value}</td><td>{coupon.usedCount}/{coupon.maxUses ?? "∞"}</td><td>{coupon.isActive ? "Sim" : "Não"}</td>
+                      <td><button style={styles.dangerBtn} onClick={() => couponDeleteMutation.mutate({ id: coupon.id })}>Excluir</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           <div style={styles.launchCard}>
             <h3 style={styles.sectionTitle}>Avisar lista de espera sobre a abertura</h3>
             <p style={styles.muted}>
@@ -2231,6 +2307,14 @@ const styles: Record<string, CSSProperties> = {
     color: "#8b949e",
     fontSize: 12,
     lineHeight: 1.5,
+  },
+  loadingPanel: {
+    padding: "28px 18px",
+    borderRadius: 16,
+    border: "1px dashed #2f2f2f",
+    background: "#0d0d0d",
+    color: "#9ca3af",
+    textAlign: "center",
   },
   grid: {
     display: "grid",
@@ -2669,6 +2753,64 @@ const styles: Record<string, CSSProperties> = {
     lineHeight: 1.4,
     color: "#e5e7eb",
     textAlign: "center",
+  },
+  activeTableRow: {
+    background: "rgba(255,255,255,0.03)",
+  },
+  orderAdminLayout: {
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr) 320px",
+    gap: 16,
+    alignItems: "start",
+  },
+  orderDetailPanel: {
+    position: "sticky",
+    top: 16,
+    display: "grid",
+    gap: 14,
+    padding: "18px 16px",
+    borderRadius: 18,
+    border: "1px solid #252525",
+    background: "#0d0d0d",
+  },
+  orderDetailHeader: {
+    display: "grid",
+    gap: 10,
+    justifyItems: "start",
+  },
+  orderDetailTitle: {
+    color: "#f8f4ec",
+    fontSize: 20,
+    lineHeight: 1.1,
+  },
+  orderDetailMeta: {
+    display: "grid",
+    gap: 8,
+    color: "#9ca3af",
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
+  orderDetailItems: {
+    display: "grid",
+    gap: 10,
+    paddingTop: 4,
+  },
+  orderDetailSubtitle: {
+    color: "#f8f4ec",
+    fontSize: 14,
+  },
+  orderDetailItemRow: {
+    display: "grid",
+    gap: 4,
+    padding: "10px 12px",
+    borderRadius: 12,
+    border: "1px solid #202020",
+    background: "#121212",
+  },
+  orderDetailItemName: {
+    color: "#f0ede8",
+    fontSize: 13,
+    fontWeight: 700,
   },
   statusBadge: {
     display: "inline-flex",
