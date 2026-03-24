@@ -124,6 +124,14 @@ export const orders = mysqlTable("orders", {
   trackingCode: varchar("trackingCode", { length: 120 }),
   totalPrice: int("totalPrice").notNull(), // em centavos
   asaasCheckoutId: varchar("asaasCheckoutId", { length: 64 }),
+  shippingRecipient: varchar("shippingRecipient", { length: 255 }),
+  shippingZipCode: varchar("shippingZipCode", { length: 20 }),
+  shippingStreet: varchar("shippingStreet", { length: 255 }),
+  shippingNumber: varchar("shippingNumber", { length: 30 }),
+  shippingComplement: varchar("shippingComplement", { length: 255 }),
+  shippingNeighborhood: varchar("shippingNeighborhood", { length: 255 }),
+  shippingCity: varchar("shippingCity", { length: 255 }),
+  shippingState: varchar("shippingState", { length: 100 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

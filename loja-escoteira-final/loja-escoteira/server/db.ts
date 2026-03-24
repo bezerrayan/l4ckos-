@@ -26,6 +26,17 @@ import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
+type OrderShippingSnapshotInput = {
+  recipient: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement?: string | null;
+  neighborhood: string;
+  city: string;
+  state: string;
+};
+
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -368,18 +379,48 @@ export async function clearCart(userId: number) {
 }
 
 // Pedidos
-export async function createOrder(userId: number, totalPrice: number) {
+export async function createOrder(userId: number, totalPrice: number, shippingAddress?: OrderShippingSnapshotInput) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(orders).values({ userId, totalPrice });
+  const result = await db.insert(orders).values({
+    userId,
+    totalPrice,
+    ...(shippingAddress
+      ? {
+          shippingRecipient: shippingAddress.recipient,
+          shippingZipCode: shippingAddress.zipCode,
+          shippingStreet: shippingAddress.street,
+          shippingNumber: shippingAddress.number,
+          shippingComplement: shippingAddress.complement ?? null,
+          shippingNeighborhood: shippingAddress.neighborhood,
+          shippingCity: shippingAddress.city,
+          shippingState: shippingAddress.state,
+        }
+      : {}),
+  });
   return result;
 }
 
-export async function createOrderWithId(userId: number, totalPrice: number) {
+export async function createOrderWithId(userId: number, totalPrice: number, shippingAddress?: OrderShippingSnapshotInput) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(orders).values({ userId, totalPrice });
+  const result = await db.insert(orders).values({
+    userId,
+    totalPrice,
+    ...(shippingAddress
+      ? {
+          shippingRecipient: shippingAddress.recipient,
+          shippingZipCode: shippingAddress.zipCode,
+          shippingStreet: shippingAddress.street,
+          shippingNumber: shippingAddress.number,
+          shippingComplement: shippingAddress.complement ?? null,
+          shippingNeighborhood: shippingAddress.neighborhood,
+          shippingCity: shippingAddress.city,
+          shippingState: shippingAddress.state,
+        }
+      : {}),
+  });
   const insertId = Number((result as any)?.[0]?.insertId ?? 0);
 
   if (!insertId) {
@@ -883,6 +924,21 @@ export async function getOrdersByFilters(filters?: {
     : await db.select().from(orders).orderBy(desc(orders.id));
 
   const usersRows = await db.select({ id: users.id, name: users.name, email: users.email }).from(users);
+  const addressRows = await db
+    .select({
+      userId: userAddresses.userId,
+      recipient: userAddresses.recipient,
+      zipCode: userAddresses.zipCode,
+      street: userAddresses.street,
+      number: userAddresses.number,
+      complement: userAddresses.complement,
+      neighborhood: userAddresses.neighborhood,
+      city: userAddresses.city,
+      state: userAddresses.state,
+      isDefault: userAddresses.isDefault,
+      updatedAt: userAddresses.updatedAt,
+    })
+    .from(userAddresses);
   const reservations = await db
     .select({
       orderId: stockReservations.orderId,
@@ -895,18 +951,70 @@ export async function getOrdersByFilters(filters?: {
 
   const usersById = new Map(usersRows.map(user => [user.id, user]));
   const itemsByOrder = new Map<number, typeof reservations>();
+  const preferredAddressByUser = new Map<number, (typeof addressRows)[number]>();
   for (const item of reservations) {
     const current = itemsByOrder.get(item.orderId) ?? [];
     current.push(item);
     itemsByOrder.set(item.orderId, current);
   }
+  for (const row of addressRows) {
+    const current = preferredAddressByUser.get(row.userId);
+    if (!current) {
+      preferredAddressByUser.set(row.userId, row);
+      continue;
+    }
 
-  return baseOrders.map(order => ({
-    ...order,
-    customerName: usersById.get(order.userId)?.name || null,
-    customerEmail: usersById.get(order.userId)?.email || null,
-    items: itemsByOrder.get(order.id) ?? [],
-  }));
+    const currentWeight = Number(current.isDefault ? 1 : 0) * 10_000_000_000_000 + new Date(current.updatedAt).getTime();
+    const nextWeight = Number(row.isDefault ? 1 : 0) * 10_000_000_000_000 + new Date(row.updatedAt).getTime();
+    if (nextWeight > currentWeight) {
+      preferredAddressByUser.set(row.userId, row);
+    }
+  }
+
+  return baseOrders.map(order => {
+    const fallbackAddress = preferredAddressByUser.get(order.userId);
+    const hasSnapshot = Boolean(
+      order.shippingZipCode ||
+      order.shippingStreet ||
+      order.shippingNeighborhood ||
+      order.shippingCity ||
+      order.shippingState,
+    );
+
+    const shippingAddress = hasSnapshot
+      ? {
+          recipient: order.shippingRecipient || null,
+          zipCode: order.shippingZipCode || null,
+          street: order.shippingStreet || null,
+          number: order.shippingNumber || null,
+          complement: order.shippingComplement || null,
+          neighborhood: order.shippingNeighborhood || null,
+          city: order.shippingCity || null,
+          state: order.shippingState || null,
+          source: "order" as const,
+        }
+      : fallbackAddress
+        ? {
+            recipient: fallbackAddress.recipient || null,
+            zipCode: fallbackAddress.zipCode || null,
+            street: fallbackAddress.street || null,
+            number: fallbackAddress.number || null,
+            complement: fallbackAddress.complement || null,
+            neighborhood: fallbackAddress.neighborhood || null,
+            city: fallbackAddress.city || null,
+            state: fallbackAddress.state || null,
+            source: "profile" as const,
+          }
+        : null;
+
+    return {
+      ...order,
+      customerName: usersById.get(order.userId)?.name || null,
+      customerEmail: usersById.get(order.userId)?.email || null,
+      items: itemsByOrder.get(order.id) ?? [],
+      shippingAddress,
+    };
+  });
 }
 
 export async function setOrderAdminData(

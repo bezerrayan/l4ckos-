@@ -241,6 +241,25 @@ function getOrderStatusTone(status: string): CSSProperties {
   }
 }
 
+function formatAdminAddressLine(address?: {
+  street?: string | null;
+  number?: string | null;
+  complement?: string | null;
+  neighborhood?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+} | null) {
+  if (!address) return [];
+
+  const lineOne = [address.street, address.number].filter(Boolean).join(", ");
+  const lineOneWithComplement = [lineOne, address.complement].filter(Boolean).join(" • ");
+  const lineTwo = [address.neighborhood, [address.city, address.state].filter(Boolean).join(" - ")].filter(Boolean).join(" • ");
+  const lineThree = address.zipCode ? `CEP ${address.zipCode}` : "";
+
+  return [lineOneWithComplement, lineTwo, lineThree].filter(Boolean);
+}
+
 function OverviewIcon({ children }: { children: ReactNode }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -1683,6 +1702,30 @@ export default function Admin() {
                     <span>Rastreio: {selectedOrder.trackingCode || "Ainda não informado"}</span>
                   </div>
                   <div style={styles.orderDetailItems}>
+                    <strong style={styles.orderDetailSubtitle}>Entrega</strong>
+                    {selectedOrder.shippingAddress ? (
+                      <div style={styles.orderAddressCard}>
+                        <div style={styles.orderAddressHeader}>
+                          <span style={styles.orderDetailItemName}>
+                            {selectedOrder.shippingAddress.recipient || "Destinatário não informado"}
+                          </span>
+                          <span style={styles.orderAddressHint}>
+                            {selectedOrder.shippingAddress.source === "profile"
+                              ? "Endereço padrão atual do cliente"
+                              : "Endereço salvo no pedido"}
+                          </span>
+                        </div>
+                        <div style={styles.orderAddressLines}>
+                          {formatAdminAddressLine(selectedOrder.shippingAddress).map(line => (
+                            <span key={`${selectedOrder.id}-${line}`} style={styles.orderSecondaryText}>{line}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <span style={styles.orderSecondaryText}>Nenhum endereço disponível para este pedido.</span>
+                    )}
+                  </div>
+                  <div style={styles.orderDetailItems}>
                     <strong style={styles.orderDetailSubtitle}>Itens reservados</strong>
                     {(selectedOrder.items ?? []).length === 0 ? (
                       <span style={styles.orderSecondaryText}>Este pedido ainda não possui itens detalhados na reserva.</span>
@@ -2943,6 +2986,30 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 12,
     border: "1px solid #202020",
     background: "#121212",
+  },
+  orderAddressCard: {
+    display: "grid",
+    gap: 8,
+    padding: "12px 14px",
+    borderRadius: 12,
+    border: "1px solid #202020",
+    background: "#121212",
+  },
+  orderAddressHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+    flexWrap: "wrap",
+  },
+  orderAddressHint: {
+    color: "#8b949e",
+    fontSize: 11,
+    lineHeight: 1.4,
+  },
+  orderAddressLines: {
+    display: "grid",
+    gap: 4,
   },
   orderDetailItemName: {
     color: "#f0ede8",

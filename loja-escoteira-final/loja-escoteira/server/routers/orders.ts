@@ -28,6 +28,17 @@ const shippingSelectionSchema = z.object({
   optionId: z.string().trim().min(1).max(120),
 });
 
+const shippingAddressSchema = z.object({
+  recipient: z.string().trim().min(3).max(255),
+  zipCode: z.string().trim().regex(/^\d{8}$/),
+  street: z.string().trim().min(2).max(255),
+  number: z.string().trim().min(1).max(30),
+  complement: z.string().trim().max(255).optional(),
+  neighborhood: z.string().trim().min(2).max(255),
+  city: z.string().trim().min(2).max(255),
+  state: z.string().trim().min(2).max(100),
+});
+
 async function resolveOrderPricing(input: {
   items: Array<{ productId: number; quantity: number }>;
   shipping: { cep: string; optionId: string };
@@ -230,6 +241,7 @@ export const ordersRouter = router({
         method: z.enum(["PIX", "BOLETO", "CARD"]),
         items: z.array(checkoutItemSchema).min(1),
         shipping: shippingSelectionSchema,
+        shippingAddress: shippingAddressSchema,
         dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
         customer: z.object({
           name: z.string().min(3).max(255),
@@ -254,7 +266,16 @@ export const ordersRouter = router({
           couponCode: input.couponCode,
         });
 
-        orderId = await createOrderWithId(ctx.user.id, pricing.finalTotalCents);
+        orderId = await createOrderWithId(ctx.user.id, pricing.finalTotalCents, {
+          recipient: input.shippingAddress.recipient,
+          zipCode: input.shippingAddress.zipCode,
+          street: input.shippingAddress.street,
+          number: input.shippingAddress.number,
+          complement: input.shippingAddress.complement,
+          neighborhood: input.shippingAddress.neighborhood,
+          city: input.shippingAddress.city,
+          state: input.shippingAddress.state,
+        });
         await reserveStockForOrder({
           userId: ctx.user.id,
           orderId,

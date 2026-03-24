@@ -112,6 +112,7 @@ export default function Pagamento() {
   const [addressCity, setAddressCity] = useState("");
   const [addressState, setAddressState] = useState("");
   const [addressNumber, setAddressNumber] = useState("");
+  const [addressComplement, setAddressComplement] = useState("");
   const [addressLoading, setAddressLoading] = useState(false);
   const [cep, setCep] = useState("");
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
@@ -372,7 +373,7 @@ export default function Pagamento() {
       return;
     }
 
-    if (!sanitizeCep(cep) || !addressStreet.trim() || !addressCity.trim() || !addressState.trim()) {
+    if (!sanitizeCep(cep) || !addressStreet.trim() || !addressNumber.trim() || !addressNeighborhood.trim() || !addressCity.trim() || !addressState.trim()) {
       setPaymentError("Preencha o CEP e o endereço para continuar.");
       return;
     }
@@ -392,6 +393,16 @@ export default function Pagamento() {
         shipping: {
           cep: sanitizeCep(cep),
           optionId: selectedShipping.id,
+        },
+        shippingAddress: {
+          recipient: customerName.trim(),
+          zipCode: sanitizeCep(cep),
+          street: addressStreet.trim(),
+          number: addressNumber.trim(),
+          complement: addressComplement.trim() || undefined,
+          neighborhood: addressNeighborhood.trim(),
+          city: addressCity.trim(),
+          state: addressState.trim(),
         },
         customer: {
           name: customerName.trim(),
@@ -800,6 +811,12 @@ export default function Pagamento() {
                     placeholder="Número"
                   value={addressNumber}
                   onChange={event => setAddressNumber(event.target.value)}
+                />
+                <input
+                  style={styles.checkoutInput}
+                  placeholder="Complemento (opcional)"
+                  value={addressComplement}
+                  onChange={event => setAddressComplement(event.target.value)}
                 />
                 <input
                   style={styles.checkoutInput}
