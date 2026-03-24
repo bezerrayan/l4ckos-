@@ -37,6 +37,77 @@ type OrderShippingSnapshotInput = {
   state: string;
 };
 
+async function getPreferredUserAddress(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const rows = await db
+    .select({
+      recipient: userAddresses.recipient,
+      zipCode: userAddresses.zipCode,
+      street: userAddresses.street,
+      number: userAddresses.number,
+      complement: userAddresses.complement,
+      neighborhood: userAddresses.neighborhood,
+      city: userAddresses.city,
+      state: userAddresses.state,
+      isDefault: userAddresses.isDefault,
+      updatedAt: userAddresses.updatedAt,
+    })
+    .from(userAddresses)
+    .where(eq(userAddresses.userId, userId));
+
+  if (rows.length === 0) return null;
+
+  return rows.reduce((best, row) => {
+    if (!best) return row;
+    const bestWeight = Number(best.isDefault ? 1 : 0) * 10_000_000_000_000 + new Date(best.updatedAt).getTime();
+    const rowWeight = Number(row.isDefault ? 1 : 0) * 10_000_000_000_000 + new Date(row.updatedAt).getTime();
+    return rowWeight > bestWeight ? row : best;
+  }, rows[0] as (typeof rows)[number] | null);
+}
+
+function buildOrderShippingAddress(
+  order: typeof orders.$inferSelect,
+  fallbackAddress?: Awaited<ReturnType<typeof getPreferredUserAddress>>,
+) {
+  const hasSnapshot = Boolean(
+    order.shippingZipCode ||
+    order.shippingStreet ||
+    order.shippingNeighborhood ||
+    order.shippingCity ||
+    order.shippingState,
+  );
+
+  if (hasSnapshot) {
+    return {
+      recipient: order.shippingRecipient || null,
+      zipCode: order.shippingZipCode || null,
+      street: order.shippingStreet || null,
+      number: order.shippingNumber || null,
+      complement: order.shippingComplement || null,
+      neighborhood: order.shippingNeighborhood || null,
+      city: order.shippingCity || null,
+      state: order.shippingState || null,
+      source: "order" as const,
+    };
+  }
+
+  if (!fallbackAddress) return null;
+
+  return {
+    recipient: fallbackAddress.recipient || null,
+    zipCode: fallbackAddress.zipCode || null,
+    street: fallbackAddress.street || null,
+    number: fallbackAddress.number || null,
+    complement: fallbackAddress.complement || null,
+    neighborhood: fallbackAddress.neighborhood || null,
+    city: fallbackAddress.city || null,
+    state: fallbackAddress.state || null,
+    source: "profile" as const,
+  };
+}
+
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -433,7 +504,14 @@ export async function createOrderWithId(userId: number, totalPrice: number, ship
 export async function getOrdersByUserId(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(orders).where(eq(orders.userId, userId));
+  const [orderRows, fallbackAddress] = await Promise.all([
+    db.select().from(orders).where(eq(orders.userId, userId)),
+    getPreferredUserAddress(userId),
+  ]);
+  return orderRows.map(order => ({
+    ...order,
+    shippingAddress: buildOrderShippingAddress(order, fallbackAddress),
+  }));
 }
 
 export async function getOrderByIdAndUser(orderId: number, userId: number) {
@@ -446,7 +524,13 @@ export async function getOrderByIdAndUser(orderId: number, userId: number) {
     .where(and(eq(orders.id, orderId), eq(orders.userId, userId)))
     .limit(1);
 
-  return result[0];
+  const order = result[0];
+  if (!order) return undefined;
+  const fallbackAddress = await getPreferredUserAddress(userId);
+  return {
+    ...order,
+    shippingAddress: buildOrderShippingAddress(order, fallbackAddress),
+  };
 }
 
 export async function getOrderByTrackingCodeAndUser(trackingCode: string, userId: number) {
@@ -462,7 +546,13 @@ export async function getOrderByTrackingCodeAndUser(trackingCode: string, userId
     .where(and(eq(orders.trackingCode, normalizedTrackingCode), eq(orders.userId, userId)))
     .limit(1);
 
-  return result[0];
+  const order = result[0];
+  if (!order) return undefined;
+  const fallbackAddress = await getPreferredUserAddress(userId);
+  return {
+    ...order,
+    shippingAddress: buildOrderShippingAddress(order, fallbackAddress),
+  };
 }
 
 export async function getOrderReservationItems(orderId: number) {

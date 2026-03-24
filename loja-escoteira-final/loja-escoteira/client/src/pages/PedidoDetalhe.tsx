@@ -26,6 +26,26 @@ function formatMoney(cents: number) {
   }).format((Number(cents) || 0) / 100);
 }
 
+function formatShippingAddress(address?: {
+  recipient?: string | null;
+  street?: string | null;
+  number?: string | null;
+  complement?: string | null;
+  neighborhood?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+} | null) {
+  if (!address) return [];
+
+  return [
+    address.recipient || "",
+    [address.street, address.number].filter(Boolean).join(", "),
+    [address.complement, address.neighborhood].filter(Boolean).join(" • "),
+    [[address.city, address.state].filter(Boolean).join(" - "), address.zipCode ? `CEP ${address.zipCode}` : ""].filter(Boolean).join(" • "),
+  ].filter(Boolean);
+}
+
 export default function PedidoDetalhe() {
   const params = useParams<{ id: string }>();
   const orderId = Number(params.id);
@@ -68,6 +88,22 @@ export default function PedidoDetalhe() {
             </div>
           </div>
 
+          <div style={styles.addressCard}>
+            <div style={styles.sectionHeader}>
+              <h3 style={styles.sectionTitle}>Entrega</h3>
+              <span style={styles.sectionHint}>Confira se este é o endereço correto do pedido.</span>
+            </div>
+            {query.data.shippingAddress ? (
+              <div style={styles.addressLines}>
+                {formatShippingAddress(query.data.shippingAddress).map(line => (
+                  <p key={line} style={styles.addressText}>{line}</p>
+                ))}
+              </div>
+            ) : (
+              <p style={styles.muted}>Endereco de entrega indisponivel no momento.</p>
+            )}
+          </div>
+
           <h3 style={styles.sectionTitle}>Itens deste pedido</h3>
           {query.data.items?.length ? (
             <div style={styles.itemsList}>
@@ -103,7 +139,12 @@ const styles: Record<string, CSSProperties> = {
   metaGrid: { display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" },
   metaLabel: { margin: 0, color: "#a1a1aa", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4 },
   metaValue: { margin: "4px 0 0", color: "#f0ede8", fontWeight: 700 },
+  sectionHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap" },
+  sectionHint: { color: "#a1a1aa", fontSize: 12 },
   sectionTitle: { margin: 0, color: "#f0ede8", fontSize: 18 },
+  addressCard: { border: "1px solid #2f2f2f", borderRadius: 10, padding: 12, display: "grid", gap: 10, background: "#0f0f0f" },
+  addressLines: { display: "grid", gap: 4 },
+  addressText: { margin: 0, color: "#f0ede8", lineHeight: 1.6 },
   itemsList: { display: "grid", gap: 8 },
   itemRow: { border: "1px solid #2f2f2f", borderRadius: 10, padding: 10, display: "flex", justifyContent: "space-between", gap: 10, background: "#0f0f0f" },
   itemName: { margin: 0, color: "#f0ede8", fontWeight: 700 },

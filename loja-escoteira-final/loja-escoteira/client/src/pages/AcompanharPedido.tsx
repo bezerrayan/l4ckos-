@@ -74,6 +74,26 @@ function resolveItemSubtotal(item: TrackedOrderItem) {
   return Number(item.productPrice || 0) * Number(item.quantity || 0);
 }
 
+function formatShippingAddress(address?: {
+  recipient?: string | null;
+  street?: string | null;
+  number?: string | null;
+  complement?: string | null;
+  neighborhood?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+} | null) {
+  if (!address) return [];
+
+  return [
+    address.recipient || "",
+    [address.street, address.number].filter(Boolean).join(", "),
+    [address.complement, address.neighborhood].filter(Boolean).join(" • "),
+    [[address.city, address.state].filter(Boolean).join(" - "), address.zipCode ? `CEP ${address.zipCode}` : ""].filter(Boolean).join(" • "),
+  ].filter(Boolean);
+}
+
 export default function AcompanharPedido() {
   const { isAuthenticated } = useUser();
   const [params] = useSearchParams();
@@ -250,6 +270,23 @@ export default function AcompanharPedido() {
           ) : (
             <p style={styles.cancelled}>Este pedido foi cancelado. Se precisar, fale com o suporte pelos canais oficiais.</p>
           )}
+
+          <div style={styles.section}>
+            <div style={styles.sectionHead}>
+              <h3 style={styles.sectionTitle}>Entrega</h3>
+              <span style={styles.sectionHint}>Endereco confirmado para esta compra.</span>
+            </div>
+
+            {query.data.shippingAddress ? (
+              <div style={styles.addressBox}>
+                {formatShippingAddress(query.data.shippingAddress).map(line => (
+                  <p key={line} style={styles.addressLine}>{line}</p>
+                ))}
+              </div>
+            ) : (
+              <div style={styles.emptyBox}>Ainda nao foi possivel carregar o endereco deste pedido.</div>
+            )}
+          </div>
 
           <div style={styles.section}>
             <div style={styles.sectionHead}>
@@ -539,6 +576,20 @@ const styles: Record<string, CSSProperties> = {
   sectionHint: {
     color: "#9ca3af",
     fontSize: 13,
+  },
+  addressBox: {
+    display: "grid",
+    gap: 6,
+    border: "1px solid #252525",
+    borderRadius: 14,
+    background: "#101010",
+    padding: 14,
+  },
+  addressLine: {
+    margin: 0,
+    color: "#f0ede8",
+    fontSize: 14,
+    lineHeight: 1.6,
   },
   itemsList: {
     display: "grid",
