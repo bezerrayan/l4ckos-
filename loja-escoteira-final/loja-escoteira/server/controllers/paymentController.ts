@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import {
   getOrderByAsaasCheckoutId,
+  getOrderById,
   getOrderByIdAndUser,
   markOrderPaid,
   getUserById,
@@ -15,6 +16,8 @@ import {
   validateAsaasWebhookSignature,
 } from "../services/asaasService";
 import { securityLog } from "../_core/security";
+import { formatCurrency } from "../utils/email/formatCurrency.js";
+import { sendPaymentApprovedEmail, sendPaymentFailedEmail } from "../services/emailService.js";
 
 type AuthenticatedRequest = Request & {
   authUser?: {
@@ -23,6 +26,7 @@ type AuthenticatedRequest = Request & {
 };
 
 const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED", "PAYMENT_OVERDUE_RECEIVED"]);
+const FAILED_EVENTS = new Set(["PAYMENT_REFUSED", "PAYMENT_DELETED", "PAYMENT_REPROVED", "PAYMENT_FAILED"]);
 
 function isTrustedRedirectUrl(redirectUrl: string) {
   try {
@@ -215,7 +219,7 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
     const payload = req.body as any;
     const event = String(payload?.event || "").trim();
 
-    if (!PAID_EVENTS.has(event)) {
+    if (!PAID_EVENTS.has(event) && !FAILED_EVENTS.has(event)) {
       console.log("[Asaas webhook] Ignored event", { event });
       res.status(200).json({ handled: false, reason: "event_ignored" });
       return;
@@ -262,7 +266,40 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
       return;
     }
 
-    const result = await markOrderPaid(orderId);
+    const order = await getOrderById(orderId);
+    let result = { updated: false };
+    if (PAID_EVENTS.has(event)) {
+      result = await markOrderPaid(orderId);
+    }
+    if (order) {
+      const user = await getUserById(order.userId);
+      if (user?.email) {
+        try {
+          if (PAID_EVENTS.has(event)) {
+            await sendPaymentApprovedEmail({
+              customerEmail: user.email,
+              customerName: user.name || "Cliente",
+              orderNumber: String(order.id),
+              total: formatCurrency(order.totalPrice / 100),
+            });
+          } else if (FAILED_EVENTS.has(event)) {
+            await sendPaymentFailedEmail({
+              customerEmail: user.email,
+              customerName: user.name || "Cliente",
+              orderNumber: String(order.id),
+              total: formatCurrency(order.totalPrice / 100),
+              paymentUrl: `${String(process.env.APP_URL || process.env.APP_BASE_URL || process.env.FRONTEND_URL || "https://l4ckos.com.br").replace(/\/$/, "")}/checkout`,
+              failureReason: "A operadora ou o provedor nao confirmou o pagamento.",
+            });
+          }
+        } catch (error) {
+          securityLog("warn", PAID_EVENTS.has(event) ? "email.payment_approved_failed" : "email.payment_failed_notification_failed", {
+            orderId,
+            reason: error instanceof Error ? error.message : "unknown",
+          });
+        }
+      }
+    }
     securityLog("info", "payment.asaas_webhook_processed", {
       requestIp: req.ip || "unknown",
       event,

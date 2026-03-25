@@ -533,6 +533,14 @@ export async function getOrderByIdAndUser(orderId: number, userId: number) {
   };
 }
 
+export async function getOrderById(orderId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  return result[0];
+}
+
 export async function getOrderByTrackingCodeAndUser(trackingCode: string, userId: number) {
   const db = await getDb();
   if (!db) return undefined;

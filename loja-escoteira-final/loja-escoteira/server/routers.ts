@@ -21,6 +21,7 @@ import {
   upsertLocalAuthCredential,
   upsertUser,
 } from "./db";
+import { sendWelcomeAccountEmail } from "./services/emailService.js";
 
 type LoginAttemptState = {
   failCount: number;
@@ -246,6 +247,18 @@ export const appRouter = router({
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ENV.sessionTtlMs });
         securityLog("info", "auth.local_signup_succeeded", { email: normalizedEmail, requestIp, userId: user.id });
+
+        try {
+          await sendWelcomeAccountEmail({
+            email: normalizedEmail,
+            name: normalizedName,
+          });
+        } catch (error) {
+          securityLog("warn", "email.account_welcome_failed", {
+            userId: user.id,
+            reason: error instanceof Error ? error.message : "unknown",
+          });
+        }
 
         return { success: true, user: user ?? null } as const;
       }),

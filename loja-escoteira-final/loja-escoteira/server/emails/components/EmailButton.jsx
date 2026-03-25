@@ -12,13 +12,13 @@ export function EmailButton({ href, children }) {
 
 const styles = {
   btn: {
-    backgroundColor: "#111",
-    color: "#fff",
+    backgroundColor: "#f3efe7",
+    color: "#0b0b0b",
     textDecoration: "none",
-    borderRadius: "8px",
-    padding: "12px 18px",
+    borderRadius: "999px",
+    padding: "13px 20px",
     fontSize: "13px",
-    fontWeight: "700",
-    letterSpacing: "0.04em",
+    fontWeight: "800",
+    letterSpacing: "0.06em",
   },
 };

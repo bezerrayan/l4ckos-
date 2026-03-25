@@ -16,6 +16,7 @@ import {
   getDashboardKpis,
   getAllOrders,
   getAllWaitlistEmails,
+  getOrderById,
   getUserById,
   getOrdersByFilters,
   getProductsAdmin,
@@ -34,7 +35,8 @@ import { ENV } from "../_core/env";
 import { TRPCError } from "@trpc/server";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { sendWaitlistLaunchEmail } from "../services/emailService.js";
+import { sendOrderDeliveredEmail, sendOrderPreparingEmail, sendReviewRequestEmail, sendShippingEmail, sendWaitlistLaunchEmail } from "../services/emailService.js";
+import { formatCurrency } from "../utils/email/formatCurrency.js";
 
 const orderStatusSchema = z.enum([
   "pending",
@@ -289,10 +291,48 @@ export const adminRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const currentOrder = await getOrderById(input.orderId);
       await setOrderAdminData(input.orderId, {
         status: input.status,
         trackingCode: input.trackingCode,
       });
+      const updatedOrder = await getOrderById(input.orderId);
+      const user = updatedOrder ? await getUserById(updatedOrder.userId) : undefined;
+      const appBaseUrl = String(process.env.APP_URL || process.env.APP_BASE_URL || process.env.FRONTEND_URL || "https://l4ckos.com.br").replace(/\/$/, "");
+
+      if (updatedOrder && user?.email && input.status && input.status !== currentOrder?.status) {
+        try {
+          if (input.status === "processing") {
+            await sendOrderPreparingEmail({
+              customerEmail: user.email,
+              customerName: user.name || "Cliente",
+              orderNumber: String(updatedOrder.id),
+              total: formatCurrency(updatedOrder.totalPrice / 100),
+            });
+          } else if (input.status === "shipped") {
+            await sendShippingEmail({
+              customerEmail: user.email,
+              customerName: user.name || "Cliente",
+              orderNumber: String(updatedOrder.id),
+              trackingCode: input.trackingCode || updatedOrder.trackingCode || "",
+              trackingUrl: `${appBaseUrl}/acompanhar-pedido?pedido=${updatedOrder.id}`,
+            });
+          } else if (input.status === "delivered") {
+            await sendOrderDeliveredEmail({
+              customerEmail: user.email,
+              customerName: user.name || "Cliente",
+              orderNumber: String(updatedOrder.id),
+              orderUrl: `${appBaseUrl}/meus-pedidos/${updatedOrder.id}`,
+            });
+            await sendReviewRequestEmail({
+              customerEmail: user.email,
+              customerName: user.name || "Cliente",
+              orderNumber: String(updatedOrder.id),
+              reviewUrl: `${appBaseUrl}/meus-pedidos/${updatedOrder.id}`,
+            });
+          }
+        } catch {}
+      }
       await createAuditLog({
         actorUserId: ctx.user.id,
         action: "order.update",

@@ -18,6 +18,8 @@ import {
 import { createAsaasChargeForOrder } from "../services/asaas";
 import { quoteShippingDetailed } from "../services/shippingService";
 import { listAsaasPaymentsByExternalReference } from "../services/asaasService";
+import { formatCurrency } from "../utils/email/formatCurrency.js";
+import { sendOrderCreatedEmail, sendPaymentPendingEmail } from "../services/emailService.js";
 
 const checkoutItemSchema = z.object({
   productId: z.number().int().positive(),
@@ -110,6 +112,11 @@ async function resolveOrderPricing(input: {
     .join(" + ");
 
   return {
+    itemsPreview: input.items.map(item => ({
+      name: productsById.get(item.productId)?.name || `Produto #${item.productId}`,
+      quantity: item.quantity,
+      price: formatCurrency((Number(productsById.get(item.productId)?.price || 0) * item.quantity) / 100),
+    })),
     itemsSubtotalCents,
     shippingCents,
     grossTotalCents,
@@ -351,6 +358,29 @@ export const ordersRouter = router({
         if (pricing.appliedCouponId) {
           await incrementCouponUsage(pricing.appliedCouponId);
         }
+
+        const formattedTotal = formatCurrency(pricing.finalTotalCents / 100);
+        try {
+          await sendOrderCreatedEmail({
+            customerEmail: input.customer.email || ctx.user.email || "",
+            customerName: input.customer.name,
+            orderNumber: String(orderId),
+            total: formattedTotal,
+            items: pricing.itemsPreview,
+            orderUrl: `${String(process.env.APP_URL || process.env.APP_BASE_URL || process.env.FRONTEND_URL || "https://l4ckos.com.br").replace(/\/$/, "")}/meus-pedidos/${orderId}`,
+          });
+        } catch {}
+
+        try {
+          await sendPaymentPendingEmail({
+            customerEmail: input.customer.email || ctx.user.email || "",
+            customerName: input.customer.name,
+            orderNumber: String(orderId),
+            total: formattedTotal,
+            paymentUrl: payment.invoiceUrl || payment.bankSlipUrl || undefined,
+            dueLabel: input.dueDate || "Aguardando compensacao",
+          });
+        } catch {}
 
         return {
           orderId,

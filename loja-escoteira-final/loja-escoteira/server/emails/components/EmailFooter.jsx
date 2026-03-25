@@ -2,7 +2,7 @@ import { Img, Link, Section, Text } from "@react-email/components";
 
 export function EmailFooter({ note }) {
   const logoUrl = String(process.env.EMAIL_SIGNATURE_LOGO_URL || "").trim();
-  const contactEmail = String(process.env.EMAIL_SIGNATURE_CONTACT_EMAIL || "yandev@l4ckos.com.br").trim();
+  const contactEmail = String(process.env.EMAIL_SIGNATURE_CONTACT_EMAIL || "contato@l4ckos.com.br").trim();
   const websiteUrl = String(process.env.EMAIL_SIGNATURE_WEBSITE || "https://l4ckos.com.br").trim();
   const instagramUrl = String(process.env.EMAIL_SIGNATURE_INSTAGRAM_URL || "https://instagram.com/l4ckosstore").trim();
   const instagramLabel = String(process.env.EMAIL_SIGNATURE_INSTAGRAM_LABEL || "@l4ckosstore").trim();
@@ -10,7 +10,7 @@ export function EmailFooter({ note }) {
 
   return (
     <Section style={styles.wrap}>
-      <Text style={styles.note}>{note || "L4CKOS - Loja Escoteira. Mensagem automatica."}</Text>
+      <Text style={styles.note}>{note || "L4CKOS. Comunicacao automatizada da operacao."}</Text>
       <Section style={styles.card}>
         <table role="presentation" cellPadding="0" cellSpacing="0" width="100%" style={styles.table}>
           <tbody>
@@ -23,8 +23,8 @@ export function EmailFooter({ note }) {
                 )}
               </td>
               <td style={styles.infoCol}>
-                <Text style={styles.name}>Yan Bezerra</Text>
-                <Text style={styles.role}>FOUNDER | L4CKOS</Text>
+                <Text style={styles.name}>L4CKOS</Text>
+                <Text style={styles.role}>Streetwear Outdoor Premium</Text>
 
                 <table role="presentation" cellPadding="0" cellSpacing="0" style={styles.infoTable}>
                   <tbody>
@@ -82,17 +82,10 @@ export function EmailFooter({ note }) {
             </tr>
           </tbody>
         </table>
-
-        <table role="presentation" cellPadding="0" cellSpacing="0" width="100%" style={styles.bottomLineTable}>
-          <tbody>
-            <tr>
-              <td style={styles.bottomLineAccent}>&nbsp;</td>
-              <td style={styles.bottomLine}>&nbsp;</td>
-            </tr>
-          </tbody>
-        </table>
-
         <Text style={styles.tagline}>STREETWEAR • OUTDOOR • LIFESTYLE</Text>
+        <Text style={styles.unsubscribe}>
+          Emails promocionais respeitam seu cadastro e podem incluir opcao de descadastro quando aplicavel.
+        </Text>
       </Section>
     </Section>
   );
@@ -102,7 +95,7 @@ const styles = {
   wrap: {
     borderTop: "1px solid #1a1a1a",
     backgroundColor: "#080808",
-    padding: "14px 24px 18px",
+    padding: "14px 24px 22px",
   },
   note: {
     margin: "0 0 8px",
@@ -136,7 +129,6 @@ const styles = {
   },
   logoFallback: {
     margin: 0,
-    fontFamily: "Arial,Helvetica,sans-serif",
     fontSize: "38px",
     fontWeight: "700",
     color: "#f0ede8",
@@ -149,8 +141,7 @@ const styles = {
   },
   name: {
     margin: "0 0 4px",
-    fontFamily: "Arial,Helvetica,sans-serif",
-    fontSize: "26px",
+    fontSize: "24px",
     fontWeight: "700",
     color: "#f0ede8",
     letterSpacing: "0.3px",
@@ -158,7 +149,6 @@ const styles = {
   },
   role: {
     margin: "0 0 14px",
-    fontFamily: "Arial,Helvetica,sans-serif",
     fontSize: "10px",
     fontWeight: "400",
     color: "#e8002a",
@@ -177,7 +167,6 @@ const styles = {
     height: "18px",
     minWidth: "18px",
     backgroundColor: "#e8002a",
-    fontFamily: "Arial,Helvetica,sans-serif",
     fontSize: "8px",
     fontWeight: "700",
     color: "#ffffff",
@@ -190,43 +179,26 @@ const styles = {
     verticalAlign: "middle",
   },
   link: {
-    fontFamily: "Arial,Helvetica,sans-serif",
     fontSize: "12px",
     color: "#8f98a3",
     textDecoration: "none",
     letterSpacing: "0.1px",
   },
-  bottomLineTable: {
-    width: "100%",
-    borderCollapse: "collapse",
-    marginTop: "20px",
-    maxWidth: "520px",
-    marginLeft: "auto",
-    marginRight: "auto",
-  },
-  bottomLineAccent: {
-    width: "28px",
-    height: "1px",
-    backgroundColor: "#e8002a",
-    fontSize: "0",
-    lineHeight: "0",
-  },
-  bottomLine: {
-    height: "1px",
-    backgroundColor: "#232833",
-    fontSize: "0",
-    lineHeight: "0",
-  },
   tagline: {
-    margin: "10px 0 0",
-    fontFamily: "Arial,Helvetica,sans-serif",
+    margin: "18px 0 0",
     fontSize: "8px",
     color: "#2f3540",
     letterSpacing: "3.5px",
     textTransform: "uppercase",
     textAlign: "center",
     lineHeight: "1",
-    padding: 0,
+    maxWidth: "520px",
+  },
+  unsubscribe: {
+    margin: "12px 0 0",
+    color: "#59606d",
+    fontSize: "11px",
+    lineHeight: "1.6",
     maxWidth: "520px",
   },
 };

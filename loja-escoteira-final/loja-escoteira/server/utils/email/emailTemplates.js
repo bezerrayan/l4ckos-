@@ -1,0 +1,27 @@
+export const emailTemplates = {
+  transactional: [
+    "comingSoonConfirmation",
+    "contactConfirmation",
+    "newContactInternal",
+    "welcomeAccount",
+    "passwordReset",
+    "orderCreated",
+    "paymentPending",
+    "paymentApproved",
+    "paymentFailed",
+    "orderPreparing",
+    "orderShipped",
+    "orderDelivered",
+    "reviewRequest",
+  ],
+  marketing: [
+    "launchAnnouncement",
+    "newDropAnnouncement",
+    "promotionEmail",
+    "abandonedCartReminder1",
+    "abandonedCartReminder2",
+    "abandonedCartReminder3",
+    "crossSellEmail",
+    "loyaltyCouponEmail",
+  ],
+};
