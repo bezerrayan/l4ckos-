@@ -17,7 +17,7 @@ export function EmailFooter({ note, unsubscribeUrl, isMarketing = false }) {
             <tr>
               <td style={styles.logoCol}>
                 {logoUrl ? (
-                  <Img src={logoUrl} alt="L4CKOS" width="160" style={styles.logo} />
+                  <Img src={logoUrl} alt="L4CKOS" width="128" style={styles.logo} />
                 ) : (
                   <Text style={styles.logoFallback}>L4CKOS</Text>
                 )}
@@ -106,20 +106,20 @@ export function EmailFooter({ note, unsubscribeUrl, isMarketing = false }) {
 
 const styles = {
   wrap: {
-    borderTop: "1px solid #1a1a1a",
-    backgroundColor: "#080808",
-    padding: "14px 24px 22px",
+    borderTop: "1px solid #e1ddd5",
+    backgroundColor: "#f6f2eb",
+    padding: "16px 28px 24px",
   },
   note: {
     margin: "0 0 8px",
-    color: "#9aa0aa",
+    color: "#7a7f88",
     fontSize: "12px",
   },
   card: {
     border: "0",
     borderRadius: "0",
-    backgroundColor: "#080808",
-    padding: "24px 8px 20px",
+    backgroundColor: "#f6f2eb",
+    padding: "16px 0 8px",
   },
   table: {
     width: "100%",
@@ -128,17 +128,18 @@ const styles = {
     margin: "0 auto",
   },
   logoCol: {
-    width: "250px",
-    verticalAlign: "middle",
-    paddingRight: "12px",
+    width: "160px",
+    verticalAlign: "top",
+    paddingRight: "16px",
   },
   logo: {
     display: "block",
-    width: "240px",
+    width: "128px",
     height: "auto",
     border: "0",
     outline: "none",
     textDecoration: "none",
+    borderRadius: "14px",
   },
   logoFallback: {
     margin: 0,
@@ -149,25 +150,25 @@ const styles = {
   },
   infoCol: {
     verticalAlign: "top",
-    paddingLeft: "22px",
+    paddingLeft: "0",
     paddingTop: "2px",
   },
   name: {
     margin: "0 0 4px",
-    fontSize: "24px",
+    fontSize: "18px",
     fontWeight: "700",
-    color: "#f0ede8",
+    color: "#181818",
     letterSpacing: "0.3px",
     lineHeight: "1.2",
   },
   role: {
-    margin: "0 0 14px",
+    margin: "0 0 12px",
     fontSize: "10px",
-    fontWeight: "400",
+    fontWeight: "700",
     color: "#e8002a",
-    letterSpacing: "2.4px",
+    letterSpacing: "2px",
     textTransform: "uppercase",
-    lineHeight: "1",
+    lineHeight: "1.3",
   },
   infoTable: {
     borderCollapse: "collapse",
@@ -192,16 +193,16 @@ const styles = {
     verticalAlign: "middle",
   },
   link: {
-    fontSize: "12px",
-    color: "#8f98a3",
+    fontSize: "13px",
+    color: "#4a4f57",
     textDecoration: "none",
     letterSpacing: "0.1px",
   },
   tagline: {
-    margin: "18px 0 0",
+    margin: "16px 0 0",
     fontSize: "8px",
-    color: "#2f3540",
-    letterSpacing: "3.5px",
+    color: "#b3aba0",
+    letterSpacing: "3px",
     textTransform: "uppercase",
     textAlign: "center",
     lineHeight: "1",
@@ -209,13 +210,13 @@ const styles = {
   },
   unsubscribe: {
     margin: "12px 0 0",
-    color: "#59606d",
+    color: "#7a7f88",
     fontSize: "11px",
     lineHeight: "1.6",
     maxWidth: "520px",
   },
   unsubscribeLink: {
-    color: "#f0ede8",
+    color: "#181818",
     textDecoration: "underline",
   },
 };
