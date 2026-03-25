@@ -2,6 +2,7 @@ import { getResendClient } from "./resendClient.js";
 import { renderEmailTemplate } from "./emailRenderer.js";
 import { emailSubjects } from "../../utils/email/emailSubjects.js";
 import { buildUnsubscribeUrl, ensureMarketingAllowed } from "./emailSubscriptions.js";
+import { renderToStaticMarkup } from "react-dom/server";
 
 function sanitizeText(value) {
   return String(value ?? "").trim();
@@ -62,11 +63,12 @@ async function sendEmail({ templateName, subjectKey, subjectPayload, templatePay
 
   const subject = buildSubject(subjectKey, subjectPayload);
   const react = renderEmailTemplate(templateName, templatePayload);
+  const html = `<!doctype html>${renderToStaticMarkup(react)}`;
   const payload = {
     from,
     to: recipients,
     subject,
-    react,
+    html,
     tags,
   };
 
@@ -78,6 +80,13 @@ async function sendEmail({ templateName, subjectKey, subjectPayload, templatePay
     err.name = "ResendError";
     throw err;
   }
+
+  console.info("[Email] sent", {
+    templateName,
+    subject,
+    to: recipients,
+    emailId: data?.id ?? null,
+  });
 
   return data;
 }
