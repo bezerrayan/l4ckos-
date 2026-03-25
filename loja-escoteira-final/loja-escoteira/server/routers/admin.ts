@@ -6,6 +6,7 @@ import {
   createProduct,
   deleteProduct,
   deleteCoupon,
+  getCartItems,
   getAuditLogs,
   getBackupPayload,
   getCoupons,
@@ -17,6 +18,7 @@ import {
   getAllOrders,
   getAllWaitlistEmails,
   getOrderById,
+  getProductsByIds,
   getUserById,
   getOrdersByFilters,
   getProductsAdmin,
@@ -35,7 +37,22 @@ import { ENV } from "../_core/env";
 import { TRPCError } from "@trpc/server";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { sendOrderDeliveredEmail, sendOrderPreparingEmail, sendReviewRequestEmail, sendShippingEmail, sendWaitlistLaunchEmail } from "../services/emailService.js";
+import {
+  sendAbandonedCartReminder1Email,
+  sendAbandonedCartReminder2Email,
+  sendAbandonedCartReminder3Email,
+  sendCrossSellEmail,
+  sendLoyaltyCouponEmail,
+  sendNewDropAnnouncementEmail,
+  sendNewProductsAnnouncementEmail,
+  sendOrderDeliveredEmail,
+  sendOrderPreparingEmail,
+  sendPaymentNotFinishedEmail,
+  sendPromotionEmail,
+  sendReviewRequestEmail,
+  sendShippingEmail,
+  sendWaitlistLaunchEmail,
+} from "../services/emailService.js";
 import { formatCurrency } from "../utils/email/formatCurrency.js";
 
 const orderStatusSchema = z.enum([
@@ -50,6 +67,25 @@ const backupFileNameSchema = z.string().trim().regex(/^[A-Za-z0-9._-]+\.json$/);
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function sanitizeRecipientList(emails: string[]) {
+  return [...new Set(emails.map(item => String(item ?? "").trim().toLowerCase()).filter(Boolean))];
+}
+
+async function getAudienceEmails(audience: "waitlist" | "allUsers" | "vipUsers" | "custom", customEmails: string[] = []) {
+  if (audience === "custom") {
+    return sanitizeRecipientList(customEmails);
+  }
+
+  if (audience === "waitlist") {
+    const waitlist = await getAllWaitlistEmails();
+    return sanitizeRecipientList(waitlist.map(item => item.email));
+  }
+
+  const users = await getUsersWithStats();
+  const filtered = audience === "vipUsers" ? users.filter(user => Boolean(user.isVip)) : users;
+  return sanitizeRecipientList(filtered.map(user => String(user.email ?? "")));
 }
 
 export const adminRouter = router({
@@ -566,6 +602,212 @@ export const adminRouter = router({
         entityId: input.fileName,
       });
       return { success: true } as const;
+    }),
+
+  lifecycleEmailSend: adminProcedure
+    .input(
+      z.object({
+        flow: z.enum(["paymentNotFinished", "abandonedCart1", "abandonedCart2", "abandonedCart3"]),
+        userId: z.number().int().positive(),
+        orderId: z.number().int().positive().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await getUserById(input.userId);
+      const userEmail = String(user?.email ?? "").trim().toLowerCase();
+      if (!user || !userEmail) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Usuario com email valido nao encontrado." });
+      }
+
+      const appBaseUrl = String(process.env.APP_URL || process.env.APP_BASE_URL || process.env.FRONTEND_URL || "https://l4ckos.com.br").replace(/\/$/, "");
+
+      if (input.flow === "paymentNotFinished") {
+        if (!input.orderId) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "orderId e obrigatorio para este fluxo." });
+        }
+
+        const order = await getOrderById(input.orderId);
+        if (!order || order.userId !== input.userId) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Pedido nao encontrado para este usuario." });
+        }
+
+        await sendPaymentNotFinishedEmail({
+          customerEmail: userEmail,
+          customerName: user.name || "Cliente",
+          orderNumber: String(order.id),
+          total: formatCurrency(order.totalPrice / 100),
+          paymentUrl: `${appBaseUrl}/checkout`,
+          recoveryWindowLabel: "enquanto a cobranca do pedido estiver ativa",
+        });
+      } else {
+        const cart = await getCartItems(input.userId);
+        if (cart.length === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Este usuario nao possui itens no carrinho." });
+        }
+
+        const products = await getProductsByIds(cart.map(item => item.productId));
+        const productMap = new Map(products.map(product => [product.id, product]));
+        const items = cart.map(item => {
+          const product = productMap.get(item.productId);
+          return {
+            id: item.productId,
+            name: product?.name || `Produto #${item.productId}`,
+            imageUrl: product?.imageUrl || "",
+            price: formatCurrency(Number(product?.price || 0) / 100),
+          };
+        });
+
+        const payload = {
+          email: userEmail,
+          name: user.name || "Cliente",
+          cartUrl: `${appBaseUrl}/carrinho`,
+          products: items,
+        };
+
+        if (input.flow === "abandonedCart1") {
+          await sendAbandonedCartReminder1Email(payload);
+        } else if (input.flow === "abandonedCart2") {
+          await sendAbandonedCartReminder2Email(payload);
+        } else {
+          await sendAbandonedCartReminder3Email(payload);
+        }
+      }
+
+      await createAuditLog({
+        actorUserId: ctx.user.id,
+        action: "email.lifecycle.send",
+        entity: "email",
+        entityId: `${input.flow}:${input.userId}`,
+        metadata: input,
+      });
+
+      return { success: true } as const;
+    }),
+
+  marketingCampaignSend: adminProcedure
+    .input(
+      z.object({
+        campaign: z.enum(["drop", "newProducts", "promotion", "crossSell", "loyaltyCoupon"]),
+        audience: z.enum(["waitlist", "allUsers", "vipUsers", "custom"]),
+        customEmails: z.array(z.string().email()).optional().default([]),
+        productIds: z.array(z.number().int().positive()).optional().default([]),
+        couponCode: z.string().trim().min(3).max(64).optional(),
+        couponDescription: z.string().trim().max(255).optional(),
+        url: z.string().url().optional(),
+        batchSize: z.number().int().min(1).max(100).default(25),
+        delayMs: z.number().int().min(100).max(5000).default(500),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const emails = await getAudienceEmails(input.audience, input.customEmails);
+      if (emails.length === 0) {
+        return {
+          success: true,
+          total: 0,
+          sent: 0,
+          failed: 0,
+          failures: [],
+          message: "Nenhum destinatario encontrado para este publico.",
+        } as const;
+      }
+
+      const products =
+        input.productIds.length > 0
+          ? await getProductsByIds(input.productIds)
+          : [];
+
+      const normalizedProducts = products.map(product => ({
+        id: product.id,
+        name: product.name,
+        imageUrl: product.imageUrl || "",
+        price: formatCurrency(product.price / 100),
+      }));
+
+      const failures: Array<{ email: string; message: string }> = [];
+      let sent = 0;
+
+      for (let index = 0; index < emails.length; index += input.batchSize) {
+        const batch = emails.slice(index, index + input.batchSize);
+        for (const email of batch) {
+          try {
+            const common = {
+              email,
+              name: "cliente",
+            };
+
+            if (input.campaign === "drop") {
+              await sendNewDropAnnouncementEmail({
+                ...common,
+                dropUrl: input.url,
+                products: normalizedProducts,
+              });
+            } else if (input.campaign === "newProducts") {
+              await sendNewProductsAnnouncementEmail({
+                ...common,
+                productsUrl: input.url,
+                products: normalizedProducts,
+              });
+            } else if (input.campaign === "promotion") {
+              await sendPromotionEmail({
+                ...common,
+                promotionUrl: input.url,
+                couponCode: input.couponCode,
+                couponDescription: input.couponDescription,
+              });
+            } else if (input.campaign === "crossSell") {
+              await sendCrossSellEmail({
+                ...common,
+                collectionUrl: input.url,
+                products: normalizedProducts,
+              });
+            } else {
+              if (!input.couponCode) {
+                throw new Error("couponCode e obrigatorio para fidelizacao.");
+              }
+              await sendLoyaltyCouponEmail({
+                ...common,
+                couponCode: input.couponCode,
+                couponDescription: input.couponDescription,
+                shopUrl: input.url,
+              });
+            }
+
+            sent += 1;
+          } catch (error) {
+            failures.push({
+              email,
+              message: error instanceof Error ? error.message : "Falha desconhecida",
+            });
+          }
+
+          await sleep(input.delayMs);
+        }
+      }
+
+      await createAuditLog({
+        actorUserId: ctx.user.id,
+        action: "marketing.campaign.send",
+        entity: "emailCampaign",
+        entityId: input.campaign,
+        metadata: {
+          ...input,
+          total: emails.length,
+          sent,
+          failed: failures.length,
+        },
+      });
+
+      return {
+        success: failures.length === 0,
+        total: emails.length,
+        sent,
+        failed: failures.length,
+        failures,
+        message:
+          failures.length === 0
+            ? "Disparo concluido com sucesso."
+            : "Disparo concluido com falhas parciais.",
+      } as const;
     }),
 
   waitlistLaunchSend: adminProcedure

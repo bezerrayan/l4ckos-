@@ -1,6 +1,7 @@
 import { getResendClient } from "./resendClient.js";
 import { renderEmailTemplate } from "./emailRenderer.js";
 import { emailSubjects } from "../../utils/email/emailSubjects.js";
+import { buildUnsubscribeUrl, ensureMarketingAllowed } from "./emailSubscriptions.js";
 
 function sanitizeText(value) {
   return String(value ?? "").trim();
@@ -33,6 +34,16 @@ function getDefaultReplyTo() {
     sanitizeText(process.env.SUPPORT_EMAIL) ||
     sanitizeText(process.env.EMAIL_FROM_CONTACT) ||
     sanitizeText(process.env.EMAIL_FROM)
+  );
+}
+
+function getAlertsRecipient() {
+  return (
+    sanitizeText(process.env.ALERTS_NOTIFICATION_EMAIL) ||
+    sanitizeText(process.env.ORDERS_ALERT_EMAIL) ||
+    sanitizeText(process.env.EMAIL_TO_SALES) ||
+    sanitizeText(process.env.EMAIL_TO_FINANCE) ||
+    sanitizeText(process.env.EMAIL_TO_CONTACT)
   );
 }
 
@@ -71,11 +82,48 @@ async function sendEmail({ templateName, subjectKey, subjectPayload, templatePay
   return data;
 }
 
+async function sendMarketingEmail({ templateName, subjectKey, subjectPayload, templatePayload, email, from, replyTo, tags }) {
+  const normalizedEmail = sanitizeEmail(email);
+  if (!normalizedEmail) {
+    throw new Error("Marketing email recipient is required");
+  }
+
+  const allowed = await ensureMarketingAllowed(normalizedEmail);
+  if (!allowed) {
+    return { skipped: true, reason: "unsubscribed" };
+  }
+
+  return sendEmail({
+    templateName,
+    subjectKey,
+    subjectPayload,
+    templatePayload: {
+      ...templatePayload,
+      unsubscribeUrl: buildUnsubscribeUrl(normalizedEmail),
+    },
+    from: from || requireEmailConfig("EMAIL_FROM_MARKETING", ["EMAIL_FROM_NOREPLY", "EMAIL_FROM"]),
+    to: normalizedEmail,
+    replyTo: replyTo || getDefaultReplyTo(),
+    tags,
+  });
+}
+
 function normalizeOrderItems(items = []) {
   return items.map(item => ({
+    id: Number(item.id || item.productId || 0),
     name: sanitizeText(item.name || item.productName || "Produto"),
     quantity: Number(item.quantity || 1),
     price: sanitizeText(item.price || item.formattedPrice || ""),
+  }));
+}
+
+function normalizeProducts(products = []) {
+  return products.map(item => ({
+    id: Number(item.id || item.productId || 0),
+    name: sanitizeText(item.name || item.productName || "Produto"),
+    price: sanitizeText(item.price || item.formattedPrice || ""),
+    imageUrl: sanitizeText(item.imageUrl || item.productImage || ""),
+    stock: item.stock === undefined || item.stock === null ? undefined : Number(item.stock),
   }));
 }
 
@@ -174,6 +222,25 @@ export async function sendPaymentPendingEmail({ customerEmail, customerName, ord
   });
 }
 
+export async function sendPaymentNotFinishedEmail({
+  customerEmail,
+  customerName,
+  orderNumber,
+  total,
+  paymentUrl,
+  recoveryWindowLabel,
+}) {
+  return sendEmail({
+    templateName: "paymentNotFinished",
+    subjectKey: "paymentNotFinished",
+    subjectPayload: { orderNumber },
+    templatePayload: { customerName, orderNumber, total, paymentUrl, recoveryWindowLabel },
+    from: requireEmailConfig("EMAIL_FROM_FINANCE", ["EMAIL_FROM"]),
+    to: sanitizeEmail(customerEmail),
+    replyTo: getDefaultReplyTo(),
+  });
+}
+
 export async function sendPaymentApprovedEmail({ customerEmail, customerName, orderNumber, total }) {
   return sendEmail({
     templateName: "paymentApproved",
@@ -235,26 +302,168 @@ export async function sendOrderDeliveredEmail({ customerEmail, customerName, ord
 }
 
 export async function sendReviewRequestEmail({ customerEmail, customerName, orderNumber, reviewUrl }) {
-  return sendEmail({
+  return sendMarketingEmail({
     templateName: "reviewRequest",
     subjectKey: "reviewRequest",
     subjectPayload: { orderNumber },
     templatePayload: { name: customerName, orderNumber, reviewUrl },
-    from: requireEmailConfig("NO_REPLY_EMAIL", ["EMAIL_FROM_NOREPLY", "EMAIL_FROM"]),
-    to: sanitizeEmail(customerEmail),
+    email: customerEmail,
+  });
+}
+
+export async function sendAbandonedCartReminder1Email({ email, name, cartUrl, products }) {
+  return sendMarketingEmail({
+    templateName: "abandonedCartReminder1",
+    subjectKey: "abandonedCartReminder1",
+    templatePayload: { name, cartUrl, products: normalizeProducts(products) },
+    email,
+  });
+}
+
+export async function sendAbandonedCartReminder2Email({ email, name, cartUrl, products }) {
+  return sendMarketingEmail({
+    templateName: "abandonedCartReminder2",
+    subjectKey: "abandonedCartReminder2",
+    templatePayload: { name, cartUrl, products: normalizeProducts(products) },
+    email,
+  });
+}
+
+export async function sendAbandonedCartReminder3Email({ email, name, cartUrl, products }) {
+  return sendMarketingEmail({
+    templateName: "abandonedCartReminder3",
+    subjectKey: "abandonedCartReminder3",
+    templatePayload: { name, cartUrl, products: normalizeProducts(products) },
+    email,
+  });
+}
+
+export async function sendLaunchAnnouncementEmail({ email, name, launchUrl, couponCode, discountPercent }) {
+  return sendMarketingEmail({
+    templateName: "launchAnnouncement",
+    subjectKey: "launchAnnouncement",
+    templatePayload: { name, launchUrl, couponCode, discountPercent },
+    email,
+  });
+}
+
+export async function sendNewDropAnnouncementEmail({ email, name, dropUrl, products }) {
+  return sendMarketingEmail({
+    templateName: "newDropAnnouncement",
+    subjectKey: "newDropAnnouncement",
+    templatePayload: { name, dropUrl, products: normalizeProducts(products) },
+    email,
+  });
+}
+
+export async function sendNewProductsAnnouncementEmail({ email, name, productsUrl, products }) {
+  return sendMarketingEmail({
+    templateName: "newProductsAnnouncement",
+    subjectKey: "newProductsAnnouncement",
+    templatePayload: { name, productsUrl, products: normalizeProducts(products) },
+    email,
+  });
+}
+
+export async function sendPromotionEmail({ email, name, promotionUrl, couponCode, couponDescription }) {
+  return sendMarketingEmail({
+    templateName: "promotionEmail",
+    subjectKey: "promotionEmail",
+    templatePayload: { name, promotionUrl, couponCode, couponDescription },
+    email,
+  });
+}
+
+export async function sendCrossSellEmail({ email, name, collectionUrl, products }) {
+  return sendMarketingEmail({
+    templateName: "crossSellEmail",
+    subjectKey: "crossSellEmail",
+    templatePayload: { name, collectionUrl, products: normalizeProducts(products) },
+    email,
+  });
+}
+
+export async function sendLoyaltyCouponEmail({ email, name, couponCode, couponDescription, shopUrl }) {
+  return sendMarketingEmail({
+    templateName: "loyaltyCouponEmail",
+    subjectKey: "loyaltyCouponEmail",
+    templatePayload: { name, couponCode, couponDescription, shopUrl },
+    email,
+  });
+}
+
+export async function sendInternalNewSaleAlertEmail({ customerName, customerEmail, orderNumber, total, items, orderUrl }) {
+  const to = getAlertsRecipient();
+  if (!to) {
+    throw new Error("Missing env var: ALERTS_NOTIFICATION_EMAIL");
+  }
+
+  return sendEmail({
+    templateName: "internalNewSaleAlert",
+    subjectKey: "internalNewSaleAlert",
+    subjectPayload: { orderNumber },
+    templatePayload: {
+      customerName,
+      customerEmail,
+      orderNumber,
+      total,
+      items: normalizeProducts(items),
+      orderUrl,
+    },
+    from: requireEmailConfig("ORDERS_EMAIL", ["EMAIL_FROM_SALES", "EMAIL_FROM"]),
+    to,
+    replyTo: getDefaultReplyTo(),
+  });
+}
+
+export async function sendInternalLowStockAlertEmail({ products }) {
+  const to = getAlertsRecipient();
+  if (!to) {
+    throw new Error("Missing env var: ALERTS_NOTIFICATION_EMAIL");
+  }
+
+  return sendEmail({
+    templateName: "internalLowStockAlert",
+    subjectKey: "internalLowStockAlert",
+    subjectPayload: { totalProducts: Array.isArray(products) ? products.length : 0 },
+    templatePayload: { products: normalizeProducts(products).map(item => ({ ...item, stock: Number(item.stock ?? 0) })) },
+    from: requireEmailConfig("ORDERS_EMAIL", ["EMAIL_FROM_SALES", "EMAIL_FROM"]),
+    to,
+    replyTo: getDefaultReplyTo(),
+  });
+}
+
+export async function sendInternalPaymentFailedAlertEmail({
+  customerName,
+  customerEmail,
+  orderNumber,
+  total,
+  failureReason,
+}) {
+  const to = getAlertsRecipient();
+  if (!to) {
+    throw new Error("Missing env var: ALERTS_NOTIFICATION_EMAIL");
+  }
+
+  return sendEmail({
+    templateName: "internalPaymentFailedAlert",
+    subjectKey: "internalPaymentFailedAlert",
+    subjectPayload: { orderNumber },
+    templatePayload: { customerName, customerEmail, orderNumber, total, failureReason },
+    from: requireEmailConfig("EMAIL_FROM_FINANCE", ["EMAIL_FROM"]),
+    to,
     replyTo: getDefaultReplyTo(),
   });
 }
 
 export async function sendWaitlistLaunchEmail({ email, couponCode, discountPercent, launchUrl }) {
-  return sendEmail({
-    templateName: "launchAnnouncement",
-    subjectKey: "launchAnnouncement",
-    templatePayload: { launchUrl, couponCode, discountPercent, name: "cliente" },
-    from: requireEmailConfig("NO_REPLY_EMAIL", ["EMAIL_FROM_NOREPLY", "EMAIL_FROM"]),
-    to: sanitizeEmail(email),
-    replyTo: getDefaultReplyTo(),
+  return sendLaunchAnnouncementEmail({
+    email,
+    couponCode,
+    discountPercent,
+    launchUrl,
+    name: "cliente",
   });
 }
 
-export { logEmailFailure, normalizeOrderItems, resolveAppUrl };
+export { logEmailFailure, normalizeOrderItems, normalizeProducts, resolveAppUrl };

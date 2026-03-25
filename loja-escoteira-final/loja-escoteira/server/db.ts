@@ -21,6 +21,7 @@ import {
   stockReservations,
   promoBanners,
   waitlistEmails,
+  emailUnsubscribes,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -36,6 +37,10 @@ type OrderShippingSnapshotInput = {
   city: string;
   state: string;
 };
+
+function normalizeEmailAddress(email: string) {
+  return String(email ?? "").trim().toLowerCase();
+}
 
 async function getPreferredUserAddress(userId: number) {
   const db = await getDb();
@@ -252,6 +257,47 @@ export async function getAllWaitlistEmails() {
     .from(waitlistEmails)
     .orderBy(desc(waitlistEmails.id));
   return rows;
+}
+
+export async function isEmailUnsubscribed(email: string) {
+  const db = await getDb();
+  if (!db) return false;
+
+  const normalizedEmail = normalizeEmailAddress(email);
+  if (!normalizedEmail) return false;
+
+  const rows = await db
+    .select({ id: emailUnsubscribes.id })
+    .from(emailUnsubscribes)
+    .where(eq(emailUnsubscribes.email, normalizedEmail))
+    .limit(1);
+
+  return rows.length > 0;
+}
+
+export async function unsubscribeEmail(payload: { email: string; reason?: string | null; source?: string | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const normalizedEmail = normalizeEmailAddress(payload.email);
+  if (!normalizedEmail) {
+    throw new Error("Email is required");
+  }
+
+  return await db
+    .insert(emailUnsubscribes)
+    .values({
+      email: normalizedEmail,
+      reason: payload.reason ?? null,
+      source: payload.source ?? null,
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        reason: payload.reason ?? null,
+        source: payload.source ?? null,
+        createdAt: sql`CURRENT_TIMESTAMP`,
+      },
+    });
 }
 
 export async function setOrderAsaasCheckoutId(orderId: number, asaasCheckoutId: string) {
@@ -727,8 +773,10 @@ export async function markOrderPaid(orderId: number) {
     }
 
     if (order.status === "paid" || order.status === "shipped" || order.status === "delivered") {
-      return { updated: false, status: order.status } as const;
+      return { updated: false, status: order.status, lowStockProducts: [] } as const;
     }
+
+    const lowStockProducts: Array<{ id: number; name: string; stock: number }> = [];
 
     await tx.update(orders).set({ status: "paid" }).where(eq(orders.id, orderId));
 
@@ -745,12 +793,34 @@ export async function markOrderPaid(orderId: number) {
       );
 
     for (const reservation of activeReservations) {
+      const productRows = await tx
+        .select({
+          id: products.id,
+          name: products.name,
+          stock: products.stock,
+        })
+        .from(products)
+        .where(eq(products.id, reservation.productId))
+        .limit(1);
+
+      const product = productRows[0];
+      const currentStock = Number(product?.stock ?? 0);
+      const nextStock = currentStock - reservation.quantity;
+
       await tx
         .update(products)
         .set({
           stock: sql`${products.stock} - ${reservation.quantity}`,
         })
         .where(eq(products.id, reservation.productId));
+
+      if (product && currentStock > 5 && nextStock <= 5) {
+        lowStockProducts.push({
+          id: Number(product.id),
+          name: product.name,
+          stock: Math.max(0, nextStock),
+        });
+      }
     }
 
     await tx
@@ -758,7 +828,7 @@ export async function markOrderPaid(orderId: number) {
       .set({ status: "consumed" })
       .where(and(eq(stockReservations.orderId, orderId), eq(stockReservations.status, "active")));
 
-    return { updated: true, status: "paid" } as const;
+    return { updated: true, status: "paid", lowStockProducts } as const;
   });
 }
 

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import {
   getOrderByAsaasCheckoutId,
   getOrderById,
+  getOrderReservationItems,
   getOrderByIdAndUser,
   markOrderPaid,
   getUserById,
@@ -17,7 +18,13 @@ import {
 } from "../services/asaasService";
 import { securityLog } from "../_core/security";
 import { formatCurrency } from "../utils/email/formatCurrency.js";
-import { sendPaymentApprovedEmail, sendPaymentFailedEmail } from "../services/emailService.js";
+import {
+  sendInternalLowStockAlertEmail,
+  sendInternalNewSaleAlertEmail,
+  sendInternalPaymentFailedAlertEmail,
+  sendPaymentApprovedEmail,
+  sendPaymentFailedEmail,
+} from "../services/emailService.js";
 
 type AuthenticatedRequest = Request & {
   authUser?: {
@@ -273,6 +280,7 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
     }
     if (order) {
       const user = await getUserById(order.userId);
+      const orderItems = PAID_EVENTS.has(event) ? await getOrderReservationItems(order.id) : [];
       if (user?.email) {
         try {
           if (PAID_EVENTS.has(event)) {
@@ -282,6 +290,24 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
               orderNumber: String(order.id),
               total: formatCurrency(order.totalPrice / 100),
             });
+            await sendInternalNewSaleAlertEmail({
+              customerName: user.name || "Cliente",
+              customerEmail: user.email,
+              orderNumber: String(order.id),
+              total: formatCurrency(order.totalPrice / 100),
+              items: orderItems.map(item => ({
+                id: item.productId,
+                name: item.productName || `Produto #${item.productId}`,
+                price: formatCurrency((Number(item.productPrice || 0) * Number(item.quantity || 1)) / 100),
+                imageUrl: item.productImage || "",
+              })),
+              orderUrl: `${String(process.env.APP_URL || process.env.APP_BASE_URL || process.env.FRONTEND_URL || "https://l4ckos.com.br").replace(/\/$/, "")}/meus-pedidos/${order.id}`,
+            });
+            if (Array.isArray((result as any).lowStockProducts) && (result as any).lowStockProducts.length > 0) {
+              await sendInternalLowStockAlertEmail({
+                products: (result as any).lowStockProducts,
+              });
+            }
           } else if (FAILED_EVENTS.has(event)) {
             await sendPaymentFailedEmail({
               customerEmail: user.email,
@@ -289,6 +315,13 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
               orderNumber: String(order.id),
               total: formatCurrency(order.totalPrice / 100),
               paymentUrl: `${String(process.env.APP_URL || process.env.APP_BASE_URL || process.env.FRONTEND_URL || "https://l4ckos.com.br").replace(/\/$/, "")}/checkout`,
+              failureReason: "A operadora ou o provedor nao confirmou o pagamento.",
+            });
+            await sendInternalPaymentFailedAlertEmail({
+              customerName: user.name || "Cliente",
+              customerEmail: user.email,
+              orderNumber: String(order.id),
+              total: formatCurrency(order.totalPrice / 100),
               failureReason: "A operadora ou o provedor nao confirmou o pagamento.",
             });
           }

@@ -297,3 +297,15 @@ export const waitlistEmails = mysqlTable("waitlist_emails", {
 
 export type WaitlistEmail = typeof waitlistEmails.$inferSelect;
 export type InsertWaitlistEmail = typeof waitlistEmails.$inferInsert;
+
+// Descadastro de emails de marketing
+export const emailUnsubscribes = mysqlTable("emailUnsubscribes", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  reason: varchar("reason", { length: 120 }),
+  source: varchar("source", { length: 120 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EmailUnsubscribe = typeof emailUnsubscribes.$inferSelect;
+export type InsertEmailUnsubscribe = typeof emailUnsubscribes.$inferInsert;

@@ -2,7 +2,7 @@ import { Body, Container, Head, Html, Preview, Section, Text } from "@react-emai
 import { EmailFooter } from "./EmailFooter.jsx";
 import { EmailHeader } from "./EmailHeader.jsx";
 
-export function EmailLayout({ preview, title, subtitle, footerNote, children }) {
+export function EmailLayout({ preview, title, subtitle, footerNote, unsubscribeUrl, isMarketing = false, children }) {
   return (
     <Html>
       <Head />
@@ -14,7 +14,7 @@ export function EmailLayout({ preview, title, subtitle, footerNote, children }) 
             <Text style={styles.kicker}>L4CKOS</Text>
             {children}
           </Section>
-          <EmailFooter note={footerNote} />
+          <EmailFooter note={footerNote} unsubscribeUrl={unsubscribeUrl} isMarketing={isMarketing} />
         </Container>
       </Body>
     </Html>

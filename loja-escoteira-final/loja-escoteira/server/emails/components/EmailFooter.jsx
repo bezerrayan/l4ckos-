@@ -1,6 +1,6 @@
 import { Img, Link, Section, Text } from "@react-email/components";
 
-export function EmailFooter({ note }) {
+export function EmailFooter({ note, unsubscribeUrl, isMarketing = false }) {
   const logoUrl = String(process.env.EMAIL_SIGNATURE_LOGO_URL || "").trim();
   const contactEmail = String(process.env.EMAIL_SIGNATURE_CONTACT_EMAIL || "contato@l4ckos.com.br").trim();
   const websiteUrl = String(process.env.EMAIL_SIGNATURE_WEBSITE || "https://l4ckos.com.br").trim();
@@ -83,9 +83,22 @@ export function EmailFooter({ note }) {
           </tbody>
         </table>
         <Text style={styles.tagline}>STREETWEAR • OUTDOOR • LIFESTYLE</Text>
-        <Text style={styles.unsubscribe}>
-          Emails promocionais respeitam seu cadastro e podem incluir opcao de descadastro quando aplicavel.
-        </Text>
+        {isMarketing ? (
+          <Text style={styles.unsubscribe}>
+            Este email faz parte da comunicacao de marketing da L4CKOS.{" "}
+            {unsubscribeUrl ? (
+              <Link href={unsubscribeUrl} style={styles.unsubscribeLink}>
+                Descadastrar
+              </Link>
+            ) : (
+              "Atualize seu descadastro quando aplicavel."
+            )}
+          </Text>
+        ) : (
+          <Text style={styles.unsubscribe}>
+            Emails transacionais mantem voce atualizado sobre conta, pedido e operacao da L4CKOS.
+          </Text>
+        )}
       </Section>
     </Section>
   );
@@ -200,5 +213,9 @@ const styles = {
     fontSize: "11px",
     lineHeight: "1.6",
     maxWidth: "520px",
+  },
+  unsubscribeLink: {
+    color: "#f0ede8",
+    textDecoration: "underline",
   },
 };

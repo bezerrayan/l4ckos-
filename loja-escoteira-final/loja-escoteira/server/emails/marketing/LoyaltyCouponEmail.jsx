@@ -3,9 +3,15 @@ import { EmailButton } from "../components/EmailButton.jsx";
 import { EmailCouponPanel } from "../components/EmailCouponPanel.jsx";
 import { EmailLayout } from "../components/EmailLayout.jsx";
 
-export function LoyaltyCouponEmail({ name, couponCode, couponDescription, shopUrl }) {
+export function LoyaltyCouponEmail({ name, couponCode, couponDescription, shopUrl, unsubscribeUrl }) {
   return (
-    <EmailLayout preview="Seu proximo passo na L4CKOS" title="Incentivo para a proxima compra" subtitle="Beneficio de fidelizacao">
+    <EmailLayout
+      preview="Seu proximo passo na L4CKOS"
+      title="Incentivo para a proxima compra"
+      subtitle="Beneficio de fidelizacao"
+      unsubscribeUrl={unsubscribeUrl}
+      isMarketing
+    >
       <Text>Ola, {name || "cliente"}.</Text>
       <Text>Obrigado por seguir construindo a jornada com a L4CKOS. Liberamos um incentivo para a sua proxima compra.</Text>
       <EmailCouponPanel code={couponCode} description={couponDescription} />

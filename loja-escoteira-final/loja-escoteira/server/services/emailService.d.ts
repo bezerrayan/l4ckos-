@@ -1,3 +1,15 @@
+type EmailProduct = {
+  id?: number;
+  productId?: number;
+  name?: string;
+  productName?: string;
+  price?: string;
+  formattedPrice?: string;
+  imageUrl?: string;
+  productImage?: string;
+  stock?: number;
+};
+
 export function sendComingSoonConfirmationEmail(payload: {
   email: string;
   name?: string;
@@ -46,6 +58,15 @@ export function sendPaymentPendingEmail(payload: {
   dueLabel?: string;
 }): Promise<unknown>;
 
+export function sendPaymentNotFinishedEmail(payload: {
+  customerEmail: string;
+  customerName?: string;
+  orderNumber: string;
+  total: string;
+  paymentUrl?: string;
+  recoveryWindowLabel?: string;
+}): Promise<unknown>;
+
 export function sendPaymentApprovedEmail(payload: {
   customerEmail: string;
   customerName?: string;
@@ -59,6 +80,27 @@ export function sendPaymentFailedEmail(payload: {
   orderNumber: string;
   total: string;
   paymentUrl?: string;
+  failureReason?: string;
+}): Promise<unknown>;
+
+export function sendInternalNewSaleAlertEmail(payload: {
+  customerName?: string;
+  customerEmail?: string;
+  orderNumber: string;
+  total: string;
+  items?: EmailProduct[];
+  orderUrl?: string;
+}): Promise<unknown>;
+
+export function sendInternalLowStockAlertEmail(payload: {
+  products: EmailProduct[];
+}): Promise<unknown>;
+
+export function sendInternalPaymentFailedAlertEmail(payload: {
+  customerName?: string;
+  customerEmail?: string;
+  orderNumber: string;
+  total: string;
   failureReason?: string;
 }): Promise<unknown>;
 
@@ -91,10 +133,76 @@ export function sendReviewRequestEmail(payload: {
   reviewUrl?: string;
 }): Promise<unknown>;
 
+export function sendAbandonedCartReminder1Email(payload: {
+  email: string;
+  name?: string;
+  cartUrl?: string;
+  products?: EmailProduct[];
+}): Promise<unknown>;
+
+export function sendAbandonedCartReminder2Email(payload: {
+  email: string;
+  name?: string;
+  cartUrl?: string;
+  products?: EmailProduct[];
+}): Promise<unknown>;
+
+export function sendAbandonedCartReminder3Email(payload: {
+  email: string;
+  name?: string;
+  cartUrl?: string;
+  products?: EmailProduct[];
+}): Promise<unknown>;
+
+export function sendLaunchAnnouncementEmail(payload: {
+  email: string;
+  name?: string;
+  launchUrl?: string;
+  couponCode?: string;
+  discountPercent?: number;
+}): Promise<unknown>;
+
+export function sendNewDropAnnouncementEmail(payload: {
+  email: string;
+  name?: string;
+  dropUrl?: string;
+  products?: EmailProduct[];
+}): Promise<unknown>;
+
+export function sendNewProductsAnnouncementEmail(payload: {
+  email: string;
+  name?: string;
+  productsUrl?: string;
+  products?: EmailProduct[];
+}): Promise<unknown>;
+
+export function sendPromotionEmail(payload: {
+  email: string;
+  name?: string;
+  promotionUrl?: string;
+  couponCode?: string;
+  couponDescription?: string;
+}): Promise<unknown>;
+
+export function sendCrossSellEmail(payload: {
+  email: string;
+  name?: string;
+  collectionUrl?: string;
+  products?: EmailProduct[];
+}): Promise<unknown>;
+
+export function sendLoyaltyCouponEmail(payload: {
+  email: string;
+  name?: string;
+  couponCode: string;
+  couponDescription?: string;
+  shopUrl?: string;
+}): Promise<unknown>;
+
 export function sendWaitlistLaunchEmail(payload: {
   email: string;
-  couponCode: string;
-  discountPercent: number;
+  couponCode?: string;
+  discountPercent?: number;
   launchUrl?: string;
 }): Promise<unknown>;
 

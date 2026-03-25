@@ -10,8 +10,13 @@ import { OrderShipped } from "../../emails/transactional/OrderShipped.jsx";
 import { OrderDelivered } from "../../emails/transactional/OrderDelivered.jsx";
 import { PasswordReset } from "../../emails/transactional/PasswordReset.jsx";
 import { WelcomeAccount } from "../../emails/transactional/WelcomeAccount.jsx";
+import { PaymentNotFinished } from "../../emails/transactional/PaymentNotFinished.jsx";
+import { InternalNewSaleAlert } from "../../emails/transactional/InternalNewSaleAlert.jsx";
+import { InternalLowStockAlert } from "../../emails/transactional/InternalLowStockAlert.jsx";
+import { InternalPaymentFailedAlert } from "../../emails/transactional/InternalPaymentFailedAlert.jsx";
 import { LaunchAnnouncement } from "../../emails/marketing/LaunchAnnouncement.jsx";
 import { NewDropAnnouncement } from "../../emails/marketing/NewDropAnnouncement.jsx";
+import { NewProductsAnnouncement } from "../../emails/marketing/NewProductsAnnouncement.jsx";
 import { PromotionEmail } from "../../emails/marketing/PromotionEmail.jsx";
 import { AbandonedCartReminder1 } from "../../emails/marketing/AbandonedCartReminder1.jsx";
 import { AbandonedCartReminder2 } from "../../emails/marketing/AbandonedCartReminder2.jsx";
@@ -26,16 +31,21 @@ const templateMap = {
   newContactInternal: NewContactInternal,
   welcomeAccount: WelcomeAccount,
   passwordReset: PasswordReset,
+  paymentNotFinished: PaymentNotFinished,
   orderCreated: OrderCreated,
   paymentPending: PaymentPending,
   paymentApproved: PaymentApproved,
   paymentFailed: PaymentFailed,
+  internalNewSaleAlert: InternalNewSaleAlert,
+  internalLowStockAlert: InternalLowStockAlert,
+  internalPaymentFailedAlert: InternalPaymentFailedAlert,
   orderPreparing: OrderPreparing,
   orderShipped: OrderShipped,
   orderDelivered: OrderDelivered,
   reviewRequest: ReviewRequest,
   launchAnnouncement: LaunchAnnouncement,
   newDropAnnouncement: NewDropAnnouncement,
+  newProductsAnnouncement: NewProductsAnnouncement,
   promotionEmail: PromotionEmail,
   abandonedCartReminder1: AbandonedCartReminder1,
   abandonedCartReminder2: AbandonedCartReminder2,
