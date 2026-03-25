@@ -1,6 +1,17 @@
 {
   "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    "backups",
+    "uploads",
+    "coverage",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
