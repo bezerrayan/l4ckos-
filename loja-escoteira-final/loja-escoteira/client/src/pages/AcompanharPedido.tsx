@@ -334,7 +334,7 @@ export default function AcompanharPedido() {
 
           <div style={styles.actions}>
             {canEditShippingAddress(query.data.status) ? (
-              <Link to={`/pedido/${query.data.id}`} style={styles.secondaryButton}>
+              <Link to={`/meus-pedidos/${query.data.id}`} style={styles.secondaryButton}>
                 Ajustar endereco
               </Link>
             ) : null}
