@@ -5,19 +5,19 @@ import { EmailStatusBadge } from "../components/EmailStatusBadge.jsx";
 
 export function ComingSoonConfirmation({ name, launchUrl }) {
   return (
-    <EmailLayout preview="Lista de espera confirmada" title="Voce esta dentro" subtitle="Lista de espera L4CKOS">
+    <EmailLayout preview="Lista de espera confirmada" title="Você está dentro" subtitle="Lista de espera L4CKOS">
       <EmailStatusBadge tone="neutral">Acesso antecipado</EmailStatusBadge>
       <Section style={styles.hero}>
-        <Text style={styles.lead}>Ola, {name || "cliente"}.</Text>
+        <Text style={styles.lead}>Olá, {name || "cliente"}.</Text>
         <Text style={styles.copy}>
-          Seu cadastro foi confirmado. Quando o primeiro drop abrir, voce recebe o aviso antes do publico geral.
+          Seu cadastro foi confirmado. Quando o primeiro drop abrir, você recebe o aviso antes do público geral.
         </Text>
       </Section>
       <Section style={styles.panel}>
         <Text style={styles.panelTitle}>O que acontece agora</Text>
-        <Text style={styles.panelCopy}>Voce entra na frente na janela de aviso e recebe a comunicacao oficial de abertura.</Text>
+        <Text style={styles.panelCopy}>Você entra na frente na janela de aviso e recebe a comunicação oficial de abertura.</Text>
       </Section>
-      {launchUrl ? <EmailButton href={launchUrl}>Acompanhar lancamento</EmailButton> : null}
+      {launchUrl ? <EmailButton href={launchUrl}>Acompanhar lançamento</EmailButton> : null}
     </EmailLayout>
   );
 }
