@@ -12,15 +12,15 @@ export function EmailButton({ href, children }) {
 
 const styles = {
   btn: {
-    backgroundColor: "#151515",
-    color: "#f7f3ec",
+    backgroundColor: "#2b2925",
+    color: "#f3eee6",
     textDecoration: "none",
     borderRadius: "999px",
     padding: "14px 22px",
     fontSize: "14px",
     fontWeight: "800",
     letterSpacing: "0.06em",
-    border: "1px solid #151515",
+    border: "1px solid #2b2925",
     display: "inline-block",
   },
 };
