@@ -13,6 +13,7 @@ import {
   incrementCouponUsage,
   markOrderPaid,
   reserveStockForOrder,
+  updateOrderShippingAddress,
 } from "../db";
 import { createAsaasChargeForOrder } from "../services/asaas";
 import { quoteShippingDetailed } from "../services/shippingService";
@@ -37,6 +38,14 @@ const shippingAddressSchema = z.object({
   neighborhood: z.string().trim().min(2).max(255),
   city: z.string().trim().min(2).max(255),
   state: z.string().trim().min(2).max(100),
+});
+
+const shippingAddressEditableSchema = z.object({
+  recipient: z.string().trim().min(3).max(255),
+  street: z.string().trim().min(2).max(255),
+  number: z.string().trim().min(1).max(30),
+  complement: z.string().trim().max(255).optional(),
+  neighborhood: z.string().trim().min(2).max(255),
 });
 
 async function resolveOrderPricing(input: {
@@ -192,6 +201,50 @@ export const ordersRouter = router({
     const items = await getOrderReservationItems(syncedOrder.id);
     return { ...syncedOrder, items };
   }),
+
+  updateShippingAddress: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.number().int().positive(),
+        address: shippingAddressEditableSchema,
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const order = await getOrderByIdAndUser(input.orderId, ctx.user.id);
+      const syncedOrder = await syncOrderPaymentIfNeeded(order);
+
+      if (!syncedOrder) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Pedido nao encontrado para este usuario",
+        });
+      }
+
+      if (!["pending", "paid"].includes(String(syncedOrder.status))) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "O endereco so pode ser ajustado antes do pedido entrar em separacao.",
+        });
+      }
+
+      await updateOrderShippingAddress(syncedOrder.id, {
+        recipient: input.address.recipient,
+        street: input.address.street,
+        number: input.address.number,
+        complement: input.address.complement,
+        neighborhood: input.address.neighborhood,
+      });
+
+      const updatedOrder = await getOrderByIdAndUser(syncedOrder.id, ctx.user.id);
+      if (!updatedOrder) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Nao foi possivel carregar o pedido atualizado.",
+        });
+      }
+
+      return updatedOrder;
+    }),
 
   // Create order only
   create: protectedProcedure

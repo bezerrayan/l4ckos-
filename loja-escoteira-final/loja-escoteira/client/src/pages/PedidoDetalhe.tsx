@@ -1,6 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { useOrderDetail } from "../hooks/useOrders";
+import { trpc } from "../lib/trpc";
 type OrderStatus = "pending" | "processing" | "paid" | "shipped" | "delivered" | "cancelled";
 
 const statusText: Record<OrderStatus, string> = {
@@ -46,10 +48,46 @@ function formatShippingAddress(address?: {
   ].filter(Boolean);
 }
 
+function canEditShippingAddress(status?: string | null) {
+  return status === "pending" || status === "paid";
+}
+
 export default function PedidoDetalhe() {
   const params = useParams<{ id: string }>();
   const orderId = Number(params.id);
   const query = useOrderDetail(Number.isFinite(orderId) ? orderId : undefined);
+  const utils = trpc.useUtils();
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [addressForm, setAddressForm] = useState({
+    recipient: "",
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+  });
+
+  useEffect(() => {
+    const address = query.data?.shippingAddress;
+    if (!address) return;
+
+    setAddressForm({
+      recipient: address.recipient || "",
+      street: address.street || "",
+      number: address.number || "",
+      complement: address.complement || "",
+      neighborhood: address.neighborhood || "",
+    });
+  }, [query.data?.id, query.data?.shippingAddress]);
+
+  const updateShippingAddressMutation = trpc.orders.updateShippingAddress.useMutation({
+    onSuccess: async () => {
+      setIsEditingAddress(false);
+      await Promise.all([
+        utils.orders.detail.invalidate(orderId),
+        utils.orders.list.invalidate(),
+      ]);
+    },
+  });
 
   return (
     <section style={styles.wrapper}>
@@ -91,7 +129,18 @@ export default function PedidoDetalhe() {
           <div style={styles.addressCard}>
             <div style={styles.sectionHeader}>
               <h3 style={styles.sectionTitle}>Entrega</h3>
-              <span style={styles.sectionHint}>Confira se este é o endereço correto do pedido.</span>
+              <div style={styles.addressActions}>
+                <span style={styles.sectionHint}>Confira se este é o endereço correto do pedido.</span>
+                {canEditShippingAddress(query.data.status) ? (
+                  <button
+                    type="button"
+                    style={styles.editButton}
+                    onClick={() => setIsEditingAddress(current => !current)}
+                  >
+                    {isEditingAddress ? "Cancelar" : "Ajustar endereço"}
+                  </button>
+                ) : null}
+              </div>
             </div>
             {query.data.shippingAddress ? (
               <div style={styles.addressLines}>
@@ -102,6 +151,75 @@ export default function PedidoDetalhe() {
             ) : (
               <p style={styles.muted}>Endereco de entrega indisponivel no momento.</p>
             )}
+            {canEditShippingAddress(query.data.status) ? (
+              <p style={styles.addressRule}>
+                Voce pode ajustar destinatario, rua, numero, complemento e bairro ate o pedido entrar em separacao.
+                CEP, cidade e UF ficam travados para nao alterar o frete da cobranca.
+              </p>
+            ) : null}
+            {isEditingAddress && canEditShippingAddress(query.data.status) ? (
+              <form
+                style={styles.addressForm}
+                onSubmit={event => {
+                  event.preventDefault();
+                  updateShippingAddressMutation.mutate({
+                    orderId: query.data.id,
+                    address: {
+                      recipient: addressForm.recipient.trim(),
+                      street: addressForm.street.trim(),
+                      number: addressForm.number.trim(),
+                      complement: addressForm.complement.trim() || undefined,
+                      neighborhood: addressForm.neighborhood.trim(),
+                    },
+                  });
+                }}
+              >
+                <input
+                  style={styles.input}
+                  placeholder="Destinatário"
+                  value={addressForm.recipient}
+                  onChange={event => setAddressForm(current => ({ ...current, recipient: event.target.value }))}
+                />
+                <input
+                  style={styles.input}
+                  placeholder="Rua"
+                  value={addressForm.street}
+                  onChange={event => setAddressForm(current => ({ ...current, street: event.target.value }))}
+                />
+                <input
+                  style={styles.input}
+                  placeholder="Número"
+                  value={addressForm.number}
+                  onChange={event => setAddressForm(current => ({ ...current, number: event.target.value }))}
+                />
+                <input
+                  style={styles.input}
+                  placeholder="Complemento (opcional)"
+                  value={addressForm.complement}
+                  onChange={event => setAddressForm(current => ({ ...current, complement: event.target.value }))}
+                />
+                <input
+                  style={styles.input}
+                  placeholder="Bairro"
+                  value={addressForm.neighborhood}
+                  onChange={event => setAddressForm(current => ({ ...current, neighborhood: event.target.value }))}
+                />
+                <div style={styles.readonlyRow}>
+                  <span style={styles.readonlyChip}>{query.data.shippingAddress?.zipCode ? `CEP ${query.data.shippingAddress.zipCode}` : "CEP não informado"}</span>
+                  <span style={styles.readonlyChip}>
+                    {[query.data.shippingAddress?.city, query.data.shippingAddress?.state].filter(Boolean).join(" - ") || "Cidade/UF não informados"}
+                  </span>
+                </div>
+                {updateShippingAddressMutation.error ? (
+                  <p style={styles.error}>{updateShippingAddressMutation.error.message}</p>
+                ) : null}
+                <div style={styles.formActions}>
+                  <button type="submit" style={styles.saveButton} disabled={updateShippingAddressMutation.isPending}>
+                    {updateShippingAddressMutation.isPending ? "Salvando..." : "Salvar endereço"}
+                  </button>
+                </div>
+              </form>
+            ) : null}
           </div>
 
           <h3 style={styles.sectionTitle}>Itens deste pedido</h3>
@@ -143,8 +261,53 @@ const styles: Record<string, CSSProperties> = {
   sectionHint: { color: "#a1a1aa", fontSize: 12 },
   sectionTitle: { margin: 0, color: "#f0ede8", fontSize: 18 },
   addressCard: { border: "1px solid #2f2f2f", borderRadius: 10, padding: 12, display: "grid", gap: 10, background: "#0f0f0f" },
+  addressActions: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", width: "100%" },
   addressLines: { display: "grid", gap: 4 },
   addressText: { margin: 0, color: "#f0ede8", lineHeight: 1.6 },
+  addressRule: { margin: 0, color: "#a1a1aa", fontSize: 12, lineHeight: 1.6 },
+  addressForm: { display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" },
+  input: {
+    width: "100%",
+    borderRadius: 10,
+    border: "1px solid #2f2f2f",
+    background: "#111111",
+    color: "#f0ede8",
+    padding: "12px 14px",
+    fontSize: 14,
+    outline: "none",
+  },
+  readonlyRow: { display: "flex", gap: 8, flexWrap: "wrap", gridColumn: "1 / -1" },
+  readonlyChip: {
+    display: "inline-flex",
+    alignItems: "center",
+    minHeight: 34,
+    padding: "0 12px",
+    borderRadius: 999,
+    border: "1px solid #2f2f2f",
+    background: "#121212",
+    color: "#cbd5e1",
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  formActions: { display: "flex", justifyContent: "flex-end", gridColumn: "1 / -1" },
+  editButton: {
+    borderRadius: 8,
+    border: "1px solid #2f2f2f",
+    background: "#121212",
+    color: "#f0ede8",
+    padding: "8px 12px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  saveButton: {
+    borderRadius: 8,
+    border: "1px solid #166534",
+    background: "#166534",
+    color: "#f8fafc",
+    padding: "10px 14px",
+    fontWeight: 800,
+    cursor: "pointer",
+  },
   itemsList: { display: "grid", gap: 8 },
   itemRow: { border: "1px solid #2f2f2f", borderRadius: 10, padding: 10, display: "flex", justifyContent: "space-between", gap: 10, background: "#0f0f0f" },
   itemName: { margin: 0, color: "#f0ede8", fontWeight: 700 },

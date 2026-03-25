@@ -580,6 +580,31 @@ export async function getOrderReservationItems(orderId: number) {
   return items;
 }
 
+export async function updateOrderShippingAddress(
+  orderId: number,
+  data: {
+    recipient: string;
+    street: string;
+    number: string;
+    complement?: string | null;
+    neighborhood: string;
+  },
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return await db
+    .update(orders)
+    .set({
+      shippingRecipient: data.recipient,
+      shippingStreet: data.street,
+      shippingNumber: data.number,
+      shippingComplement: data.complement ?? null,
+      shippingNeighborhood: data.neighborhood,
+    })
+    .where(eq(orders.id, orderId));
+}
+
 export async function reserveStockForOrder(input: {
   userId: number;
   orderId: number;

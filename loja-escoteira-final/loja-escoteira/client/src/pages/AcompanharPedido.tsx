@@ -94,6 +94,10 @@ function formatShippingAddress(address?: {
   ].filter(Boolean);
 }
 
+function canEditShippingAddress(status?: string | null) {
+  return status === "pending" || status === "paid";
+}
+
 export default function AcompanharPedido() {
   const { isAuthenticated } = useUser();
   const [params] = useSearchParams();
@@ -329,6 +333,11 @@ export default function AcompanharPedido() {
           </div>
 
           <div style={styles.actions}>
+            {canEditShippingAddress(query.data.status) ? (
+              <Link to={`/pedido/${query.data.id}`} style={styles.secondaryButton}>
+                Ajustar endereco
+              </Link>
+            ) : null}
             <Link to="/meus-pedidos" style={styles.secondaryButton}>
               Ver meus pedidos
             </Link>
