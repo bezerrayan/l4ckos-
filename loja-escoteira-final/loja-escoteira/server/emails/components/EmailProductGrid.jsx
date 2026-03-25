@@ -24,19 +24,19 @@ export function EmailProductGrid({ title = "Produtos em destaque", products = []
 const styles = {
   name: {
     margin: "0 0 6px",
-    color: "#f5f1e8",
+    color: "#181818",
     fontSize: "15px",
     fontWeight: "800",
   },
   description: {
     margin: "0 0 6px",
-    color: "#9ca3af",
+    color: "#5a6068",
     fontSize: "13px",
     lineHeight: "1.6",
   },
   price: {
     margin: 0,
-    color: "#f5f1e8",
+    color: "#181818",
     fontSize: "14px",
     fontWeight: "700",
   },
