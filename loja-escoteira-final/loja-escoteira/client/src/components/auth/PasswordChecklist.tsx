@@ -7,27 +7,34 @@ type Props = {
 
 export default function PasswordChecklist({ password }: Props) {
   const requirements = evaluatePasswordRequirements(password);
+  const completedCount = requirements.filter(requirement => requirement.met).length;
 
   return (
     <div style={styles.wrapper}>
-      <p style={styles.title}>Sua senha precisa atender a estes requisitos:</p>
+      <div style={styles.header}>
+        <p style={styles.title}>Requisitos da senha</p>
+        <span style={styles.progress}>{completedCount}/{requirements.length}</span>
+      </div>
       <ul style={styles.list}>
         {requirements.map(requirement => (
           <li
             key={requirement.key}
             style={{
               ...styles.item,
-              color: requirement.met ? "#8fd19e" : "#b6b0a2",
+              color: requirement.met ? "#dff5e4" : "#c2bbaf",
             }}
           >
             <span
               aria-hidden="true"
               style={{
-                ...styles.dot,
-                background: requirement.met ? "#8fd19e" : "#39342c",
-                borderColor: requirement.met ? "#8fd19e" : "#4f473b",
+                ...styles.badge,
+                background: requirement.met ? "rgba(100, 168, 120, 0.16)" : "rgba(103, 92, 75, 0.18)",
+                borderColor: requirement.met ? "rgba(128, 201, 149, 0.45)" : "rgba(98, 88, 74, 0.45)",
+                color: requirement.met ? "#8fd19e" : "#908577",
               }}
-            />
+            >
+              {requirement.met ? "✓" : "•"}
+            </span>
             {requirement.label}
           </li>
         ))}
@@ -39,15 +46,38 @@ export default function PasswordChecklist({ password }: Props) {
 const styles: Record<string, CSSProperties> = {
   wrapper: {
     marginTop: 12,
-    padding: "14px 16px",
-    borderRadius: 12,
-    border: "1px solid #242424",
-    background: "#111111",
+    padding: "12px 14px",
+    borderRadius: 14,
+    border: "1px solid #252525",
+    background: "linear-gradient(180deg, rgba(18,18,18,0.96) 0%, rgba(12,12,12,0.98) 100%)",
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 10,
   },
   title: {
-    margin: "0 0 10px",
-    color: "#f0ede8",
-    fontSize: 13,
+    margin: 0,
+    color: "#f2ede4",
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: "0.02em",
+    textTransform: "uppercase",
+  },
+  progress: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 42,
+    height: 24,
+    padding: "0 8px",
+    borderRadius: 999,
+    border: "1px solid #2a2a2a",
+    background: "#151515",
+    color: "#c9c1b4",
+    fontSize: 12,
     fontWeight: 700,
   },
   list: {
@@ -59,16 +89,22 @@ const styles: Record<string, CSSProperties> = {
   },
   item: {
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 10,
     fontSize: 13,
     lineHeight: 1.4,
   },
-  dot: {
-    width: 10,
-    height: 10,
-    minWidth: 10,
+  badge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 20,
+    height: 20,
+    minWidth: 20,
     borderRadius: 999,
     border: "1px solid transparent",
+    fontSize: 12,
+    fontWeight: 800,
+    lineHeight: 1,
   },
 };

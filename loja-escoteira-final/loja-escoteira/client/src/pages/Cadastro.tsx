@@ -35,7 +35,8 @@ export default function Cadastro() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [formError, setFormError] = useState<{ message: string; details: string[] } | null>(null);
+  const [formError, setFormError] = useState<{ code?: string; message: string; details: string[] } | null>(null);
+  const showTopAlert = Boolean(formError && formError.code !== "WEAK_PASSWORD" && formError.code !== "PASSWORD_MISMATCH");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -78,6 +79,7 @@ export default function Cadastro() {
 
     if (formData.password !== formData.confirmPassword) {
       setFormError({
+        code: "PASSWORD_MISMATCH",
         message: "As senhas precisam ser iguais para concluir o cadastro.",
         details: ["Confirme a senha exatamente como foi digitada acima."],
       });
@@ -91,6 +93,7 @@ export default function Cadastro() {
     const passwordDetails = getPasswordPolicyDetails(formData.password);
     if (passwordDetails.length > 0) {
       setFormError({
+        code: "WEAK_PASSWORD",
         message: "A senha não atende aos requisitos de segurança.",
         details: passwordDetails,
       });
@@ -126,7 +129,7 @@ export default function Cadastro() {
       navigate("/");
     } catch (err) {
       const parsed = getApiErrorDisplay(err, "Não foi possível criar sua conta agora.");
-      setFormError({ message: parsed.message, details: parsed.details });
+      setFormError({ code: parsed.code, message: parsed.message, details: parsed.details });
       showToast({
         message: parsed.message,
         duration: 3000,
@@ -183,7 +186,7 @@ export default function Cadastro() {
 
         {/* Formulário de cadastro */}
         <form onSubmit={handleSignUp} style={styles.form as CSSProperties}>
-          {formError ? (
+          {showTopAlert && formError ? (
             <div style={styles.formAlert as CSSProperties}>
               <strong style={styles.formAlertTitle as CSSProperties}>{formError.message}</strong>
               {formError.details.length > 0 ? (
@@ -248,6 +251,9 @@ export default function Cadastro() {
               style={styles.input as CSSProperties}
               disabled={isSubmitting || localSignupMutation.isPending}
             />
+            {formError?.code === "PASSWORD_MISMATCH" ? (
+              <p style={styles.inlineHintError as CSSProperties}>A confirmação precisa ser igual à senha informada.</p>
+            ) : null}
           </div>
 
           <div style={styles.formGroup as CSSProperties}>
@@ -515,24 +521,24 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: 20,
   },
   formAlert: {
-    padding: "14px 16px",
+    padding: "12px 14px",
     borderRadius: 12,
-    border: "1px solid rgba(210, 88, 88, 0.5)",
-    background: "rgba(86, 23, 23, 0.32)",
-    color: "#ffd7d7",
+    border: "1px solid rgba(184, 95, 95, 0.34)",
+    background: "rgba(70, 25, 25, 0.18)",
+    color: "#f4d6d6",
   },
   formAlertTitle: {
     display: "block",
-    marginBottom: 8,
+    marginBottom: 6,
     fontSize: 14,
   },
   formAlertList: {
     margin: 0,
     paddingLeft: 18,
     display: "grid",
-    gap: 6,
-    fontSize: 13,
-    color: "#f3c0c0",
+    gap: 4,
+    fontSize: 12,
+    color: "#e7bebe",
   },
   nameRow: {
     display: "grid",
@@ -566,15 +572,22 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     alignItems: "flex-start",
     gap: 12,
-    padding: 12,
-    background: "#121212",
-    borderRadius: 6,
+    padding: 14,
+    background: "#111111",
+    border: "1px solid #232323",
+    borderRadius: 10,
     fontSize: 13,
   },
   termsLabel: {
     color: "#a1a1aa",
-    lineHeight: 1.4,
+    lineHeight: 1.5,
     cursor: "pointer",
+  },
+  inlineHintError: {
+    margin: "6px 0 0",
+    color: "#f0b7b7",
+    fontSize: 12,
+    lineHeight: 1.4,
   },
   submitBtn: {
     padding: "14px 24px",
