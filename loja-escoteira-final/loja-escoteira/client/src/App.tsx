@@ -13,6 +13,8 @@ const Pagamento = lazy(() => import("./pages/Pagamento"));
 const Favoritos = lazy(() => import("./pages/Favoritos"));
 const Login = lazy(() => import("./pages/Login"));
 const Cadastro = lazy(() => import("./pages/Cadastro"));
+const EsqueciSenha = lazy(() => import("./pages/EsqueciSenha"));
+const RedefinirSenha = lazy(() => import("./pages/RedefinirSenha"));
 const Perfil = lazy(() => import("./pages/Perfil"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Sobre = lazy(() => import("./pages/Sobre"));
@@ -69,7 +71,7 @@ function AppRoutes() {
     .replace(/[^a-z]/g, "");
   const comingSoonEnabled = comingSoonRaw === "true";
   const isAdmin = isAuthenticated && user?.role === "admin";
-  const comingSoonAllowedRoutes = new Set(["/login", "/cadastro"]);
+  const comingSoonAllowedRoutes = new Set(["/login", "/cadastro", "/esqueci-senha", "/redefinir-senha"]);
   const isAllowedDuringComingSoon = comingSoonAllowedRoutes.has(location.pathname);
 
   if (comingSoonEnabled && !isAllowedDuringComingSoon) {
@@ -102,6 +104,8 @@ function AppRoutes() {
             <Route path="/checkout" element={<Pagamento />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
+            <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+            <Route path="/redefinir-senha" element={<RedefinirSenha />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/meus-pedidos" element={<MeusPedidos />} />
             <Route path="/meus-pedidos/:id" element={<PedidoDetalhe />} />

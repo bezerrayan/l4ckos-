@@ -295,6 +295,8 @@ async function startServer() {
   app.use("/api/oauth/login", authLimiter);
   app.use("/api/trpc/auth.localLogin", authLimiter);
   app.use("/api/trpc/auth.localSignup", authLimiter);
+  app.use("/api/trpc/auth.requestPasswordReset", authLimiter);
+  app.use("/api/trpc/auth.resetPassword", authLimiter);
 
   const publicWriteLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,

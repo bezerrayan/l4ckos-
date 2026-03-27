@@ -33,6 +33,7 @@ export default function Cadastro() {
     password: "",
     confirmPassword: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [formError, setFormError] = useState<{ code?: string; message: string; details: string[] } | null>(null);
@@ -262,7 +263,7 @@ export default function Cadastro() {
             </label>
             <input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -282,7 +283,7 @@ export default function Cadastro() {
             </label>
             <input
               id="confirmPassword"
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
@@ -290,6 +291,16 @@ export default function Cadastro() {
               style={styles.input as CSSProperties}
               disabled={isSubmitting || localSignupMutation.isPending}
             />
+            <label style={styles.checkboxLabel as CSSProperties}>
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(event) => setShowPassword(event.target.checked)}
+                style={styles.checkboxInput as CSSProperties}
+                disabled={isSubmitting || localSignupMutation.isPending}
+              />
+              Mostrar senha e confirmação
+            </label>
           </div>
 
           {/* Termos */}
@@ -489,18 +500,15 @@ const styles: Record<string, CSSProperties> = {
     flexShrink: 0,
   },
   rightPanel: {
-    padding: "40px 20px",
+    padding: "60px 40px",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "flex-start",
-    width: "100%",
-    maxWidth: "500px",
-    borderTop: "1px solid #27272a",
+    justifyContent: "center",
     background: "linear-gradient(180deg, #0d0d0d 0%, #080808 100%)",
     overflowY: "auto",
   },
   header: {
-    marginBottom: 32,
+    marginBottom: 40,
   },
   title: {
     fontSize: 36,
@@ -517,8 +525,8 @@ const styles: Record<string, CSSProperties> = {
   form: {
     display: "flex",
     flexDirection: "column",
-    gap: 16,
-    marginBottom: 20,
+    gap: 20,
+    marginBottom: 24,
   },
   formAlert: {
     padding: "12px 14px",
@@ -589,6 +597,20 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 12,
     lineHeight: 1.4,
   },
+  checkboxLabel: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 2,
+    color: "#b4b4bb",
+    fontSize: 13,
+    lineHeight: 1.4,
+    cursor: "pointer",
+  },
+  checkboxInput: {
+    margin: 0,
+    accentColor: "#f0ede8",
+  },
   submitBtn: {
     padding: "14px 24px",
     background: "linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%)",
@@ -605,7 +627,7 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     alignItems: "center",
     gap: 16,
-    margin: "16px 0",
+    margin: "20px 0",
   },
   dividerText: {
     color: "#71717a",
@@ -633,6 +655,7 @@ const styles: Record<string, CSSProperties> = {
     color: "#8f8f95",
     fontSize: 13,
     lineHeight: 1.6,
+    textAlign: "center",
   },
   securityLink: {
     color: "#f0ede8",
@@ -641,7 +664,7 @@ const styles: Record<string, CSSProperties> = {
   },
   loginSection: {
     textAlign: "center",
-    paddingTop: 16,
+    paddingTop: 24,
     borderTop: "1px solid #27272a",
   },
   loginText: {

@@ -11,18 +11,26 @@ import { adminRouter } from "./routers/admin";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "node:crypto";
 import { sdk } from "./_core/sdk";
 import { ENV, isEmailAllowedForProductionLocalAuth } from "./_core/env";
 import { securityLog } from "./_core/security";
 import { createAppError } from "./_core/appErrors";
 import {
+  createPasswordResetToken,
+  deletePasswordResetTokensForUser,
+  getActivePasswordResetTokenByHash,
   getLocalAuthCredentialByEmail,
+  getLocalAuthCredentialByUserId,
+  getUserById,
   getUserByOpenId,
+  markPasswordResetTokenUsed,
   rotateUserSessionVersion,
+  updateLocalAuthPasswordByUserId,
   upsertLocalAuthCredential,
   upsertUser,
 } from "./db";
-import { sendWelcomeAccountEmail } from "./services/emailService.js";
+import { sendPasswordResetEmail, sendWelcomeAccountEmail } from "./services/emailService.js";
 import { getPasswordPolicyDetails, PASSWORD_MAX_LENGTH } from "../shared/passwordPolicy";
 
 type LoginAttemptState = {
@@ -36,6 +44,7 @@ const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_BLOCK_MS = 15 * 60 * 1000;
 const PASSWORD_HASH_ROUNDS = 12;
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
 function normalizeEmailInput(email: string) {
   return String(email ?? "").trim().toLowerCase();
@@ -43,6 +52,20 @@ function normalizeEmailInput(email: string) {
 
 function normalizeNameInput(name: string) {
   return String(name ?? "").replace(/\s+/g, " ").trim();
+}
+
+function getFrontendBaseUrl() {
+  return String(ENV.frontendUrl || process.env.APP_URL || process.env.APP_BASE_URL || "https://l4ckos.com.br")
+    .trim()
+    .replace(/\/$/, "");
+}
+
+function createPasswordResetRawToken() {
+  return randomBytes(32).toString("base64url");
+}
+
+function hashPasswordResetToken(token: string) {
+  return createHash("sha256").update(String(token ?? ""), "utf8").digest("hex");
 }
 
 function getNameValidationDetails(name: string) {
@@ -376,6 +399,149 @@ export const appRouter = router({
         }
 
         return { success: true, user: user ?? null } as const;
+      }),
+    requestPasswordReset: publicProcedure
+      .input(
+        z.object({
+          email: z.string().trim().min(1).max(255),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const normalizedEmail = normalizeEmailInput(input.email);
+        const requestIp = ctx.req.ip || "unknown";
+        const neutralResponse = {
+          success: true,
+          message: "Se existir uma conta local com este e-mail, enviaremos as instrucoes para redefinir a senha.",
+        } as const;
+
+        const emailDetails = getEmailValidationDetails(normalizedEmail);
+        if (emailDetails.length > 0) {
+          throw createAppError({
+            trpcCode: "BAD_REQUEST",
+            appCode: "INVALID_EMAIL",
+            message: "Informe um e-mail valido para continuar.",
+            details: emailDetails,
+          });
+        }
+
+        if (ENV.isProduction && !ENV.allowLocalAuthInProduction) {
+          securityLog("info", "auth.password_reset_request_ignored", {
+            email: normalizedEmail,
+            requestIp,
+            reason: "local_auth_disabled",
+          });
+          return neutralResponse;
+        }
+
+        const credential = await getLocalAuthCredentialByEmail(normalizedEmail);
+        if (!credential) {
+          securityLog("info", "auth.password_reset_request_ignored", {
+            email: normalizedEmail,
+            requestIp,
+            reason: "missing_local_credential",
+          });
+          return neutralResponse;
+        }
+
+        const user = await getUserById(credential.userId);
+        if (!user || (ENV.isProduction && !isEmailAllowedForProductionLocalAuth(normalizedEmail))) {
+          securityLog("info", "auth.password_reset_request_ignored", {
+            email: normalizedEmail,
+            requestIp,
+            reason: !user ? "missing_user" : "email_not_allowed",
+          });
+          return neutralResponse;
+        }
+
+        const rawToken = createPasswordResetRawToken();
+        const tokenHash = hashPasswordResetToken(rawToken);
+        const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+        const resetUrl = `${getFrontendBaseUrl()}/redefinir-senha?token=${encodeURIComponent(rawToken)}`;
+
+        await createPasswordResetToken({
+          userId: user.id,
+          tokenHash,
+          expiresAt,
+        });
+
+        try {
+          await sendPasswordResetEmail({
+            email: normalizedEmail,
+            name: user.name || normalizedEmail.split("@")[0] || "cliente",
+            resetUrl,
+          });
+          securityLog("info", "auth.password_reset_email_sent", {
+            userId: user.id,
+            requestIp,
+            email: normalizedEmail,
+          });
+        } catch (error) {
+          securityLog("warn", "auth.password_reset_email_failed", {
+            userId: user.id,
+            requestIp,
+            email: normalizedEmail,
+            reason: error instanceof Error ? error.message : "unknown",
+          });
+        }
+
+        return neutralResponse;
+      }),
+    resetPassword: publicProcedure
+      .input(
+        z.object({
+          token: z.string().trim().min(32).max(255),
+          password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const requestIp = ctx.req.ip || "unknown";
+        const passwordDetails = getPasswordPolicyDetails(input.password);
+        if (passwordDetails.length > 0) {
+          throw createAppError({
+            trpcCode: "BAD_REQUEST",
+            appCode: "WEAK_PASSWORD",
+            message: "A senha nao atende aos requisitos de seguranca.",
+            details: passwordDetails,
+          });
+        }
+
+        const tokenHash = hashPasswordResetToken(input.token);
+        const resetToken = await getActivePasswordResetTokenByHash(tokenHash);
+        if (!resetToken) {
+          throw createAppError({
+            trpcCode: "BAD_REQUEST",
+            appCode: "INVALID_OR_EXPIRED_RESET_TOKEN",
+            message: "O link de redefinicao e invalido ou expirou.",
+          });
+        }
+
+        const credential = await getLocalAuthCredentialByUserId(resetToken.userId);
+        if (!credential) {
+          throw createAppError({
+            trpcCode: "BAD_REQUEST",
+            appCode: "INVALID_OR_EXPIRED_RESET_TOKEN",
+            message: "O link de redefinicao e invalido ou expirou.",
+          });
+        }
+
+        const passwordHash = await bcrypt.hash(input.password, PASSWORD_HASH_ROUNDS);
+        await updateLocalAuthPasswordByUserId({
+          userId: resetToken.userId,
+          passwordHash,
+        });
+        await markPasswordResetTokenUsed(resetToken.id);
+        await deletePasswordResetTokensForUser(resetToken.userId);
+        await rotateUserSessionVersion(resetToken.userId);
+
+        securityLog("info", "auth.password_reset_completed", {
+          userId: resetToken.userId,
+          requestIp,
+        });
+
+        return {
+          success: true,
+          message: "Senha redefinida com sucesso. Voce ja pode entrar com a nova senha.",
+        } as const;
       }),
     logout: publicProcedure.mutation(async ({ ctx }) => {
       if (ctx.user) {

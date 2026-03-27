@@ -182,7 +182,7 @@ export default function Login() {
                 Usamos cookies seguros e necessários para manter sua conta autenticada e proteger o acesso.
               </span>
             </div>
-            <Link to="/contato" style={styles.forgotLink as CSSProperties}>
+            <Link to="/esqueci-senha" style={styles.forgotLink as CSSProperties}>
               Precisa de ajuda com a senha?
             </Link>
           </div>

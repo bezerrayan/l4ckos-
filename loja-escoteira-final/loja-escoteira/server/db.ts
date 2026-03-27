@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -22,6 +22,7 @@ import {
   promoBanners,
   waitlistEmails,
   emailUnsubscribes,
+  passwordResetTokens,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1624,6 +1625,80 @@ export async function getLocalAuthCredentialByEmail(email: string) {
     .where(eq(localAuthUsers.email, email.toLowerCase()))
     .limit(1);
   return rows[0];
+}
+
+export async function getLocalAuthCredentialByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db
+    .select()
+    .from(localAuthUsers)
+    .where(eq(localAuthUsers.userId, userId))
+    .limit(1);
+  return rows[0];
+}
+
+export async function createPasswordResetToken(payload: {
+  userId: number;
+  tokenHash: string;
+  expiresAt: Date;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, payload.userId));
+
+  await db.insert(passwordResetTokens).values({
+    userId: payload.userId,
+    tokenHash: payload.tokenHash,
+    expiresAt: payload.expiresAt,
+  });
+}
+
+export async function getActivePasswordResetTokenByHash(tokenHash: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const now = new Date();
+  const rows = await db
+    .select()
+    .from(passwordResetTokens)
+    .where(
+      and(
+        eq(passwordResetTokens.tokenHash, tokenHash),
+        gte(passwordResetTokens.expiresAt, now),
+        isNull(passwordResetTokens.usedAt),
+      ),
+    )
+    .limit(1);
+
+  return rows[0];
+}
+
+export async function markPasswordResetTokenUsed(tokenId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(passwordResetTokens)
+    .set({ usedAt: new Date() })
+    .where(eq(passwordResetTokens.id, tokenId));
+}
+
+export async function deletePasswordResetTokensForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
+}
+
+export async function updateLocalAuthPasswordByUserId(payload: { userId: number; passwordHash: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(localAuthUsers)
+    .set({ passwordHash: payload.passwordHash })
+    .where(eq(localAuthUsers.userId, payload.userId));
 }
 
 export async function getBackupPayload() {

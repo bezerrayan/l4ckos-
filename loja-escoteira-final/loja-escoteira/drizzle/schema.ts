@@ -244,6 +244,18 @@ export const localAuthUsers = mysqlTable("localAuthUsers", {
 export type LocalAuthUser = typeof localAuthUsers.$inferSelect;
 export type InsertLocalAuthUser = typeof localAuthUsers.$inferInsert;
 
+export const passwordResetTokens = mysqlTable("passwordResetTokens", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  tokenHash: varchar("tokenHash", { length: 128 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
 // Imagens de Produtos (para múltiplas imagens por produto)
 export const productImages = mysqlTable("productImages", {
   id: int("id").autoincrement().primaryKey(),
