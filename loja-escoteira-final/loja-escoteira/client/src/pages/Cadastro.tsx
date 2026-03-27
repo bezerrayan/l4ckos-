@@ -3,7 +3,7 @@
  
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
@@ -14,6 +14,7 @@ import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 import { getPasswordPolicyDetails } from "../../../shared/passwordPolicy";
 import PasswordChecklist from "../components/auth/PasswordChecklist";
 import { getApiErrorDisplay } from "../utils/apiError";
+import { useUser } from "../contexts/UserContext";
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -23,6 +24,7 @@ export default function Cadastro() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { isAuthenticated, isLoading } = useUser();
   const utils = trpc.useUtils();
   const localSignupMutation = trpc.auth.localSignup.useMutation();
 
@@ -38,6 +40,12 @@ export default function Cadastro() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [formError, setFormError] = useState<{ code?: string; message: string; details: string[] } | null>(null);
   const showTopAlert = Boolean(formError && formError.code !== "WEAK_PASSWORD" && formError.code !== "PASSWORD_MISMATCH");
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

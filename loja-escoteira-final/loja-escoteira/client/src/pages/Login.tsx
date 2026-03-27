@@ -3,8 +3,8 @@
 
  */
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
@@ -12,6 +12,7 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
 import { getApiErrorDisplay } from "../utils/apiError";
+import { useUser } from "../contexts/UserContext";
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -20,7 +21,9 @@ function isValidEmail(email: string) {
 export default function Login() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
+  const { isAuthenticated, isLoading } = useUser();
   const utils = trpc.useUtils();
   const localLoginMutation = trpc.auth.localLogin.useMutation();
 
@@ -30,6 +33,18 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<{ message: string; details: string[] } | null>(null);
   const isBusy = isSubmitting || localLoginMutation.isPending;
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  useEffect(() => {
+    if (location.search.includes("oauthError=") && !isLoading && isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, isLoading, location.search, navigate]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
