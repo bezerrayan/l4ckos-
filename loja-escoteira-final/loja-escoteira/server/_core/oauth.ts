@@ -6,6 +6,7 @@ import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { ENV } from "./env";
 import { sdk } from "./sdk";
+import { sendWelcomeAccountEmail } from "../services/emailService.js";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -230,6 +231,7 @@ export function registerOAuthRoutes(app: Express) {
         openId === ENV.ownerOpenId || (normalizedEmail && ENV.adminEmails.includes(normalizedEmail))
           ? "admin"
           : "user";
+      const existingUser = await db.getUserByOpenId(openId);
 
       await db.upsertUser({
         openId,
@@ -246,6 +248,20 @@ export function registerOAuthRoutes(app: Express) {
         const persistenceError = new Error("User was not persisted or retrieved after OAuth upsert");
         Object.assign(persistenceError, { code: "USER_NOT_PERSISTED" });
         throw persistenceError;
+      }
+
+      if (!existingUser && normalizedEmail) {
+        try {
+          await sendWelcomeAccountEmail({
+            email: normalizedEmail,
+            name: userInfo.name || normalizedEmail.split("@")[0] || "cliente",
+          });
+        } catch (emailError) {
+          console.warn("[OAuth] Welcome email failed", {
+            userId: persistedUser.id,
+            reason: emailError instanceof Error ? emailError.message : "unknown",
+          });
+        }
       }
 
       const nextSessionVersion = await db.rotateUserSessionVersion(persistedUser.id);
