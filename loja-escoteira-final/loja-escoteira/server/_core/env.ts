@@ -50,6 +50,10 @@ export function isEmailAllowedForProductionLocalAuth(email: string) {
   const normalized = email.trim().toLowerCase();
   if (!normalized) return false;
 
+  if (ENV.allowLocalAuthInProduction && ENV.allowPublicLocalSignupInProduction) {
+    return true;
+  }
+
   if (ENV.localAuthAllowedEmails.length > 0) {
     return ENV.localAuthAllowedEmails.includes(normalized);
   }
@@ -66,7 +70,12 @@ export function validateEnvOnStartup() {
     issues.push("JWT_SECRET precisa ter ao menos 32 caracteres.");
   }
 
-  if (ENV.isProduction && ENV.allowLocalAuthInProduction && ENV.localAuthAllowedEmails.length === 0) {
+  if (
+    ENV.isProduction &&
+    ENV.allowLocalAuthInProduction &&
+    !ENV.allowPublicLocalSignupInProduction &&
+    ENV.localAuthAllowedEmails.length === 0
+  ) {
     issues.push("ALLOW_LOCAL_AUTH_IN_PRODUCTION=true exige LOCAL_AUTH_ALLOWED_EMAILS ou ADMIN_EMAILS restrito.");
   }
 
