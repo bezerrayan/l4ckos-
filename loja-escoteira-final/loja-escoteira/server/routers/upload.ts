@@ -4,7 +4,8 @@ import path from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { storagePut } from "../storage";
-import { sdk } from "../_core/sdk";
+import { AuthenticatedRequest, requireAdminUser } from "../_core/httpAuth";
+import { buildApiErrorResponse } from "../_core/appErrors";
 import { securityLog } from "../_core/security";
 
 const router = Router();
@@ -59,12 +60,16 @@ function buildAbsoluteUploadUrl(req: Request, relativePath: string) {
   return `${protocol}://${host}${relativePath}`;
 }
 
-router.post("/", async (req, res) => {
+router.post("/", requireAdminUser, async (req, res) => {
   try {
-    const user = await sdk.authenticateRequest(req);
-    if (user.role !== "admin") {
-      securityLog("warn", "upload.denied_non_admin", { userId: user.id, requestIp: req.ip || "unknown" });
-      res.status(403).json({ error: "Forbidden" });
+    const authReq = req as AuthenticatedRequest;
+    const user = authReq.authUser;
+    if (!user) {
+      res.status(401).json(buildApiErrorResponse({
+        status: 401,
+        code: "AUTH_REQUIRED",
+        message: "Faça login para continuar.",
+      }));
       return;
     }
 
@@ -75,24 +80,40 @@ router.post("/", async (req, res) => {
           requestIp: req.ip || "unknown",
           reason: uploadError.message,
         });
-        res.status(400).json({ error: uploadError.message || "Upload invalido" });
+        res.status(400).json(buildApiErrorResponse({
+          status: 400,
+          code: "INVALID_UPLOAD",
+          message: uploadError.message || "Upload inválido.",
+        }));
         return;
       }
 
       try {
         if (!req.file) {
-          res.status(400).json({ error: "Nenhum arquivo foi enviado" });
+          res.status(400).json(buildApiErrorResponse({
+            status: 400,
+            code: "FILE_REQUIRED",
+            message: "Selecione um arquivo para enviar.",
+          }));
           return;
         }
 
         const { originalname, buffer, mimetype, size } = req.file;
         if (!ALLOWED_MIME_TYPES.has(mimetype)) {
-          res.status(400).json({ error: "Tipo de arquivo nao permitido" });
+          res.status(400).json(buildApiErrorResponse({
+            status: 400,
+            code: "INVALID_FILE_TYPE",
+            message: "Tipo de arquivo não permitido.",
+          }));
           return;
         }
 
         if (size > MAX_UPLOAD_SIZE_BYTES) {
-          res.status(400).json({ error: "Arquivo excede o tamanho maximo permitido" });
+          res.status(400).json(buildApiErrorResponse({
+            status: 400,
+            code: "FILE_TOO_LARGE",
+            message: "O arquivo excede o tamanho máximo permitido.",
+          }));
           return;
         }
 
@@ -123,11 +144,19 @@ router.post("/", async (req, res) => {
           requestIp: req.ip || "unknown",
           reason: error instanceof Error ? error.message : "unknown",
         });
-        res.status(500).json({ error: "Nao foi possivel enviar o arquivo" });
+        res.status(500).json(buildApiErrorResponse({
+          status: 500,
+          code: "UPLOAD_FAILED",
+          message: "Não foi possível enviar o arquivo.",
+        }));
       }
     });
   } catch {
-    res.status(401).json({ error: "Unauthorized" });
+    res.status(401).json(buildApiErrorResponse({
+      status: 401,
+      code: "AUTH_REQUIRED",
+      message: "Faça login para continuar.",
+    }));
   }
 });
 

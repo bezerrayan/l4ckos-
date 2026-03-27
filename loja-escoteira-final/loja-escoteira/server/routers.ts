@@ -14,6 +14,7 @@ import bcrypt from "bcryptjs";
 import { sdk } from "./_core/sdk";
 import { ENV, isEmailAllowedForProductionLocalAuth } from "./_core/env";
 import { securityLog } from "./_core/security";
+import { createAppError } from "./_core/appErrors";
 import {
   getLocalAuthCredentialByEmail,
   getUserByOpenId,
@@ -22,6 +23,7 @@ import {
   upsertUser,
 } from "./db";
 import { sendWelcomeAccountEmail } from "./services/emailService.js";
+import { getPasswordPolicyDetails, PASSWORD_MAX_LENGTH } from "../shared/passwordPolicy";
 
 type LoginAttemptState = {
   failCount: number;
@@ -33,9 +35,67 @@ const loginAttemptStore = new Map<string, LoginAttemptState>();
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_BLOCK_MS = 15 * 60 * 1000;
-const PASSWORD_MIN_LENGTH = 10;
-const PASSWORD_MAX_LENGTH = 120;
 const PASSWORD_HASH_ROUNDS = 12;
+
+function normalizeEmailInput(email: string) {
+  return String(email ?? "").trim().toLowerCase();
+}
+
+function normalizeNameInput(name: string) {
+  return String(name ?? "").replace(/\s+/g, " ").trim();
+}
+
+function getNameValidationDetails(name: string) {
+  const details: string[] = [];
+  if (name.length < 2) details.push("Informe um nome com pelo menos 2 caracteres.");
+  if (name.length > 120) details.push("Informe um nome com no máximo 120 caracteres.");
+  if (!/^[\p{L}\p{M}\s.'-]+$/u.test(name)) {
+    details.push("Use apenas letras e caracteres válidos no nome.");
+  }
+  return details;
+}
+
+function getEmailValidationDetails(email: string) {
+  const details: string[] = [];
+  if (!email) {
+    details.push("Informe um e-mail.");
+  } else if (!z.string().email().safeParse(email).success) {
+    details.push("Informe um e-mail válido.");
+  }
+  return details;
+}
+
+function assertSignupInput(input: { name: string; email: string; password: string }) {
+  const nameDetails = getNameValidationDetails(input.name);
+  if (nameDetails.length > 0) {
+    throw createAppError({
+      trpcCode: "BAD_REQUEST",
+      appCode: "INVALID_NAME",
+      message: "Revise o nome informado.",
+      details: nameDetails,
+    });
+  }
+
+  const emailDetails = getEmailValidationDetails(input.email);
+  if (emailDetails.length > 0) {
+    throw createAppError({
+      trpcCode: "BAD_REQUEST",
+      appCode: "INVALID_EMAIL",
+      message: "Revise o e-mail informado.",
+      details: emailDetails,
+    });
+  }
+
+  const passwordDetails = getPasswordPolicyDetails(input.password);
+  if (passwordDetails.length > 0) {
+    throw createAppError({
+      trpcCode: "BAD_REQUEST",
+      appCode: "WEAK_PASSWORD",
+      message: "A senha não atende aos requisitos de segurança.",
+      details: passwordDetails,
+    });
+  }
+}
 
 function isAdminEmail(email: string) {
   return ENV.adminEmails.includes(email.trim().toLowerCase());
@@ -103,18 +163,36 @@ export const appRouter = router({
     localLogin: publicProcedure
       .input(
         z.object({
-          email: z.string().email(),
+          email: z.string().trim().min(1).max(255),
           password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
         }),
       )
       .mutation(async ({ ctx, input }) => {
         if (ENV.isProduction && !ENV.allowLocalAuthInProduction) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Local login disabled in production" });
+          throw createAppError({
+            trpcCode: "FORBIDDEN",
+            appCode: "LOCAL_AUTH_DISABLED",
+            message: "O login por e-mail está desativado neste ambiente.",
+          });
         }
 
-        const normalizedEmail = input.email.trim().toLowerCase();
+        const normalizedEmail = normalizeEmailInput(input.email);
+        const emailDetails = getEmailValidationDetails(normalizedEmail);
+        if (emailDetails.length > 0) {
+          throw createAppError({
+            trpcCode: "BAD_REQUEST",
+            appCode: "INVALID_EMAIL",
+            message: "Informe um e-mail válido para continuar.",
+            details: emailDetails,
+          });
+        }
+
         if (ENV.isProduction && !isEmailAllowedForProductionLocalAuth(normalizedEmail)) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Local login disabled for this account" });
+          throw createAppError({
+            trpcCode: "FORBIDDEN",
+            appCode: "LOCAL_AUTH_DISABLED",
+            message: "O login por e-mail está desativado para esta conta.",
+          });
         }
 
         const requestIp = ctx.req.ip || "unknown";
@@ -128,7 +206,11 @@ export const appRouter = router({
           securityLog("warn", "auth.local_login_failed", { email: normalizedEmail, requestIp, reason: "missing_user" });
           registerLoginAttemptFailure(emailIpKey);
           registerLoginAttemptFailure(ipKey);
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais invalidas" });
+          throw createAppError({
+            trpcCode: "UNAUTHORIZED",
+            appCode: "INVALID_CREDENTIALS",
+            message: "E-mail ou senha inválidos.",
+          });
         }
 
         const passwordOk = await bcrypt.compare(input.password, credential.passwordHash);
@@ -136,7 +218,11 @@ export const appRouter = router({
           securityLog("warn", "auth.local_login_failed", { email: normalizedEmail, requestIp, reason: "invalid_password" });
           registerLoginAttemptFailure(emailIpKey);
           registerLoginAttemptFailure(ipKey);
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais invalidas" });
+          throw createAppError({
+            trpcCode: "UNAUTHORIZED",
+            appCode: "INVALID_CREDENTIALS",
+            message: "E-mail ou senha inválidos.",
+          });
         }
 
         if (isAdminEmail(normalizedEmail)) {
@@ -163,11 +249,19 @@ export const appRouter = router({
         const user = await getUserByOpenId(localOpenId);
         if (user?.isBlocked === 1 && user.role !== "admin") {
           securityLog("warn", "auth.local_login_blocked_user", { email: normalizedEmail, requestIp, userId: user?.id });
-          throw new TRPCError({ code: "FORBIDDEN", message: "Usuario bloqueado" });
+          throw createAppError({
+            trpcCode: "FORBIDDEN",
+            appCode: "ACCOUNT_BLOCKED",
+            message: "Sua conta está temporariamente bloqueada. Entre em contato com o suporte.",
+          });
         }
 
         if (!user) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Falha ao carregar usuario" });
+          throw createAppError({
+            trpcCode: "INTERNAL_SERVER_ERROR",
+            appCode: "AUTH_USER_LOAD_FAILED",
+            message: "Não foi possível concluir o login agora.",
+          });
         }
 
         const nextSessionVersion = await rotateUserSessionVersion(user.id);
@@ -188,31 +282,48 @@ export const appRouter = router({
     localSignup: publicProcedure
       .input(
         z.object({
-          name: z.string().min(1).max(255),
-          email: z.string().email(),
-          password: z.string()
-            .min(PASSWORD_MIN_LENGTH)
-            .max(PASSWORD_MAX_LENGTH)
-            .regex(/[a-z]/, "A senha deve conter letra minuscula")
-            .regex(/[A-Z]/, "A senha deve conter letra maiuscula")
-            .regex(/\d/, "A senha deve conter numero")
-            .regex(/[^A-Za-z0-9]/, "A senha deve conter caractere especial"),
+          name: z.string().trim().min(1).max(255),
+          email: z.string().trim().min(1).max(255),
+          password: z.string().min(1).max(PASSWORD_MAX_LENGTH),
         }),
       )
       .mutation(async ({ ctx, input }) => {
         if (ENV.isProduction && (!ENV.allowLocalAuthInProduction || !ENV.allowPublicLocalSignupInProduction)) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Local signup disabled in production" });
+          throw createAppError({
+            trpcCode: "FORBIDDEN",
+            appCode: "LOCAL_SIGNUP_DISABLED",
+            message: "O cadastro por e-mail está desativado neste ambiente.",
+          });
         }
 
-        const normalizedEmail = input.email.trim().toLowerCase();
+        const normalizedEmail = normalizeEmailInput(input.email);
         const requestIp = ctx.req.ip || "unknown";
         if (ENV.isProduction && !isEmailAllowedForProductionLocalAuth(normalizedEmail)) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Local signup disabled for this account" });
+          throw createAppError({
+            trpcCode: "FORBIDDEN",
+            appCode: "LOCAL_SIGNUP_DISABLED",
+            message: "O cadastro por e-mail está desativado para esta conta.",
+          });
         }
 
         assertLoginAttemptLimit(`local-signup:${normalizedEmail}:${requestIp}`);
         const localOpenId = `local:${normalizedEmail}`;
-        const normalizedName = input.name.trim();
+        const normalizedName = normalizeNameInput(input.name);
+        assertSignupInput({
+          name: normalizedName,
+          email: normalizedEmail,
+          password: input.password,
+        });
+
+        const existingCredential = await getLocalAuthCredentialByEmail(normalizedEmail);
+        if (existingCredential) {
+          throw createAppError({
+            trpcCode: "BAD_REQUEST",
+            appCode: "EMAIL_ALREADY_IN_USE",
+            message: "Já existe uma conta cadastrada com este e-mail.",
+          });
+        }
+
         const localRole = isAdminEmail(normalizedEmail) ? "admin" : "user";
 
         await upsertUser({
@@ -226,7 +337,11 @@ export const appRouter = router({
 
         const user = await getUserByOpenId(localOpenId);
         if (!user) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Falha ao criar usuario" });
+          throw createAppError({
+            trpcCode: "INTERNAL_SERVER_ERROR",
+            appCode: "ACCOUNT_CREATION_FAILED",
+            message: "Não foi possível criar sua conta agora.",
+          });
         }
 
         const passwordHash = await bcrypt.hash(input.password, PASSWORD_HASH_ROUNDS);

@@ -32,6 +32,9 @@ export function securityLog(
         if (key.toLowerCase().includes("ip")) return [key, maskIp(String(value ?? ""))];
         if (key.toLowerCase().includes("token")) return [key, redactValue(value)];
         if (key.toLowerCase().includes("secret")) return [key, "[redacted]"];
+        if (key.toLowerCase().includes("password")) return [key, "[redacted]"];
+        if (key.toLowerCase().includes("authorization")) return [key, "[redacted]"];
+        if (key.toLowerCase().includes("cookie")) return [key, "[redacted]"];
         return [key, value];
       }),
     ),

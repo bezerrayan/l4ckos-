@@ -11,6 +11,9 @@ import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
+import { getPasswordPolicyDetails } from "../../../shared/passwordPolicy";
+import PasswordChecklist from "../components/auth/PasswordChecklist";
+import { getApiErrorDisplay } from "../utils/apiError";
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -32,6 +35,7 @@ export default function Cadastro() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [formError, setFormError] = useState<{ message: string; details: string[] } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -39,6 +43,9 @@ export default function Cadastro() {
       ...prev,
       [name]: value,
     }));
+    if (name === "password" || name === "confirmPassword") {
+      setFormError(null);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -52,6 +59,7 @@ export default function Cadastro() {
       !formData.password ||
       !formData.confirmPassword
     ) {
+      setFormError(null);
       showToast({
         message: "Por favor, preencha todos os campos obrigatórios",
         duration: 3000,
@@ -60,14 +68,19 @@ export default function Cadastro() {
     }
 
     if (!isValidEmail(normalizedEmail)) {
+      setFormError(null);
       showToast({
-        message: "Informe um email válido",
+        message: "Informe um e-mail válido",
         duration: 3000,
       });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
+      setFormError({
+        message: "As senhas precisam ser iguais para concluir o cadastro.",
+        details: ["Confirme a senha exatamente como foi digitada acima."],
+      });
       showToast({
         message: "As senhas não coincidem",
         duration: 3000,
@@ -75,9 +88,14 @@ export default function Cadastro() {
       return;
     }
 
-    if (formData.password.length < 6) {
+    const passwordDetails = getPasswordPolicyDetails(formData.password);
+    if (passwordDetails.length > 0) {
+      setFormError({
+        message: "A senha não atende aos requisitos de segurança.",
+        details: passwordDetails,
+      });
       showToast({
-        message: "Senha deve ter no mínimo 6 caracteres",
+        message: "Revise os requisitos da senha antes de continuar.",
         duration: 3000,
       });
       return;
@@ -92,6 +110,7 @@ export default function Cadastro() {
     }
 
     setIsSubmitting(true);
+    setFormError(null);
     try {
       await localSignupMutation.mutateAsync({
         name: `${formData.firstName} ${formData.lastName}`.trim() || formData.firstName,
@@ -106,9 +125,10 @@ export default function Cadastro() {
       });
       navigate("/");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao criar conta. Tente novamente.";
+      const parsed = getApiErrorDisplay(err, "Não foi possível criar sua conta agora.");
+      setFormError({ message: parsed.message, details: parsed.details });
       showToast({
-        message,
+        message: parsed.message,
         duration: 3000,
       });
     } finally {
@@ -163,6 +183,18 @@ export default function Cadastro() {
 
         {/* Formulário de cadastro */}
         <form onSubmit={handleSignUp} style={styles.form as CSSProperties}>
+          {formError ? (
+            <div style={styles.formAlert as CSSProperties}>
+              <strong style={styles.formAlertTitle as CSSProperties}>{formError.message}</strong>
+              {formError.details.length > 0 ? (
+                <ul style={styles.formAlertList as CSSProperties}>
+                  {formError.details.map(detail => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
           <div
             style={{
               ...styles.nameRow,
@@ -228,10 +260,11 @@ export default function Cadastro() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Mínimo de 6 caracteres"
+              placeholder="Crie uma senha forte"
               style={styles.input as CSSProperties}
               disabled={isSubmitting || localSignupMutation.isPending}
             />
+            <PasswordChecklist password={formData.password} />
           </div>
 
           <div style={styles.formGroup as CSSProperties}>
@@ -330,6 +363,10 @@ export default function Cadastro() {
         </button>
 
         {/* Link para login */}
+        <p style={styles.securityNote as CSSProperties}>
+          Ao criar sua conta, usamos cookies seguros e necessários para autenticação, continuidade da sessão e proteção da área do cliente.
+          Consulte a <Link to="/privacidade" style={styles.securityLink as CSSProperties}>Política de Privacidade</Link>.
+        </p>
         <div style={styles.loginSection as CSSProperties}>
           <p style={styles.loginText as CSSProperties}>
             Já tem conta?{" "}
@@ -477,6 +514,26 @@ const styles: Record<string, CSSProperties> = {
     gap: 16,
     marginBottom: 20,
   },
+  formAlert: {
+    padding: "14px 16px",
+    borderRadius: 12,
+    border: "1px solid rgba(210, 88, 88, 0.5)",
+    background: "rgba(86, 23, 23, 0.32)",
+    color: "#ffd7d7",
+  },
+  formAlertTitle: {
+    display: "block",
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  formAlertList: {
+    margin: 0,
+    paddingLeft: 18,
+    display: "grid",
+    gap: 6,
+    fontSize: 13,
+    color: "#f3c0c0",
+  },
   nameRow: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -557,6 +614,17 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
     transition: "all 0.3s ease",
     marginBottom: 16,
+  },
+  securityNote: {
+    margin: "0 0 18px",
+    color: "#8f8f95",
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
+  securityLink: {
+    color: "#f0ede8",
+    fontWeight: 600,
+    marginLeft: 4,
   },
   loginSection: {
     textAlign: "center",

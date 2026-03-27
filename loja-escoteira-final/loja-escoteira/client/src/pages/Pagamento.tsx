@@ -13,6 +13,7 @@ import { useUser } from "../contexts/UserContext";
 import { trpc } from "../lib/trpc";
 import { apiUrl } from "../const";
 import camisaFallback from "../images/camisa.png";
+import { getApiErrorDisplay } from "../utils/apiError";
 
 type CheckoutMethod = "PIX" | "BOLETO" | "CARD";
 
@@ -322,7 +323,8 @@ export default function Pagamento() {
       setAddressState(data.uf || "");
       await handleCalculateShipping();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível consultar o CEP.";
+      const parsed = getApiErrorDisplay(error, "Não foi possível consultar o CEP.");
+      const message = parsed.message;
       setShippingError(message.includes("Load failed") ? "Não foi possível consultar o CEP agora." : message);
       await handleCalculateShipping();
     } finally {
@@ -356,7 +358,8 @@ export default function Pagamento() {
     } catch (error) {
       setCouponDiscount(0);
       setAppliedCouponCode(null);
-      setCouponError(error instanceof Error ? error.message : "Cupom inválido ou expirado.");
+      const parsed = getApiErrorDisplay(error, "Cupom inválido ou expirado.");
+      setCouponError(parsed.message);
     }
   };
 
@@ -414,8 +417,8 @@ export default function Pagamento() {
 
       setPaymentData(result);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível gerar a cobrança.";
-      setPaymentError(message);
+      const parsed = getApiErrorDisplay(error, "Não foi possível gerar a cobrança.");
+      setPaymentError(parsed.message);
     }
   };
 

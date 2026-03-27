@@ -5,6 +5,7 @@ import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
+import { getApiErrorDisplay } from "../utils/apiError";
 
 type SavedAddress = {
   id: string;
@@ -54,6 +55,10 @@ const defaultPaymentDraft: Omit<PaymentMethod, "id"> = {
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
+function getFriendlyErrorMessage(error: unknown, fallback: string) {
+  return getApiErrorDisplay(error, fallback).message;
 }
 
 export default function Perfil() {
@@ -227,7 +232,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), normalizedEmail, phone, addresses, payments, true);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível salvar o perfil no banco.";
+      const message = getFriendlyErrorMessage(error, "Não foi possível salvar seu perfil agora.");
       showToast({ message, duration: 3000 });
       return;
     }
@@ -289,7 +294,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, normalized, payments);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível salvar endereço no banco.";
+      const message = getFriendlyErrorMessage(error, "Não foi possível salvar o endereço agora.");
       showToast({ message, duration: 3000 });
       return;
     }
@@ -312,7 +317,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, normalized, payments);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível remover endereço no banco.";
+      const message = getFriendlyErrorMessage(error, "Não foi possível remover o endereço agora.");
       showToast({ message, duration: 3000 });
       return;
     }
@@ -327,7 +332,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, normalized, payments);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível definir o endereço padrão.";
+      const message = getFriendlyErrorMessage(error, "Não foi possível definir o endereço padrão.");
       showToast({ message, duration: 3000 });
       return;
     }
@@ -385,7 +390,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, addresses, normalized);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível salvar o método no banco.";
+      const message = getFriendlyErrorMessage(error, "Não foi possível salvar o método de pagamento agora.");
       showToast({ message, duration: 3000 });
       return;
     }
@@ -408,7 +413,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, addresses, normalized);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível remover o método no banco.";
+      const message = getFriendlyErrorMessage(error, "Não foi possível remover o método de pagamento agora.");
       showToast({ message, duration: 3000 });
       return;
     }
@@ -423,7 +428,7 @@ export default function Perfil() {
     try {
       await persistProfileData(profileName.trim(), profileEmail.trim(), phone, addresses, normalized);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Não foi possível definir o método padrão.";
+      const message = getFriendlyErrorMessage(error, "Não foi possível definir o método padrão.");
       showToast({ message, duration: 3000 });
       return;
     }

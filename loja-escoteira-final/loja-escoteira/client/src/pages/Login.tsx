@@ -11,6 +11,7 @@ import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
 import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
+import { getApiErrorDisplay } from "../utils/apiError";
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -27,14 +28,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<{ message: string; details: string[] } | null>(null);
   const isBusy = isSubmitting || localLoginMutation.isPending;
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const normalizedEmail = email.trim().toLowerCase();
-    
+     
     if (!normalizedEmail || !password) {
+      setFormError(null);
       showToast({
         message: "Por favor, preencha todos os campos",
         duration: 3000,
@@ -42,14 +45,16 @@ export default function Login() {
       return;
     }
     if (!isValidEmail(normalizedEmail)) {
+      setFormError(null);
       showToast({
-        message: "Informe um email valido",
+        message: "Informe um e-mail válido",
         duration: 3000,
       });
       return;
     }
 
     setIsSubmitting(true);
+    setFormError(null);
     try {
       await localLoginMutation.mutateAsync({ email: normalizedEmail, password });
       await utils.auth.me.invalidate();
@@ -59,9 +64,10 @@ export default function Login() {
       });
       navigate("/");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao fazer login. Verifique suas credenciais.";
+      const parsed = getApiErrorDisplay(err, "Não foi possível fazer login. Verifique suas credenciais.");
+      setFormError({ message: parsed.message, details: parsed.details });
       showToast({
-        message,
+        message: parsed.message,
         duration: 3000,
       });
     } finally {
@@ -116,6 +122,18 @@ export default function Login() {
 
         {/* Formulário de login */}
         <form onSubmit={handleEmailLogin} style={styles.form as CSSProperties}>
+          {formError ? (
+            <div style={styles.formAlert as CSSProperties}>
+              <strong style={styles.formAlertTitle as CSSProperties}>{formError.message}</strong>
+              {formError.details.length > 0 ? (
+                <ul style={styles.formAlertList as CSSProperties}>
+                  {formError.details.map(detail => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
           <div style={styles.formGroup as CSSProperties}>
             <label style={styles.label as CSSProperties} htmlFor="email">
               Email
@@ -219,6 +237,10 @@ export default function Login() {
         </button>
 
         {/* Link para cadastro */}
+        <p style={styles.securityNote as CSSProperties}>
+          Ao continuar, usamos cookies seguros e necessários para manter sua sessão autenticada e proteger sua conta.
+          Consulte a <Link to="/privacidade" style={styles.securityLink as CSSProperties}>Política de Privacidade</Link>.
+        </p>
         <div style={styles.signupSection as CSSProperties}>
           <p style={styles.signupText as CSSProperties}>
             Não tem conta? <a 
@@ -362,6 +384,26 @@ const styles: Record<string, CSSProperties> = {
     gap: 20,
     marginBottom: 24,
   },
+  formAlert: {
+    padding: "14px 16px",
+    borderRadius: 12,
+    border: "1px solid rgba(210, 88, 88, 0.5)",
+    background: "rgba(86, 23, 23, 0.32)",
+    color: "#ffd7d7",
+  },
+  formAlertTitle: {
+    display: "block",
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  formAlertList: {
+    margin: 0,
+    paddingLeft: 18,
+    display: "grid",
+    gap: 6,
+    fontSize: 13,
+    color: "#f3c0c0",
+  },
   formGroup: {
     display: "flex",
     flexDirection: "column",
@@ -440,6 +482,17 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
     transition: "all 0.3s ease",
     marginBottom: 24,
+  },
+  securityNote: {
+    margin: "0 0 18px",
+    color: "#8f8f95",
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
+  securityLink: {
+    color: "#f0ede8",
+    fontWeight: 600,
+    marginLeft: 4,
   },
   signupSection: {
     textAlign: "center",

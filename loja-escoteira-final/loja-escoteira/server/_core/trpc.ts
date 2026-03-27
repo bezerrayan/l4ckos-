@@ -3,9 +3,22 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
 import { ENV } from "./env";
+import { getPublicAppError } from "./appErrors";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    const appError = getPublicAppError(error);
+
+    return {
+      ...shape,
+      message: appError.message,
+      data: {
+        ...shape.data,
+        appError,
+      },
+    };
+  },
 });
 
 export const router = t.router;

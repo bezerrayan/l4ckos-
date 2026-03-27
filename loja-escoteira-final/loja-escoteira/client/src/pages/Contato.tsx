@@ -7,6 +7,7 @@ import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { apiUrl } from "../const";
+import { getApiErrorDisplay } from "../utils/apiError";
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -23,6 +24,7 @@ export default function Contato() {
     mensagem: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<{ message: string; details: string[] } | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -33,6 +35,7 @@ export default function Contato() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +43,7 @@ export default function Contato() {
     const normalizedEmail = formData.email.trim().toLowerCase();
 
     if (!formData.nome || !normalizedEmail || !formData.mensagem) {
+      setFormError(null);
       showToast({
         message: "Por favor, preencha todos os campos obrigatórios.",
         duration: 3000,
@@ -48,6 +52,7 @@ export default function Contato() {
     }
 
     if (!isValidEmail(normalizedEmail)) {
+      setFormError(null);
       showToast({
         message: "Informe um e-mail válido.",
         duration: 3000,
@@ -56,6 +61,7 @@ export default function Contato() {
     }
 
     setIsSubmitting(true);
+    setFormError(null);
 
     try {
       const response = await fetch(apiUrl("/api/contact"), {
@@ -71,9 +77,13 @@ export default function Contato() {
         }),
       });
 
-      const payload = await response.json().catch(() => null);
+      const payload = await response.json().catch(() => null) as {
+        error?: string;
+        message?: string;
+        details?: string[];
+      } | null;
       if (!response.ok) {
-        throw new Error(payload?.error || "Erro ao enviar mensagem.");
+        throw new Error(payload?.message || payload?.error || "Erro ao enviar mensagem.");
       }
 
       showToast({
@@ -88,8 +98,10 @@ export default function Contato() {
         mensagem: "",
       });
     } catch (error) {
+      const parsed = getApiErrorDisplay(error, "Não foi possível enviar sua mensagem agora.");
+      setFormError({ message: parsed.message, details: parsed.details });
       showToast({
-        message: error instanceof Error ? error.message : "Erro ao enviar mensagem.",
+        message: parsed.message,
         duration: 4000,
       });
     } finally {
@@ -168,6 +180,18 @@ export default function Contato() {
           <h2 style={styles.sectionTitle}>Envie uma Mensagem</h2>
 
           <form onSubmit={handleSubmit} style={styles.form as CSSProperties}>
+            {formError ? (
+              <div style={styles.formAlert as CSSProperties}>
+                <strong style={styles.formAlertTitle as CSSProperties}>{formError.message}</strong>
+                {formError.details.length > 0 ? (
+                  <ul style={styles.formAlertList as CSSProperties}>
+                    {formError.details.map(detail => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
             <div style={styles.formGroup as CSSProperties}>
               <label style={styles.label as CSSProperties} htmlFor="nome">
                 Nome completo *
@@ -371,6 +395,26 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 20,
+  },
+  formAlert: {
+    padding: "14px 16px",
+    borderRadius: 12,
+    border: "1px solid rgba(210, 88, 88, 0.5)",
+    background: "rgba(86, 23, 23, 0.32)",
+    color: "#ffd7d7",
+  },
+  formAlertTitle: {
+    display: "block",
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  formAlertList: {
+    margin: 0,
+    paddingLeft: 18,
+    display: "grid",
+    gap: 6,
+    fontSize: 13,
+    color: "#f3c0c0",
   },
   formGroup: {
     display: "flex",

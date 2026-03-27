@@ -17,6 +17,7 @@ import {
   validateAsaasWebhookSignature,
 } from "../services/asaasService";
 import { securityLog } from "../_core/security";
+import { buildApiErrorResponse } from "../_core/appErrors";
 import { formatCurrency } from "../utils/email/formatCurrency.js";
 import {
   sendInternalLowStockAlertEmail,
@@ -31,6 +32,16 @@ type AuthenticatedRequest = Request & {
     id: number;
   };
 };
+
+function sendControllerError(
+  res: Response,
+  status: number,
+  code: string,
+  message: string,
+  details?: string[],
+) {
+  res.status(status).json(buildApiErrorResponse({ status, code, message, details }));
+}
 
 const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED", "PAYMENT_OVERDUE_RECEIVED"]);
 const FAILED_EVENTS = new Set(["PAYMENT_REFUSED", "PAYMENT_DELETED", "PAYMENT_REPROVED", "PAYMENT_FAILED"]);
@@ -122,7 +133,7 @@ export async function createCustomerHandler(req: Request, res: Response) {
     const authReq = req as AuthenticatedRequest;
     const userId = authReq.authUser?.id;
     if (!userId) {
-      res.status(401).json({ error: "Unauthorized" });
+      sendControllerError(res, 401, "AUTH_REQUIRED", "Faça login para continuar.");
       return;
     }
 
@@ -137,8 +148,11 @@ export async function createCustomerHandler(req: Request, res: Response) {
       created: result.created,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create customer";
-    res.status(400).json({ error: message });
+    securityLog("warn", "payment.create_customer_failed", {
+      requestIp: req.ip || "unknown",
+      reason: error instanceof Error ? error.message : "unknown",
+    });
+    sendControllerError(res, 400, "CUSTOMER_CREATE_FAILED", "Não foi possível preparar o cadastro de pagamento.");
   }
 }
 
@@ -147,7 +161,7 @@ export async function createCheckoutHandler(req: Request, res: Response) {
     const authReq = req as AuthenticatedRequest;
     const userId = authReq.authUser?.id;
     if (!userId) {
-      res.status(401).json({ error: "Unauthorized" });
+      sendControllerError(res, 401, "AUTH_REQUIRED", "Faça login para continuar.");
       return;
     }
 
@@ -162,18 +176,18 @@ export async function createCheckoutHandler(req: Request, res: Response) {
 
     const orderId = Number(body.orderId);
     if (!Number.isInteger(orderId) || orderId <= 0) {
-      res.status(400).json({ error: "Invalid orderId" });
+      sendControllerError(res, 400, "INVALID_ORDER_ID", "Pedido inválido.");
       return;
     }
 
     const redirectUrl = String(body.redirectUrl || "").trim();
     if (!redirectUrl) {
-      res.status(400).json({ error: "redirectUrl is required" });
+      sendControllerError(res, 400, "INVALID_REDIRECT_URL", "Não foi possível iniciar o checkout.");
       return;
     }
 
     if (!isTrustedRedirectUrl(redirectUrl)) {
-      res.status(400).json({ error: "Invalid redirectUrl" });
+      sendControllerError(res, 400, "INVALID_REDIRECT_URL", "Não foi possível iniciar o checkout.");
       return;
     }
 
@@ -185,7 +199,7 @@ export async function createCheckoutHandler(req: Request, res: Response) {
 
     const order = await getOrderByIdAndUser(orderId, userId);
     if (!order) {
-      res.status(404).json({ error: "Order not found" });
+      sendControllerError(res, 404, "ORDER_NOT_FOUND", "Pedido não encontrado.");
       return;
     }
 
@@ -206,8 +220,11 @@ export async function createCheckoutHandler(req: Request, res: Response) {
       checkoutUrl: checkout.checkoutUrl,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create checkout";
-    res.status(400).json({ error: message });
+    securityLog("warn", "payment.create_checkout_failed", {
+      requestIp: req.ip || "unknown",
+      reason: error instanceof Error ? error.message : "unknown",
+    });
+    sendControllerError(res, 400, "CHECKOUT_CREATE_FAILED", "Não foi possível gerar a cobrança agora.");
   }
 }
 
