@@ -175,8 +175,13 @@ export default function Login() {
           </div>
 
           {/* Ajuda */}
-          <div style={styles.optionsRow as CSSProperties}>
-            <span style={styles.checkboxLabel as CSSProperties}>Acesso seguro pela sua conta.</span>
+          <div style={styles.supportCard as CSSProperties}>
+            <div style={styles.supportCopy as CSSProperties}>
+              <span style={styles.supportTitle as CSSProperties}>Sessão protegida</span>
+              <span style={styles.supportText as CSSProperties}>
+                Usamos cookies seguros e necessários para manter sua conta autenticada e proteger o acesso.
+              </span>
+            </div>
             <Link to="/contato" style={styles.forgotLink as CSSProperties}>
               Precisa de ajuda com a senha?
             </Link>
@@ -238,8 +243,8 @@ export default function Login() {
 
         {/* Link para cadastro */}
         <p style={styles.securityNote as CSSProperties}>
-          Ao continuar, usamos cookies seguros e necessários para manter sua sessão autenticada e proteger sua conta.
-          Consulte a <Link to="/privacidade" style={styles.securityLink as CSSProperties}>Política de Privacidade</Link>.
+          Ao continuar, você concorda com o uso de cookies essenciais de autenticação. Saiba mais na
+          <Link to="/privacidade" style={styles.securityLink as CSSProperties}> Política de Privacidade</Link>.
         </p>
         <div style={styles.signupSection as CSSProperties}>
           <p style={styles.signupText as CSSProperties}>
@@ -385,24 +390,24 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: 24,
   },
   formAlert: {
-    padding: "14px 16px",
+    padding: "12px 14px",
     borderRadius: 12,
-    border: "1px solid rgba(210, 88, 88, 0.5)",
-    background: "rgba(86, 23, 23, 0.32)",
-    color: "#ffd7d7",
+    border: "1px solid rgba(184, 95, 95, 0.34)",
+    background: "rgba(70, 25, 25, 0.18)",
+    color: "#f4d6d6",
   },
   formAlertTitle: {
     display: "block",
-    marginBottom: 8,
+    marginBottom: 6,
     fontSize: 14,
   },
   formAlertList: {
     margin: 0,
     paddingLeft: 18,
     display: "grid",
-    gap: 6,
-    fontSize: 13,
-    color: "#f3c0c0",
+    gap: 4,
+    fontSize: 12,
+    color: "#e7bebe",
   },
   formGroup: {
     display: "flex",
@@ -443,6 +448,33 @@ const styles: Record<string, CSSProperties> = {
     color: "#f0ede8",
     fontWeight: 600,
     transition: "color 0.2s ease",
+    alignSelf: "flex-start",
+  },
+  supportCard: {
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 16,
+    padding: "14px 16px",
+    borderRadius: 12,
+    border: "1px solid #232323",
+    background: "#111111",
+  },
+  supportCopy: {
+    display: "grid",
+    gap: 4,
+  },
+  supportTitle: {
+    color: "#f0ede8",
+    fontSize: 13,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  },
+  supportText: {
+    color: "#9d9ca3",
+    fontSize: 13,
+    lineHeight: 1.55,
   },
   submitBtn: {
     padding: "14px 24px",
@@ -488,6 +520,7 @@ const styles: Record<string, CSSProperties> = {
     color: "#8f8f95",
     fontSize: 13,
     lineHeight: 1.6,
+    textAlign: "center",
   },
   securityLink: {
     color: "#f0ede8",
