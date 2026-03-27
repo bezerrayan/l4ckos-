@@ -6,7 +6,7 @@ const router = Router();
 router.get("/email/unsubscribe", async (req, res) => {
   const token = String(req.query.token ?? "").trim();
   if (!token) {
-    return res.status(400).type("html").send(renderPage("Link invalido", "O link de descadastro esta incompleto."));
+    return res.status(400).type("html").send(renderPage("Link inválido", "O link de descadastro está incompleto."));
   }
 
   try {
@@ -18,12 +18,12 @@ router.get("/email/unsubscribe", async (req, res) => {
     return res
       .status(200)
       .type("html")
-      .send(renderPage("Descadastro confirmado", `${email} nao recebera mais emails de marketing da L4CKOS.`));
+      .send(renderPage("Descadastro confirmado", `${email} não receberá mais e-mails de marketing da L4CKOS.`));
   } catch {
     return res
       .status(400)
       .type("html")
-      .send(renderPage("Link invalido", "Nao foi possivel validar o link de descadastro."));
+      .send(renderPage("Link inválido", "Não foi possível validar o link de descadastro."));
   }
 });
 

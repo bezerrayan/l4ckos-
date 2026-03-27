@@ -181,12 +181,7 @@ export async function createCheckoutHandler(req: Request, res: Response) {
     }
 
     const redirectUrl = String(body.redirectUrl || "").trim();
-    if (!redirectUrl) {
-      sendControllerError(res, 400, "INVALID_REDIRECT_URL", "Não foi possível iniciar o checkout.");
-      return;
-    }
-
-    if (!isTrustedRedirectUrl(redirectUrl)) {
+    if (!redirectUrl || !isTrustedRedirectUrl(redirectUrl)) {
       sendControllerError(res, 400, "INVALID_REDIRECT_URL", "Não foi possível iniciar o checkout.");
       return;
     }
@@ -236,7 +231,7 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
         requestIp: req.ip || "unknown",
         hasTokenHeader: Boolean((req.headers as Record<string, unknown>)["asaas-access-token"]),
       });
-      res.status(401).json({ error: "Invalid webhook signature" });
+      sendControllerError(res, 401, "INVALID_WEBHOOK_SIGNATURE", "A solicitação não pôde ser validada.");
       return;
     }
 
@@ -244,7 +239,6 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
     const event = String(payload?.event || "").trim();
 
     if (!PAID_EVENTS.has(event) && !FAILED_EVENTS.has(event)) {
-      console.log("[Asaas webhook] Ignored event", { event });
       res.status(200).json({ handled: false, reason: "event_ignored" });
       return;
     }
@@ -253,14 +247,11 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
     let checkoutId = parseCheckoutIdFromWebhook(payload);
     const paymentId = parsePaymentIdFromWebhook(payload);
 
-    if (!orderId) {
-      if (checkoutId) {
-        const order = await getOrderByAsaasCheckoutId(checkoutId);
-        orderId = order?.id ?? null;
-      }
+    if (!orderId && checkoutId) {
+      const order = await getOrderByAsaasCheckoutId(checkoutId);
+      orderId = order?.id ?? null;
     }
 
-    // Fallback: some Asaas payloads do not include externalReference/checkout.
     if (!orderId && paymentId) {
       try {
         const payment = await getAsaasPayment(paymentId);
@@ -273,15 +264,17 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
           orderId = order?.id ?? null;
         }
       } catch (error) {
-        console.error("[Asaas webhook] Failed to resolve payment by id", {
+        securityLog("warn", "payment.asaas_webhook_resolve_failed", {
           paymentId,
-          error: error instanceof Error ? error.message : String(error),
+          requestIp: req.ip || "unknown",
+          reason: error instanceof Error ? error.message : String(error),
         });
       }
     }
 
     if (!orderId) {
-      console.warn("[Asaas webhook] Could not resolve order", {
+      securityLog("warn", "payment.asaas_webhook_order_unresolved", {
+        requestIp: req.ip || "unknown",
         event,
         paymentId,
         checkoutId,
@@ -295,6 +288,7 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
     if (PAID_EVENTS.has(event)) {
       result = await markOrderPaid(orderId);
     }
+
     if (order) {
       const user = await getUserById(order.userId);
       const orderItems = PAID_EVENTS.has(event) ? await getOrderReservationItems(order.id) : [];
@@ -332,14 +326,14 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
               orderNumber: String(order.id),
               total: formatCurrency(order.totalPrice / 100),
               paymentUrl: `${String(process.env.APP_URL || process.env.APP_BASE_URL || process.env.FRONTEND_URL || "https://l4ckos.com.br").replace(/\/$/, "")}/checkout`,
-              failureReason: "A operadora ou o provedor nao confirmou o pagamento.",
+              failureReason: "A operadora ou o provedor não confirmou o pagamento.",
             });
             await sendInternalPaymentFailedAlertEmail({
               customerName: user.name || "Cliente",
               customerEmail: user.email,
               orderNumber: String(order.id),
               total: formatCurrency(order.totalPrice / 100),
-              failureReason: "A operadora ou o provedor nao confirmou o pagamento.",
+              failureReason: "A operadora ou o provedor não confirmou o pagamento.",
             });
           }
         } catch (error) {
@@ -350,6 +344,7 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
         }
       }
     }
+
     securityLog("info", "payment.asaas_webhook_processed", {
       requestIp: req.ip || "unknown",
       event,
@@ -361,7 +356,10 @@ export async function asaasWebhookHandler(req: Request, res: Response) {
 
     res.status(200).json({ handled: true, event, orderId });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Webhook processing failed";
-    res.status(500).json({ error: message });
+    securityLog("error", "payment.asaas_webhook_failed", {
+      requestIp: req.ip || "unknown",
+      reason: error instanceof Error ? error.message : "unknown",
+    });
+    sendControllerError(res, 500, "WEBHOOK_PROCESSING_FAILED", "Não foi possível processar a notificação.");
   }
 }

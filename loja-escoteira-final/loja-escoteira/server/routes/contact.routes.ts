@@ -1,8 +1,11 @@
+import type { Response } from "express";
 import { Router } from "express";
 import {
   sendAutoReplyToCustomer,
   sendContactNotificationToStore,
 } from "../services/emailService.js";
+import { buildApiErrorResponse } from "../_core/appErrors";
+import { securityLog } from "../_core/security";
 
 const router = Router();
 
@@ -14,97 +17,98 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function getClientSafeErrorMessage(error: unknown) {
-  const message = error instanceof Error ? error.message : "";
-
-  if (message.includes("Missing env var: RESEND_API_KEY")) {
-    return "Configuracao de email incompleta (RESEND_API_KEY).";
-  }
-  if (message.includes("Missing env var: EMAIL_FROM")) {
-    return "Configuracao de remetente incompleta no servidor.";
-  }
-  if (message.includes("Missing env var: EMAIL_TO")) {
-    return "Configuracao de destinatario incompleta no servidor.";
-  }
-  if (/domain is not verified/i.test(message)) {
-    return "Dominio de envio ainda nao verificado no provedor de email.";
-  }
-  if (/Invalid `from` field/i.test(message) || /Invalid from/i.test(message)) {
-    return "Remetente invalido. Revise EMAIL_FROM_* no servidor.";
-  }
-
-  return "Erro ao enviar mensagem.";
+function sendError(res: Response, status: number, code: string, message: string) {
+  res.status(status).json(buildApiErrorResponse({ status, code, message }));
 }
 
-// Frontend form should call this endpoint:
-// POST /api/contact
-// Compatible payload: { name, email, message, subject? }
+function validateContactPayload(payload: unknown) {
+  const body = (payload ?? {}) as Record<string, unknown>;
+  const cleanName = sanitizeInput(body.name);
+  const cleanEmail = sanitizeInput(body.email).toLowerCase();
+  const cleanMessage = sanitizeInput(body.message);
+  const cleanSubject = sanitizeInput(body.subject);
+  const cleanPhone = sanitizeInput(body.phone);
+
+  if (cleanName.length < 2 || cleanName.length > 120) {
+    return { error: "Informe um nome válido." } as const;
+  }
+
+  if (!cleanEmail || cleanEmail.length > 160 || !isValidEmail(cleanEmail)) {
+    return { error: "Informe um e-mail válido." } as const;
+  }
+
+  if (cleanSubject.length > 160) {
+    return { error: "O assunto está muito longo." } as const;
+  }
+
+  if (cleanPhone.length > 40) {
+    return { error: "O telefone informado é inválido." } as const;
+  }
+
+  if (cleanMessage.length < 10 || cleanMessage.length > 5000) {
+    return { error: "Escreva uma mensagem entre 10 e 5000 caracteres." } as const;
+  }
+
+  return {
+    cleanName,
+    cleanEmail,
+    cleanMessage,
+    cleanSubject,
+    cleanPhone,
+  } as const;
+}
+
 router.post("/contact", async (req, res) => {
   try {
-    const { name, email, message, subject, phone } = req.body ?? {};
-    const cleanName = sanitizeInput(name);
-    const cleanEmail = sanitizeInput(email);
-    const cleanMessage = sanitizeInput(message);
-    const cleanSubject = sanitizeInput(subject);
-    const cleanPhone = sanitizeInput(phone);
-
-    if (!cleanName) return res.status(400).json({ success: false, error: "O campo name e obrigatorio." });
-    if (!cleanEmail) return res.status(400).json({ success: false, error: "O campo email e obrigatorio." });
-    if (!cleanMessage) return res.status(400).json({ success: false, error: "O campo message e obrigatorio." });
-    if (!isValidEmail(cleanEmail)) return res.status(400).json({ success: false, error: "Email invalido." });
+    const parsed = validateContactPayload(req.body);
+    if ("error" in parsed && parsed.error) {
+      sendError(res, 400, "INVALID_CONTACT_INPUT", parsed.error);
+      return;
+    }
 
     await sendContactNotificationToStore({
-      name: cleanName,
-      email: cleanEmail,
-      subject: cleanPhone ? `${cleanSubject || "Contato"} | Tel: ${cleanPhone}` : cleanSubject,
-      message: cleanMessage + (cleanPhone ? `\n\nTelefone: ${cleanPhone}` : ""),
+      name: parsed.cleanName,
+      email: parsed.cleanEmail,
+      subject: parsed.cleanPhone ? `${parsed.cleanSubject || "Contato"} | Tel: ${parsed.cleanPhone}` : parsed.cleanSubject,
+      message: parsed.cleanMessage + (parsed.cleanPhone ? `\n\nTelefone: ${parsed.cleanPhone}` : ""),
     });
 
-    let autoReplyFailure: unknown = null;
     try {
       await sendAutoReplyToCustomer({
-        name: cleanName,
-        email: cleanEmail,
+        name: parsed.cleanName,
+        email: parsed.cleanEmail,
       });
-    } catch (err) {
-      autoReplyFailure = err;
-      console.error("[Contact] Auto-reply failed, but store notification succeeded", {
+    } catch (error) {
+      securityLog("warn", "contact.auto_reply_failed", {
         route: "/api/contact",
-        provider: "resend",
-        name: err instanceof Error ? err.name : "UnknownError",
-        message: err instanceof Error ? err.message : "Unknown error",
-        stack: err instanceof Error ? err.stack : undefined,
-        cause: err instanceof Error && err.cause ? err.cause : undefined,
+        requestIp: req.ip || "unknown",
+        reason: error instanceof Error ? error.message : "unknown",
       });
+
+      res.status(200).json({
+        success: true,
+        code: "MESSAGE_RECEIVED",
+        message: "Recebemos sua mensagem. Nossa equipe vai continuar o atendimento por e-mail.",
+      });
+      return;
     }
 
-    if (autoReplyFailure) {
-      return res.status(502).json({
-        success: false,
-        error: "Recebemos sua mensagem, mas nao conseguimos enviar a confirmacao automatica para seu e-mail.",
-        code: "AUTO_REPLY_FAILED",
-      });
-    }
-
-    return res.status(200).json({ success: true, message: "Mensagem enviada com sucesso." });
+    res.status(200).json({ success: true, message: "Mensagem enviada com sucesso." });
   } catch (error) {
-    console.error("[Contact] Failed to process contact flow", {
+    securityLog("error", "contact.flow_failed", {
       route: "/api/contact",
-      provider: "resend",
-      name: error instanceof Error ? error.name : "UnknownError",
-      message: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-      cause: error instanceof Error && error.cause ? error.cause : undefined,
+      requestIp: req.ip || "unknown",
+      reason: error instanceof Error ? error.message : "unknown",
     });
-    return res.status(500).json({ success: false, error: getClientSafeErrorMessage(error) });
+
+    sendError(res, 500, "CONTACT_SEND_FAILED", "Não foi possível enviar sua mensagem agora. Tente novamente em instantes.");
   }
 });
 
-// Minimal test endpoint for provider verification.
-// Keep disabled in production by default and enable only with CONTACT_TEST_ENABLED=true.
 router.post("/contact/test", async (_req, res) => {
-  if (process.env.CONTACT_TEST_ENABLED !== "true") {
-    return res.status(404).json({ success: false, error: "Not found" });
+  if (process.env.NODE_ENV === "production" || process.env.CONTACT_TEST_ENABLED !== "true") {
+    res.status(404).json({ success: false, error: "Not found" });
+    return;
   }
 
   try {
@@ -114,16 +118,13 @@ router.post("/contact/test", async (_req, res) => {
       subject: "Teste de contato",
       message: "Teste do endpoint /api/contact/test.",
     });
-    return res.status(200).json({ success: true, message: "Teste enviado com sucesso." });
+    res.status(200).json({ success: true, message: "Teste enviado com sucesso." });
   } catch (error) {
-    console.error("[ContactTest] Failed to send email", {
+    securityLog("warn", "contact.test_failed", {
       route: "/api/contact/test",
-      provider: "resend",
-      name: error instanceof Error ? error.name : "UnknownError",
-      message: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
+      reason: error instanceof Error ? error.message : "unknown",
     });
-    return res.status(500).json({ success: false, error: "Erro ao enviar teste." });
+    res.status(500).json({ success: false, error: "Erro ao enviar teste." });
   }
 });
 

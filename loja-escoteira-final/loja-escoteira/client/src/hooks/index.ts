@@ -28,5 +28,5 @@ export {
   useRemoveFavorite,
   useIsFavorite,
 } from "./useFavoritesSync";
-export { useOrders, useCreateOrder, useCreateAsaasCharge } from "./useOrders";
+export { useOrders, useCreateAsaasCharge } from "./useOrders";
 

@@ -51,7 +51,7 @@ export default function MeusPedidos() {
     return (
       <section style={styles.wrapper}>
         <h1 style={styles.title}>Meus pedidos</h1>
-        <p style={styles.muted}>Voce precisa entrar para ver seu historico de compras.</p>
+        <p style={styles.muted}>Você precisa entrar para ver seu histórico de compras.</p>
         <Link to="/login" style={styles.primaryButton}>
           Entrar na conta
         </Link>
@@ -77,10 +77,10 @@ export default function MeusPedidos() {
       </div>
 
       {ordersQuery.isLoading ? <p style={styles.muted}>Carregando pedidos...</p> : null}
-      {ordersQuery.isError ? <p style={styles.error}>Nao foi possivel carregar seus pedidos agora.</p> : null}
+      {ordersQuery.isError ? <p style={styles.error}>Não foi possível carregar seus pedidos agora.</p> : null}
 
       {!ordersQuery.isLoading && !ordersQuery.isError && orders.length === 0 ? (
-        <p style={styles.muted}>Voce ainda nao possui pedidos concluidos na sua conta.</p>
+        <p style={styles.muted}>Você ainda não possui pedidos concluídos na sua conta.</p>
       ) : null}
 
       <div style={styles.list}>
@@ -105,7 +105,7 @@ export default function MeusPedidos() {
                 </div>
                 <div>
                   <p style={styles.metaLabel}>Rastreio</p>
-                  <p style={styles.metaStrong}>{order.trackingCode || "Ainda nao informado"}</p>
+                  <p style={styles.metaStrong}>{order.trackingCode || "Ainda não informado"}</p>
                 </div>
               </div>
 

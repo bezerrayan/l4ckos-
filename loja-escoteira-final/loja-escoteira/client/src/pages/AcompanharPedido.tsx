@@ -208,7 +208,7 @@ export default function AcompanharPedido() {
       </form>
 
       {query.isLoading ? <p style={styles.muted}>Buscando pedido...</p> : null}
-      {query.isError ? <p style={styles.error}>Nao foi possivel localizar este pedido na sua conta.</p> : null}
+      {query.isError ? <p style={styles.error}>Não foi possível localizar este pedido na sua conta.</p> : null}
 
       {query.data ? (
         <article style={styles.card}>
@@ -251,7 +251,7 @@ export default function AcompanharPedido() {
             </div>
             <div style={styles.summaryCard}>
               <p style={styles.metaLabel}>Rastreio</p>
-              <p style={styles.metaStrong}>{query.data.trackingCode || "Ainda nao informado"}</p>
+              <p style={styles.metaStrong}>{query.data.trackingCode || "Ainda não informado"}</p>
             </div>
           </div>
 
@@ -278,7 +278,7 @@ export default function AcompanharPedido() {
           <div style={styles.section}>
             <div style={styles.sectionHead}>
               <h3 style={styles.sectionTitle}>Entrega</h3>
-              <span style={styles.sectionHint}>Endereco confirmado para esta compra.</span>
+              <span style={styles.sectionHint}>Endereço confirmado para esta compra.</span>
             </div>
 
             {query.data.shippingAddress ? (
@@ -288,7 +288,7 @@ export default function AcompanharPedido() {
                 ))}
               </div>
             ) : (
-              <div style={styles.emptyBox}>Ainda nao foi possivel carregar o endereco deste pedido.</div>
+              <div style={styles.emptyBox}>Ainda não foi possível carregar o endereço deste pedido.</div>
             )}
           </div>
 
@@ -327,7 +327,7 @@ export default function AcompanharPedido() {
               </div>
             ) : (
               <div style={styles.emptyBox}>
-                Os itens deste pedido ainda nao puderam ser carregados. Atualize novamente em instantes.
+                Os itens deste pedido ainda não puderam ser carregados. Atualize novamente em instantes.
               </div>
             )}
           </div>
@@ -335,7 +335,7 @@ export default function AcompanharPedido() {
           <div style={styles.actions}>
             {canEditShippingAddress(query.data.status) ? (
               <Link to={`/meus-pedidos/${query.data.id}`} style={styles.secondaryButton}>
-                Ajustar endereco
+                 Ajustar endereço
               </Link>
             ) : null}
             <Link to="/meus-pedidos" style={styles.secondaryButton}>

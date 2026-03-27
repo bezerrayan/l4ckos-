@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
 import {
-  createOrder,
   createOrderWithId,
   getProductsByIds,
   getOrderByIdAndUser,
@@ -20,6 +19,7 @@ import { quoteShippingDetailed } from "../services/shippingService";
 import { listAsaasPaymentsByExternalReference } from "../services/asaasService";
 import { formatCurrency } from "../utils/email/formatCurrency.js";
 import { sendOrderCreatedEmail, sendPaymentPendingEmail } from "../services/emailService.js";
+import { securityLog } from "../_core/security";
 
 const checkoutItemSchema = z.object({
   productId: z.number().int().positive(),
@@ -63,7 +63,7 @@ async function resolveOrderPricing(input: {
   for (const item of input.items) {
     const product = productsById.get(item.productId);
     if (!product) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: `Produto ${item.productId} nao encontrado` });
+      throw new TRPCError({ code: "BAD_REQUEST", message: `Produto ${item.productId} não encontrado` });
     }
 
     if (Number(product.stock ?? 0) < item.quantity) {
@@ -81,7 +81,7 @@ async function resolveOrderPricing(input: {
 
   const shippingOption = shippingQuote.options.find(option => option.id === input.shipping.optionId);
   if (!shippingOption) {
-    throw new TRPCError({ code: "BAD_REQUEST", message: "Opcao de frete invalida" });
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Opção de frete inválida" });
   }
 
   const shippingCents = Math.round(Number(shippingOption.price) * 100);
@@ -92,7 +92,7 @@ async function resolveOrderPricing(input: {
   if (input.couponCode) {
     const coupon = await getApplicableCouponByCode(input.couponCode);
     if (!coupon) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "Cupom invalido ou expirado" });
+      throw new TRPCError({ code: "BAD_REQUEST", message: "Cupom inválido ou expirado" });
     }
 
     const grossTotal = grossTotalCents / 100;
@@ -158,14 +158,12 @@ async function syncOrderPaymentIfNeeded(order: Awaited<ReturnType<typeof getOrde
 }
 
 export const ordersRouter = router({
-  // List user orders
   list: protectedProcedure.query(async ({ ctx }) => {
     const orders = await getOrdersByUserId(ctx.user.id);
     const syncedOrders = await Promise.all(orders.map(order => syncOrderPaymentIfNeeded(order)));
     return syncedOrders;
   }),
 
-  // Track order by order number or tracking code
   track: protectedProcedure
     .input(
       z
@@ -174,7 +172,7 @@ export const ordersRouter = router({
           trackingCode: z.string().trim().min(3).max(120).optional(),
         })
         .refine(data => data.orderId || data.trackingCode, {
-          message: "Informe o numero do pedido ou codigo de rastreio",
+          message: "Informe o número do pedido ou código de rastreio",
         }),
     )
     .query(async ({ input, ctx }) => {
@@ -187,7 +185,7 @@ export const ordersRouter = router({
       if (!syncedOrder) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Pedido nao encontrado para este usuario",
+          message: "Pedido não encontrado para este usuário",
         });
       }
 
@@ -201,7 +199,7 @@ export const ordersRouter = router({
     if (!syncedOrder) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Pedido nao encontrado para este usuario",
+        message: "Pedido não encontrado para este usuário",
       });
     }
 
@@ -223,14 +221,14 @@ export const ordersRouter = router({
       if (!syncedOrder) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Pedido nao encontrado para este usuario",
+          message: "Pedido não encontrado para este usuário",
         });
       }
 
       if (!["pending", "paid"].includes(String(syncedOrder.status))) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "O endereco so pode ser ajustado antes do pedido entrar em separacao.",
+          message: "O endereço só pode ser ajustado antes do pedido entrar em separação.",
         });
       }
 
@@ -246,26 +244,26 @@ export const ordersRouter = router({
       if (!updatedOrder) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Nao foi possivel carregar o pedido atualizado.",
+          message: "Não foi possível carregar o pedido atualizado.",
         });
       }
 
       return updatedOrder;
     }),
 
-  // Create order only
   create: protectedProcedure
     .input(
       z.object({
         totalPrice: z.number().positive(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      const result = await createOrder(ctx.user.id, input.totalPrice);
-      return result;
+    .mutation(async () => {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Este fluxo de criação direta foi desativado por segurança. Use o checkout protegido.",
+      });
     }),
 
-  // Create order + Asaas charge (PIX, boleto, card via invoice)
   validateCoupon: protectedProcedure
     .input(
       z.object({
@@ -283,7 +281,7 @@ export const ordersRouter = router({
 
       const coupon = await getApplicableCouponByCode(input.code);
       if (!coupon) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Cupom invalido ou expirado" });
+        throw new TRPCError({ code: "NOT_FOUND", message: "Cupom inválido ou expirado" });
       }
 
       return {
@@ -378,7 +376,7 @@ export const ordersRouter = router({
             orderNumber: String(orderId),
             total: formattedTotal,
             paymentUrl: payment.invoiceUrl || payment.bankSlipUrl || undefined,
-            dueLabel: input.dueDate || "Aguardando compensacao",
+            dueLabel: input.dueDate || "Aguardando compensação",
           });
         } catch {}
 
@@ -387,10 +385,14 @@ export const ordersRouter = router({
           ...payment,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to create Asaas charge";
+        securityLog("warn", "orders.asaas_charge_failed", {
+          userId: ctx.user.id,
+          orderId: orderId || undefined,
+          reason: error instanceof Error ? error.message : "unknown",
+        });
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: orderId ? `${message} (order #${orderId})` : message,
+          message: "Não foi possível gerar a cobrança agora.",
         });
       }
     }),

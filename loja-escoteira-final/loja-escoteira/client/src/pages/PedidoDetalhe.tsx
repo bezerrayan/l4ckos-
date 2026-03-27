@@ -99,7 +99,7 @@ export default function PedidoDetalhe() {
       </div>
 
       {query.isLoading ? <p style={styles.muted}>Carregando pedido...</p> : null}
-      {query.isError ? <p style={styles.error}>Nao foi possivel carregar este pedido agora.</p> : null}
+      {query.isError ? <p style={styles.error}>Não foi possível carregar este pedido agora.</p> : null}
 
       {query.data ? (
         <article style={styles.card}>
@@ -118,7 +118,7 @@ export default function PedidoDetalhe() {
             </div>
             <div>
               <p style={styles.metaLabel}>Rastreio</p>
-              <p style={styles.metaValue}>{query.data.trackingCode || "Nao informado"}</p>
+              <p style={styles.metaValue}>{query.data.trackingCode || "Não informado"}</p>
             </div>
             <div>
               <p style={styles.metaLabel}>Ultima atualizacao</p>
@@ -154,7 +154,7 @@ export default function PedidoDetalhe() {
             {canEditShippingAddress(query.data.status) ? (
               <p style={styles.addressRule}>
                 Voce pode ajustar destinatario, rua, numero, complemento e bairro ate o pedido entrar em separacao.
-                CEP, cidade e UF ficam travados para nao alterar o frete da cobranca.
+                CEP, cidade e UF ficam travados para não alterar o frete da cobrança.
               </p>
             ) : null}
             {isEditingAddress && canEditShippingAddress(query.data.status) ? (
@@ -236,7 +236,7 @@ export default function PedidoDetalhe() {
               ))}
             </div>
           ) : (
-            <p style={styles.muted}>Os itens deste pedido nao estao disponiveis no momento.</p>
+            <p style={styles.muted}>Os itens deste pedido não estão disponíveis no momento.</p>
           )}
         </article>
       ) : null}

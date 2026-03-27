@@ -17,13 +17,6 @@ export function useOrders() {
 }
 
 /**
- * Hook para criar novo pedido
- */
-export function useCreateOrder() {
-  return trpc.orders.create.useMutation();
-}
-
-/**
  * Hook para criar pedido com cobrança Asaas (PIX, boleto, cartão via invoice)
  */
 export function useCreateAsaasCharge() {

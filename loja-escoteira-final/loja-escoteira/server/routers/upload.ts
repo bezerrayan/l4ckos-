@@ -31,7 +31,7 @@ const upload = multer({
     const extensionAllowed = ALLOWED_EXTENSIONS.has(extension);
 
     if (!mimeAllowed || !extensionAllowed) {
-      callback(new Error("Tipo de arquivo nao permitido"));
+      callback(new Error("Tipo de arquivo não permitido"));
       return;
     }
 

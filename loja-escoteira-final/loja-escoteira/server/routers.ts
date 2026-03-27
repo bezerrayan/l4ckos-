@@ -500,7 +500,7 @@ export const appRouter = router({
           throw createAppError({
             trpcCode: "BAD_REQUEST",
             appCode: "WEAK_PASSWORD",
-            message: "A senha nao atende aos requisitos de seguranca.",
+            message: "A senha não atende aos requisitos de segurança.",
             details: passwordDetails,
           });
         }
@@ -511,7 +511,7 @@ export const appRouter = router({
           throw createAppError({
             trpcCode: "BAD_REQUEST",
             appCode: "INVALID_OR_EXPIRED_RESET_TOKEN",
-            message: "O link de redefinicao e invalido ou expirou.",
+            message: "O link de redefinição é inválido ou expirou.",
           });
         }
 
@@ -520,7 +520,7 @@ export const appRouter = router({
           throw createAppError({
             trpcCode: "BAD_REQUEST",
             appCode: "INVALID_OR_EXPIRED_RESET_TOKEN",
-            message: "O link de redefinicao e invalido ou expirou.",
+            message: "O link de redefinição é inválido ou expirou.",
           });
         }
 
