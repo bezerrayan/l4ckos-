@@ -7,7 +7,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Definir diretório raiz
-$projectRoot = "loja-escoteira-final\loja-escoteira"
+$projectRoot = "l4ckos-final\l4ckos-store"
 $rootPath = (Get-Location).Path
 
 # Verificar se está no diretório correto
@@ -198,17 +198,17 @@ Write-Host ""
 
 Write-Host "🗑️  Limpando pastas antigas..." -ForegroundColor Yellow
 
-$oldFolder = "$rootPath/loja-escoteira-final"
+$oldFolder = "$rootPath/l4ckos-final"
 if (Test-Path $oldFolder) {
-    $response = Read-Host "Deseja deletar a pasta 'loja-escoteira-final'? (s/n)"
+    $response = Read-Host "Deseja deletar a pasta 'l4ckos-final'? (s/n)"
     if ($response -eq "s") {
         Remove-Item -Path $oldFolder -Recurse -Force
-        Write-Host "  ✓ Deletado: loja-escoteira-final/" -ForegroundColor Green
+        Write-Host "  ✓ Deletado: l4ckos-final/" -ForegroundColor Green
     } else {
         Write-Host "  ⚠ Pasta mantida" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  ✓ Pasta 'loja-escoteira-final' não encontrada" -ForegroundColor Gray
+    Write-Host "  ✓ Pasta 'l4ckos-final' não encontrada" -ForegroundColor Gray
 }
 
 Write-Host ""
