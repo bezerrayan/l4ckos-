@@ -4,6 +4,7 @@ import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
+import { fileURLToPath } from "node:url";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
 
@@ -11,6 +12,8 @@ if (typeof crypto.hash !== "function") {
   crypto.hash = ((algorithm: string, data: crypto.BinaryLike, outputEncoding: crypto.BinaryToTextEncoding = "hex") =>
     crypto.createHash(algorithm).update(data).digest(outputEncoding)) as typeof crypto.hash;
 }
+
+const CORE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -32,7 +35,7 @@ export async function setupVite(app: Express, server: Server) {
 
     try {
       const clientTemplate = path.resolve(
-        import.meta.dirname,
+        CORE_DIR,
         "../..",
         "client",
         "index.html"
@@ -56,8 +59,8 @@ export async function setupVite(app: Express, server: Server) {
 export function serveStatic(app: Express) {
   const distPath =
     process.env.NODE_ENV === "development"
-      ? path.resolve(import.meta.dirname, "../..", "dist", "public")
-      : path.resolve(import.meta.dirname, "public");
+      ? path.resolve(CORE_DIR, "../..", "dist", "public")
+      : path.resolve(CORE_DIR, "public");
   if (!fs.existsSync(distPath)) {
     console.error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`
