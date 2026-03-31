@@ -1,10 +1,16 @@
 import express, { type Express } from "express";
+import crypto from "node:crypto";
 import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
+
+if (typeof crypto.hash !== "function") {
+  crypto.hash = ((algorithm: string, data: crypto.BinaryLike, outputEncoding: crypto.BinaryToTextEncoding = "hex") =>
+    crypto.createHash(algorithm).update(data).digest(outputEncoding)) as typeof crypto.hash;
+}
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
