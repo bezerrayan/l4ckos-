@@ -58,32 +58,32 @@ export function EmailOrderSummary({ orderNumber, total, statusLabel, shippingLab
 const styles = {
   label: {
     margin: "0 0 4px",
-    color: "#6f746f",
+    color: "#8e8785",
     fontSize: "11px",
     textTransform: "uppercase",
-    letterSpacing: "0.12em",
+    letterSpacing: "0.18em",
   },
   value: {
-    margin: "0 0 10px",
-    color: "#181818",
-    fontSize: "18px",
+    margin: "0 0 14px",
+    color: "#ffffff",
+    fontSize: "20px",
     fontWeight: "800",
   },
   secondary: {
     margin: "0 0 10px",
-    color: "#4c5258",
+    color: "#b7b0ad",
     fontSize: "13px",
-    lineHeight: "1.6",
+    lineHeight: "1.7",
   },
   itemName: {
     margin: "0 0 2px",
-    color: "#181818",
+    color: "#ffffff",
     fontSize: "14px",
     fontWeight: "700",
   },
   itemMeta: {
     margin: "0 0 10px",
-    color: "#6f746f",
+    color: "#8e8785",
     fontSize: "12px",
   },
 };

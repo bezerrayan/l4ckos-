@@ -1,11 +1,11 @@
 import { Text } from "@react-email/components";
 
 const toneMap = {
-  neutral: { bg: "#efebe4", border: "#d8d1c4", color: "#262626" },
-  success: { bg: "#edf2ed", border: "#cdd8cf", color: "#345241" },
-  warning: { bg: "#f2ede6", border: "#ddd2c0", color: "#6e5940" },
-  danger: { bg: "#f3eaea", border: "#dcc9c9", color: "#734848" },
-  info: { bg: "#ece8e2", border: "#d6cec4", color: "#4b4540" },
+  neutral: { bg: "#130809", border: "#5a1820", color: "#ff6074" },
+  success: { bg: "#130809", border: "#5a1820", color: "#ff6074" },
+  warning: { bg: "#130809", border: "#5a1820", color: "#ff6074" },
+  danger: { bg: "#130809", border: "#5a1820", color: "#ff6074" },
+  info: { bg: "#130809", border: "#5a1820", color: "#ff6074" },
 };
 
 export function EmailStatusBadge({ children, tone = "neutral" }) {
@@ -20,9 +20,9 @@ const styles = {
     padding: "8px 14px",
     borderRadius: "999px",
     border: "1px solid #2a2a2a",
-    fontSize: "12px",
+    fontSize: "11px",
     fontWeight: "700",
-    letterSpacing: "0.05em",
+    letterSpacing: "0.14em",
     textTransform: "uppercase",
   },
 };

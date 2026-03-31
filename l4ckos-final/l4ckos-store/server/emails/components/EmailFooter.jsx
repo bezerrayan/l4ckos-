@@ -72,9 +72,11 @@ const styles = {
   },
   note: {
     margin: "0 0 10px",
-    color: "#8d8584",
-    fontSize: "12px",
+    color: "#766f6d",
+    fontSize: "10px",
     lineHeight: "1.6",
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
   },
   logoCol: {
     width: "104px",
@@ -86,7 +88,9 @@ const styles = {
     width: "88px",
     height: "88px",
     objectFit: "cover",
-    borderRadius: "12px",
+    borderRadius: "14px",
+    backgroundColor: "#120809",
+    border: "1px solid #4b1a21",
   },
   infoCol: {
     verticalAlign: "middle",
@@ -102,7 +106,7 @@ const styles = {
     margin: "0",
     color: "#b1a8a6",
     fontSize: "13px",
-    lineHeight: "1.8",
+    lineHeight: "1.9",
   },
   link: {
     color: "#b1a8a6",

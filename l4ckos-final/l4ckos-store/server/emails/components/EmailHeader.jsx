@@ -12,9 +12,9 @@ export function EmailHeader({ title, subtitle }) {
 
 const styles = {
   wrap: {
-    backgroundColor: "#171718",
+    backgroundColor: "#12090a",
     padding: "32px 28px 28px",
-    borderBottom: "1px solid #2c2c2f",
+    borderBottom: "1px solid #2a2022",
   },
   eyebrow: {
     margin: "0 0 12px",
@@ -36,9 +36,9 @@ const styles = {
   },
   subtitle: {
     margin: "12px 0 0",
-    color: "#b4acaa",
+    color: "#b8aead",
     fontSize: "15px",
-    lineHeight: "1.55",
-    WebkitTextFillColor: "#b4acaa",
+    lineHeight: "1.7",
+    WebkitTextFillColor: "#b8aead",
   },
 };

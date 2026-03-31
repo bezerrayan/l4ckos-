@@ -6,11 +6,17 @@ export function EmailSectionTitle({ children }) {
 
 const styles = {
   title: {
+    display: "inline-block",
     margin: "24px 0 10px",
-    color: "#ffffff",
-    fontSize: "18px",
+    padding: "10px 16px",
+    color: "#ff5b6f",
+    fontSize: "11px",
     fontWeight: "800",
-    lineHeight: "1.3",
-    letterSpacing: "-0.01em",
+    lineHeight: "1",
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    border: "1px solid #5a1820",
+    borderRadius: "999px",
+    backgroundColor: "#130809",
   },
 };
