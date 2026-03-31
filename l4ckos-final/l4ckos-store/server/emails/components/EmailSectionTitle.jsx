@@ -7,7 +7,7 @@ export function EmailSectionTitle({ children }) {
 const styles = {
   title: {
     margin: "24px 0 10px",
-    color: "#181818",
+    color: "#f3efe9",
     fontSize: "18px",
     fontWeight: "800",
     lineHeight: "1.3",

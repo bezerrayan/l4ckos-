@@ -12,33 +12,33 @@ export function EmailHeader({ title, subtitle }) {
 
 const styles = {
   wrap: {
-    backgroundColor: "#131313",
+    backgroundColor: "#f3f0ec",
     padding: "32px 28px 28px",
-    borderBottom: "1px solid #2a2621",
+    borderBottom: "1px solid #d8d0c4",
   },
   eyebrow: {
     margin: "0 0 12px",
-    color: "#ddd7cd",
+    color: "#2e2a28",
     fontWeight: "800",
     letterSpacing: "0.28em",
     fontSize: "11px",
     textTransform: "uppercase",
-    WebkitTextFillColor: "#ddd7cd",
+    WebkitTextFillColor: "#2e2a28",
   },
   title: {
     margin: "0",
-    color: "#ffffff",
+    color: "#2a2a2a",
     fontSize: "36px",
     fontWeight: "800",
     lineHeight: "1.05",
     letterSpacing: "-0.03em",
-    WebkitTextFillColor: "#ffffff",
+    WebkitTextFillColor: "#2a2a2a",
   },
   subtitle: {
     margin: "12px 0 0",
-    color: "#b8b2a9",
+    color: "#625b55",
     fontSize: "15px",
     lineHeight: "1.55",
-    WebkitTextFillColor: "#b8b2a9",
+    WebkitTextFillColor: "#625b55",
   },
 };

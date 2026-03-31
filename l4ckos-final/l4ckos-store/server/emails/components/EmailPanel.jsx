@@ -6,9 +6,9 @@ export function EmailPanel({ children }) {
 
 const styles = {
   panel: {
-    border: "1px solid #d8d0c3",
+    border: "1px solid #c5b8ae",
     borderRadius: "14px",
-    backgroundColor: "#ede7dc",
+    backgroundColor: "#322e28",
     padding: "16px 18px",
     margin: "14px 0",
   },

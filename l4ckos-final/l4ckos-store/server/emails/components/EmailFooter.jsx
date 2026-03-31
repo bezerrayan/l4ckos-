@@ -62,8 +62,8 @@ export function EmailFooter({ note, unsubscribeUrl, isMarketing = false }) {
 
 const styles = {
   wrap: {
-    borderTop: "1px solid #ded8cd",
-    backgroundColor: "#f3eee6",
+    borderTop: "1px solid #c5b8ae",
+    backgroundColor: "#322d27",
     padding: "20px 28px 24px",
   },
   table: {
@@ -72,7 +72,7 @@ const styles = {
   },
   note: {
     margin: "0 0 10px",
-    color: "#7a7f88",
+    color: "#8b827d",
     fontSize: "12px",
     lineHeight: "1.6",
   },
@@ -93,29 +93,29 @@ const styles = {
   },
   brand: {
     margin: "0 0 6px",
-    color: "#181818",
+    color: "#f3efe9",
     fontSize: "22px",
     fontWeight: "800",
     letterSpacing: "0.04em",
   },
   links: {
     margin: "0",
-    color: "#5a6068",
+    color: "#a9a19b",
     fontSize: "13px",
     lineHeight: "1.8",
   },
   link: {
-    color: "#5a6068",
+    color: "#a9a19b",
     textDecoration: "none",
   },
   unsubscribe: {
     margin: "12px 0 0",
-    color: "#7a7f88",
+    color: "#8b827d",
     fontSize: "11px",
     lineHeight: "1.6",
   },
   unsubscribeLink: {
-    color: "#181818",
+    color: "#ff6a7b",
     textDecoration: "underline",
   },
 };
