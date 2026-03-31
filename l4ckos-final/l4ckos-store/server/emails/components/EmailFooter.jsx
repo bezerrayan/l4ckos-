@@ -1,4 +1,4 @@
-import { Img, Link, Section, Text } from "@react-email/components";
+import { Img, Link, Text } from "@react-email/components";
 
 export function EmailFooter({ note, unsubscribeUrl, isMarketing = false }) {
   const logoUrl = String(process.env.EMAIL_SIGNATURE_LOGO_URL || "").trim();
@@ -9,114 +9,124 @@ export function EmailFooter({ note, unsubscribeUrl, isMarketing = false }) {
   const websiteLabel = websiteUrl.replace("https://", "").replace("http://", "");
 
   return (
-    <Section style={styles.wrap}>
-      <Text style={styles.note}>{note || "L4CKOS. Comunicação automatizada da operação."}</Text>
-      <table role="presentation" cellPadding="0" cellSpacing="0" width="100%" style={styles.table}>
-        <tbody>
-          <tr>
-            <td style={styles.logoCol}>
-              {logoUrl ? (
-                <Img src={logoUrl} alt="L4CKOS" width="88" style={styles.logo} />
-              ) : (
-                <Text style={styles.brand}>L4CKOS</Text>
-              )}
-            </td>
-            <td style={styles.infoCol}>
-              <Text style={styles.brand}>L4CKOS</Text>
-              <Text style={styles.links}>
-                <Link href={websiteUrl} style={styles.link}>
-                  {websiteLabel}
-                </Link>
-                {" • "}
-                <Link href={instagramUrl} style={styles.link}>
-                  {instagramLabel}
-                </Link>
-                {" • "}
-                <Link href={`mailto:${contactEmail}`} style={styles.link}>
-                  {contactEmail}
-                </Link>
-              </Text>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      {isMarketing ? (
-        <Text style={styles.unsubscribe}>
-          Este email faz parte da comunicação de marketing da L4CKOS.{" "}
-          {unsubscribeUrl ? (
-            <Link href={unsubscribeUrl} style={styles.unsubscribeLink}>
-              Descadastrar
-            </Link>
-          ) : (
-            "Atualize seu descadastro quando aplicável."
-          )}
-        </Text>
-      ) : (
-        <Text style={styles.unsubscribe}>
-          Emails transacionais mantêm você atualizado sobre conta, pedido e operação da L4CKOS.
-        </Text>
-      )}
-    </Section>
+    <table role="presentation" cellPadding="0" cellSpacing="0" border="0" width="100%" bgcolor="#0b0b0d" style={styles.table}>
+      <tbody>
+        <tr>
+          <td bgcolor="#0b0b0d" style={styles.cell}>
+            <Text style={styles.note}>{note || "L4CKOS. Comunicação automatizada da operação."}</Text>
+            <table role="presentation" cellPadding="0" cellSpacing="0" width="100%" style={styles.infoTable}>
+              <tbody>
+                <tr>
+                  <td style={styles.logoCol}>
+                    {logoUrl ? <Img src={logoUrl} alt="L4CKOS" width="76" style={styles.logo} /> : <div style={styles.fallback}>L4K</div>}
+                  </td>
+                  <td style={styles.infoCol}>
+                    <Text style={styles.brand}>L4CKOS</Text>
+                    <Text style={styles.links}>
+                      <Link href={websiteUrl} style={styles.link}>{websiteLabel}</Link>
+                      {" • "}
+                      <Link href={instagramUrl} style={styles.link}>{instagramLabel}</Link>
+                      {" • "}
+                      <Link href={`mailto:${contactEmail}`} style={styles.link}>{contactEmail}</Link>
+                    </Text>
+                    <Text style={styles.unsubscribe}>
+                      {isMarketing
+                        ? "Este email faz parte da comunicação de marketing da L4CKOS."
+                        : "Emails transacionais mantêm você atualizado sobre conta, pedido e operação da L4CKOS."}
+                      {isMarketing && unsubscribeUrl ? (
+                        <>
+                          {" "}
+                          <Link href={unsubscribeUrl} style={styles.unsubscribeLink}>Descadastrar</Link>
+                        </>
+                      ) : null}
+                    </Text>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   );
 }
 
 const styles = {
-  wrap: {
-    borderTop: "1px solid #2f2f33",
-    backgroundColor: "#161618",
-    padding: "20px 28px 24px",
-  },
   table: {
     width: "100%",
     borderCollapse: "collapse",
+    backgroundColor: "#0b0b0d",
+  },
+  cell: {
+    padding: "24px 28px 30px",
+    backgroundColor: "#0b0b0d",
+    borderTop: "1px solid #202228",
   },
   note: {
-    margin: "0 0 10px",
-    color: "#766f6d",
+    margin: "0 0 18px",
+    color: "#707078",
     fontSize: "10px",
-    lineHeight: "1.6",
-    letterSpacing: "0.18em",
+    lineHeight: "16px",
+    fontWeight: "700",
+    letterSpacing: "2px",
     textTransform: "uppercase",
   },
+  infoTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+  },
   logoCol: {
-    width: "104px",
+    width: "92px",
     verticalAlign: "top",
-    paddingRight: "14px",
   },
   logo: {
     display: "block",
-    width: "88px",
-    height: "88px",
+    width: "76px",
+    height: "76px",
     objectFit: "cover",
     borderRadius: "14px",
-    backgroundColor: "#120809",
-    border: "1px solid #4b1a21",
+    border: "1px solid #341019",
+    backgroundColor: "#111113",
+  },
+  fallback: {
+    width: "76px",
+    height: "76px",
+    lineHeight: "76px",
+    textAlign: "center",
+    borderRadius: "14px",
+    border: "1px solid #341019",
+    backgroundColor: "#111113",
+    color: "#ff314d",
+    fontSize: "22px",
+    fontWeight: "700",
   },
   infoCol: {
-    verticalAlign: "middle",
+    paddingLeft: "16px",
+    verticalAlign: "top",
   },
   brand: {
-    margin: "0 0 6px",
+    margin: "0",
     color: "#ffffff",
-    fontSize: "22px",
-    fontWeight: "800",
-    letterSpacing: "0.04em",
+    fontSize: "34px",
+    lineHeight: "36px",
+    fontWeight: "700",
+    letterSpacing: "-0.6px",
   },
   links: {
-    margin: "0",
-    color: "#b1a8a6",
-    fontSize: "13px",
-    lineHeight: "1.9",
+    margin: "10px 0 0",
+    color: "#a2a2aa",
+    fontSize: "14px",
+    lineHeight: "27px",
   },
   link: {
-    color: "#b1a8a6",
+    color: "#a2a2aa",
     textDecoration: "none",
   },
   unsubscribe: {
-    margin: "12px 0 0",
-    color: "#847c7a",
+    margin: "10px 0 0",
+    color: "#66666e",
     fontSize: "11px",
-    lineHeight: "1.6",
+    lineHeight: "20px",
   },
   unsubscribeLink: {
     color: "#ff5c70",
