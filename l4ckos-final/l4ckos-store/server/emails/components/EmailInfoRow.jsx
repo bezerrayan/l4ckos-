@@ -11,12 +11,12 @@ export function EmailInfoRow({ label, value }) {
 const styles = {
   row: {
     margin: "0 0 10px",
-    color: "#ece6de",
+    color: "#ece6e2",
     fontSize: "14px",
     lineHeight: "1.7",
   },
   label: {
-    color: "#a49a92",
+    color: "#ff586c",
     textTransform: "uppercase",
     letterSpacing: "0.08em",
     fontSize: "11px",

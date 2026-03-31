@@ -25,7 +25,7 @@ export function NewContactInternal({ name, email, phone, subject, message }) {
 const styles = {
   message: {
     margin: 0,
-    color: "#ece6de",
+    color: "#f0e8e4",
     fontSize: "15px",
     lineHeight: "1.85",
     whiteSpace: "pre-wrap",
