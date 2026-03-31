@@ -33,7 +33,7 @@ const styles = {
     margin: "0 auto",
     backgroundColor: "#0b0b0c",
     border: "1px solid #2a2a2a",
-    borderRadius: "18px",
+    borderRadius: "22px",
     overflow: "hidden",
     boxShadow: "0 20px 48px rgba(0,0,0,0.55)",
   },
