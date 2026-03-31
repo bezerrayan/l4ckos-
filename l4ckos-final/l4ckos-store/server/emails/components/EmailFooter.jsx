@@ -9,10 +9,10 @@ export function EmailFooter({ note, unsubscribeUrl, isMarketing = false }) {
   const websiteLabel = websiteUrl.replace("https://", "").replace("http://", "");
 
   return (
-    <table role="presentation" cellPadding="0" cellSpacing="0" border="0" width="100%" bgcolor="#0b0b0d" style={styles.table}>
+    <table role="presentation" cellPadding="0" cellSpacing="0" border="0" width="100%" bgcolor="#f3eeea" style={styles.table}>
       <tbody>
         <tr>
-          <td bgcolor="#0b0b0d" style={styles.cell}>
+          <td bgcolor="#f3eeea" style={styles.cell}>
             <Text style={styles.note}>{note || "L4CKOS. Comunicação automatizada da operação."}</Text>
             <table role="presentation" cellPadding="0" cellSpacing="0" width="100%" style={styles.infoTable}>
               <tbody>
@@ -55,16 +55,16 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    backgroundColor: "#0b0b0d",
+    backgroundColor: "#f3eeea",
   },
   cell: {
     padding: "24px 28px 30px",
-    backgroundColor: "#0b0b0d",
-    borderTop: "1px solid #202228",
+    backgroundColor: "#f3eeea",
+    borderTop: "1px solid #3a3435",
   },
   note: {
     margin: "0 0 18px",
-    color: "#707078",
+    color: "#8a8183",
     fontSize: "10px",
     lineHeight: "16px",
     fontWeight: "700",
@@ -106,7 +106,7 @@ const styles = {
   },
   brand: {
     margin: "0",
-    color: "#ffffff",
+    color: "#2a2628",
     fontSize: "34px",
     lineHeight: "36px",
     fontWeight: "700",
@@ -114,22 +114,22 @@ const styles = {
   },
   links: {
     margin: "10px 0 0",
-    color: "#a2a2aa",
+    color: "#6d6668",
     fontSize: "14px",
     lineHeight: "27px",
   },
   link: {
-    color: "#a2a2aa",
+    color: "#6d6668",
     textDecoration: "none",
   },
   unsubscribe: {
     margin: "10px 0 0",
-    color: "#66666e",
+    color: "#8a8183",
     fontSize: "11px",
     lineHeight: "20px",
   },
   unsubscribeLink: {
-    color: "#ff5c70",
+    color: "#d5152f",
     textDecoration: "underline",
   },
 };
