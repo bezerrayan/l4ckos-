@@ -43,16 +43,19 @@ export function OrderReceivedEmail({ customerName, orderNumber, items, total }) 
 const styles = {
   tableWrap: {
     marginTop: "12px",
-    border: "1px solid #ece6dd",
-    borderRadius: "8px",
-    padding: "12px 14px",
+    border: "1px solid #4b1a21",
+    backgroundColor: "#101013",
+    borderRadius: "18px",
+    padding: "16px 18px",
   },
   table: { width: "100%", borderCollapse: "collapse" },
   th: {
     fontSize: "12px",
-    color: "#6b6b6b",
-    borderBottom: "1px solid #ece6dd",
-    paddingBottom: "8px",
+    color: "#ff6477",
+    borderBottom: "1px solid #24171a",
+    paddingBottom: "10px",
     fontWeight: "700",
+    letterSpacing: "0.14em",
+    textTransform: "uppercase",
   },
 };

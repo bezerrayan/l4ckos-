@@ -27,13 +27,13 @@ export function renderOrderItems(items = []) {
 const styles = {
   cell: {
     padding: "8px 0",
-    borderBottom: "1px solid #ece6dd",
+    borderBottom: "1px solid #24171a",
     fontSize: "13px",
-    color: "#222",
+    color: "#f1ece8",
   },
   empty: {
     padding: "10px 0",
-    color: "#666",
+    color: "#9b9190",
     fontSize: "13px",
   },
 };
