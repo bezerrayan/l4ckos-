@@ -196,7 +196,7 @@ export default function RedefinirSenha() {
 const styles: Record<string, CSSProperties> = {
   container: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "0.72fr 1.28fr",
     minHeight: "calc(100vh - 200px)",
     gap: 0,
     background: "#0a0a0a",
@@ -204,7 +204,7 @@ const styles: Record<string, CSSProperties> = {
   },
   leftPanel: {
     background: "#0f0f0f",
-    padding: "60px 40px",
+    padding: "44px 24px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -220,7 +220,7 @@ const styles: Record<string, CSSProperties> = {
   logoPlaceholder: {
     textAlign: "center",
     width: "100%",
-    maxWidth: 340,
+    maxWidth: 260,
     padding: "8px 0",
     background: "transparent",
     border: "none",
