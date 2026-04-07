@@ -10,7 +10,7 @@ import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
-import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
+import logoMarkDark from "../images/l4k-mark-dark-transparent.png";
 import { getApiErrorDisplay } from "../utils/apiError";
 import { useUser } from "../contexts/UserContext";
 
@@ -115,7 +115,7 @@ export default function Login() {
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
-            <img src={logoMainDark} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
+            <img src={logoMarkDark} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
           </div>
         </div>
       </div>
@@ -309,8 +309,8 @@ const styles: Record<string, CSSProperties> = {
     width: "100%",
     maxWidth: 420,
     height: 240,
-    background: "#080808",
-    border: "1px solid #161616",
+    background: "transparent",
+    border: "none",
     borderRadius: 0,
     display: "flex",
     alignItems: "center",
@@ -321,11 +321,12 @@ const styles: Record<string, CSSProperties> = {
     overflow: "hidden",
   },
   logoImage: {
-    width: "84%",
-    maxWidth: "84%",
+    width: "58%",
+    maxWidth: "58%",
     height: "auto",
     objectFit: "contain",
     objectPosition: "center",
+    filter: "drop-shadow(0 18px 34px rgba(232, 0, 42, 0.16))",
   },
   logo: {
     fontSize: 64,

@@ -1,7 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { apiUrl } from "../const";
-import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
 import logoMarkDark from "../images/l4k-mark-dark-transparent.png";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
@@ -111,7 +110,6 @@ export default function ComingSoon() {
         <div className={`l4-coming-v2-splash ${splashOut ? "is-out" : ""}`}>
           <div className="l4-coming-v2-splash-stage">
             <img className="l4-coming-v2-splash-word-l4" src={logoMarkDark} alt="L4K" />
-            <img className="l4-coming-v2-splash-word-rest" src={logoMainDark} alt="L4CKOS" />
           </div>
         </div>
       )}
@@ -119,7 +117,7 @@ export default function ComingSoon() {
       <div className={`l4-coming-v2-shell ${introDone ? "is-ready" : ""}`}>
         <header className="l4-coming-v2-header">
           <a className="l4-coming-v2-logo-text" href="/">
-            <img src={logoMainDark} alt="L4CKOS" />
+            <img src={logoMarkDark} alt="L4K" />
           </a>
           <div className="l4-coming-v2-live-pill">
             <span className="dot" />
