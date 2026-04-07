@@ -1,6 +1,6 @@
 ﻿import { Link } from "react-router-dom";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
-import logoMainDark from "../images/l4ckos-main-dark.png";
+import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
 import "./Footer.css";
 
 export default function Footer() {

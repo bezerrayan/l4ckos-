@@ -1,8 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { apiUrl } from "../const";
-import logoMainDark from "../images/l4ckos-main-dark.png";
-import logoMarkDark from "../images/l4k-mark-dark.png";
+import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
+import logoMarkDark from "../images/l4k-mark-dark-transparent.png";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
 const STORE_OPENING_TARGET = new Date("2026-06-11T00:00:00-03:00").getTime();

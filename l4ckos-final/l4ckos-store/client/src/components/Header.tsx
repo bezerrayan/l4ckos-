@@ -5,7 +5,7 @@ import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { PRODUCT_CATEGORIES } from "../lib/productCategories";
-import logoMainDark from "../images/l4ckos-main-dark.png";
+import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
 import "./Header.css";
 
 function firstName(name?: string, email?: string) {

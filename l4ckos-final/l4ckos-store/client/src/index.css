@@ -1342,35 +1342,33 @@ small {
 }
 
 .l4-coming-v2-splash-stage {
-  position: relative;
-  width: min(700px, 90vw);
-  height: min(260px, 36vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2vw, 22px);
+  width: min(760px, 92vw);
+  min-height: min(300px, 52vw);
 }
 
 .l4-coming-v2-splash-stage img {
-  position: absolute;
-  left: 50%;
-  top: 50%;
   display: block;
 }
 
 .l4-coming-v2-splash-word-l4,
 .l4-coming-v2-splash-word-rest {
-  width: min(520px, 82vw);
-  transform: translate(-50%, -50%);
+  transform-origin: center center;
 }
 
 .l4-coming-v2-splash-word-l4 {
-  /* Show the left block (L4) first */
-  clip-path: inset(0 54% 0 0);
+  width: min(220px, 40vw);
   opacity: 0;
   filter: drop-shadow(0 8px 24px rgba(232, 0, 42, 0.25));
   animation: l4v2L4First 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .l4-coming-v2-splash-word-rest {
-  /* Then reveal the remainder of the word */
-  clip-path: inset(0 0 0 46%);
+  width: min(520px, 82vw);
   opacity: 0;
   animation: l4v2WordRest 0.82s cubic-bezier(0.2, 0.7, 0.2, 1) 0.55s both;
 }
@@ -1903,26 +1901,26 @@ small {
 @keyframes l4v2L4First {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.84);
+    transform: scale(0.84);
   }
   65% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.03);
+    transform: scale(1.03);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
 }
 
 @keyframes l4v2WordRest {
   0% {
     opacity: 0;
-    transform: translate(-48.5%, -50%) scale(0.98);
+    transform: translateY(10px) scale(0.98);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 

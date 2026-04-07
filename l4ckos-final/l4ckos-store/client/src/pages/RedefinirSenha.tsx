@@ -4,7 +4,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { useToast } from "../contexts/ToastContext";
 import { useIsMobile } from "../hooks/useIsMobile";
-import logoMainLight from "../images/l4ckos-main-light.png";
+import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
 import PasswordChecklist from "../components/auth/PasswordChecklist";
 import { getPasswordPolicyDetails } from "../../../shared/passwordPolicy";
 import { getApiErrorDisplay } from "../utils/apiError";
@@ -81,7 +81,7 @@ export default function RedefinirSenha() {
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
-            <img src={logoMainLight} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
+            <img src={logoMainDark} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
           </div>
         </div>
       </div>
@@ -221,9 +221,9 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "center",
     width: 320,
     height: 190,
-    background: "#f5f5f5",
-    border: "1px solid #2a2a2a",
-    borderRadius: 12,
+    background: "#080808",
+    border: "1px solid #161616",
+    borderRadius: 0,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
