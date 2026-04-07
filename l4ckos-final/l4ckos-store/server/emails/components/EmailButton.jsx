@@ -15,7 +15,6 @@ const styles = {
     backgroundColor: "#d7142e",
     color: "#ffffff",
     textDecoration: "none",
-    borderRadius: "999px",
     padding: "16px 28px",
     fontSize: "14px",
     fontWeight: "800",

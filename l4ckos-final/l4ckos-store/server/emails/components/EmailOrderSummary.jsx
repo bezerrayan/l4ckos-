@@ -58,7 +58,7 @@ export function EmailOrderSummary({ orderNumber, total, statusLabel, shippingLab
 const styles = {
   label: {
     margin: "0 0 4px",
-    color: "#8e8785",
+    color: "#8f8f8f",
     fontSize: "11px",
     textTransform: "uppercase",
     letterSpacing: "0.18em",
@@ -71,7 +71,7 @@ const styles = {
   },
   secondary: {
     margin: "0 0 10px",
-    color: "#b7b0ad",
+    color: "#c8c8c8",
     fontSize: "13px",
     lineHeight: "1.7",
   },
@@ -83,7 +83,7 @@ const styles = {
   },
   itemMeta: {
     margin: "0 0 10px",
-    color: "#8e8785",
+    color: "#8f8f8f",
     fontSize: "12px",
   },
 };

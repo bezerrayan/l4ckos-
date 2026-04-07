@@ -9,12 +9,12 @@ export function EmailFooter({ note, unsubscribeUrl, isMarketing = false }) {
   const websiteLabel = websiteUrl.replace("https://", "").replace("http://", "");
 
   return (
-    <table role="presentation" cellPadding="0" cellSpacing="0" border="0" width="100%" bgcolor="#f3eeea" style={styles.table}>
+    <table role="presentation" cellPadding="0" cellSpacing="0" border="0" width="100%" bgcolor="#090909" style={styles.table}>
       <tbody>
         <tr>
-          <td bgcolor="#f3eeea" style={styles.cell}>
+          <td bgcolor="#090909" style={styles.cell}>
             <Text style={styles.note}>{note || "L4CKOS. Comunicação automatizada da operação."}</Text>
-            <table role="presentation" cellPadding="0" cellSpacing="0" width="100%" style={styles.infoTable}>
+            <table role="presentation" cellPadding="0" cellSpacing="0" width="100%" bgcolor="#101010" style={styles.infoTable}>
               <tbody>
                 <tr>
                   <td style={styles.logoCol}>
@@ -55,16 +55,16 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    backgroundColor: "#f3eeea",
+    backgroundColor: "#090909",
   },
   cell: {
-    padding: "24px 28px 30px",
-    backgroundColor: "#f3eeea",
-    borderTop: "1px solid #3a3435",
+    padding: "0 28px 28px",
+    backgroundColor: "#090909",
+    borderTop: "1px solid #1f1f1f",
   },
   note: {
-    margin: "0 0 18px",
-    color: "#8a8183",
+    margin: "20px 0 16px",
+    color: "#8d8d8d",
     fontSize: "10px",
     lineHeight: "16px",
     fontWeight: "700",
@@ -74,18 +74,20 @@ const styles = {
   infoTable: {
     width: "100%",
     borderCollapse: "collapse",
+    backgroundColor: "#101010",
+    border: "1px solid #1f1f1f",
   },
   logoCol: {
-    width: "92px",
+    width: "96px",
     verticalAlign: "top",
+    padding: "18px 0 18px 18px",
   },
   logo: {
     display: "block",
     width: "76px",
     height: "76px",
     objectFit: "cover",
-    borderRadius: "14px",
-    border: "1px solid #341019",
+    border: "1px solid #2a2a2a",
     backgroundColor: "#111113",
   },
   fallback: {
@@ -93,20 +95,19 @@ const styles = {
     height: "76px",
     lineHeight: "76px",
     textAlign: "center",
-    borderRadius: "14px",
-    border: "1px solid #341019",
+    border: "1px solid #2a2a2a",
     backgroundColor: "#111113",
     color: "#ff314d",
     fontSize: "22px",
     fontWeight: "700",
   },
   infoCol: {
-    paddingLeft: "16px",
+    padding: "18px 18px 18px 8px",
     verticalAlign: "top",
   },
   brand: {
     margin: "0",
-    color: "#2a2628",
+    color: "#f0ede8",
     fontSize: "34px",
     lineHeight: "36px",
     fontWeight: "700",
@@ -114,17 +115,17 @@ const styles = {
   },
   links: {
     margin: "10px 0 0",
-    color: "#6d6668",
+    color: "#c6c6c6",
     fontSize: "14px",
     lineHeight: "27px",
   },
   link: {
-    color: "#6d6668",
+    color: "#c6c6c6",
     textDecoration: "none",
   },
   unsubscribe: {
     margin: "10px 0 0",
-    color: "#8a8183",
+    color: "#8d8d8d",
     fontSize: "11px",
     lineHeight: "20px",
   },

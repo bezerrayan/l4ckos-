@@ -11,7 +11,7 @@ export function EmailInfoRow({ label, value }) {
 const styles = {
   row: {
     margin: "0 0 10px",
-    color: "#353032",
+    color: "#d3d3d3",
     fontSize: "14px",
     lineHeight: "1.7",
   },
