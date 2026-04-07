@@ -175,7 +175,7 @@ const styles: Record<string, CSSProperties> = {
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "center",
-    alignSelf: "start",
+    alignSelf: "center",
     color: "#f0ede8",
   },
   logoSection: {
