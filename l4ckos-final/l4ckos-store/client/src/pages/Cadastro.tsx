@@ -424,12 +424,12 @@ const styles: Record<string, CSSProperties> = {
   },
   leftPanel: {
     background: "transparent",
-    padding: "40px 24px 0",
+    padding: "72px 24px 0",
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "center",
-    alignSelf: "center",
+    alignSelf: "start",
     color: "#f0ede8",
   },
   logoSection: {
