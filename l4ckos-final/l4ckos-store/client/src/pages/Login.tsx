@@ -283,7 +283,7 @@ export default function Login() {
 const styles: Record<string, CSSProperties> = {
   container: {
     display: "grid",
-    gridTemplateColumns: "minmax(280px, 380px) minmax(0, 1fr)",
+    gridTemplateColumns: "0.9fr 1.1fr",
     minHeight: "clamp(420px, 60vh, 560px)",
     gap: 0,
     alignItems: "start",
@@ -293,7 +293,6 @@ const styles: Record<string, CSSProperties> = {
   leftPanel: {
     background: "transparent",
     padding: "40px 24px 0",
-    width: "100%",
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-start",
@@ -311,7 +310,7 @@ const styles: Record<string, CSSProperties> = {
   logoPlaceholder: {
     textAlign: "center",
     width: "100%",
-    maxWidth: 380,
+    maxWidth: 360,
     margin: "0 auto",
     padding: "6px 0",
     background: "transparent",
@@ -326,8 +325,8 @@ const styles: Record<string, CSSProperties> = {
     overflow: "hidden",
   },
   logoImage: {
-    width: "100%",
-    maxWidth: "100%",
+    width: "96%",
+    maxWidth: "96%",
     height: "auto",
     objectFit: "contain",
     objectPosition: "center",
