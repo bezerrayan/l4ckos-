@@ -418,6 +418,7 @@ const styles: Record<string, CSSProperties> = {
     gridTemplateColumns: "0.9fr 1.1fr",
     minHeight: "clamp(420px, 60vh, 560px)",
     gap: 0,
+    alignItems: "start",
     background: "#0a0a0a",
     border: "1px solid #1f1f1f",
   },
@@ -428,6 +429,7 @@ const styles: Record<string, CSSProperties> = {
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "center",
+    alignSelf: "start",
     color: "#f0ede8",
   },
   logoSection: {
