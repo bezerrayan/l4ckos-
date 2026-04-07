@@ -10,7 +10,7 @@ import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
-import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
+import logoMainLight from "../images/l4ckos-main-light.png";
 import { getApiErrorDisplay } from "../utils/apiError";
 import { useUser } from "../contexts/UserContext";
 
@@ -115,7 +115,7 @@ export default function Login() {
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
-            <img src={logoPrincipalPreta} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
+            <img src={logoMainLight} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
           </div>
         </div>
       </div>
@@ -309,7 +309,7 @@ const styles: Record<string, CSSProperties> = {
     width: "100%",
     maxWidth: 420,
     height: 240,
-    background: "#ececec",
+    background: "#f5f5f5",
     border: "1px solid #2a2a2a",
     borderRadius: 12,
     display: "flex",
@@ -321,10 +321,10 @@ const styles: Record<string, CSSProperties> = {
     overflow: "hidden",
   },
   logoImage: {
-    width: "100%",
-    maxWidth: "none",
-    height: "100%",
-    objectFit: "cover",
+    width: "84%",
+    maxWidth: "84%",
+    height: "auto",
+    objectFit: "contain",
     objectPosition: "center",
   },
   logo: {

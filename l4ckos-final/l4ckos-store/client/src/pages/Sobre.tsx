@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
-import logoPrincipalPreta from "../images/logo-principal-preta.jpeg";
+import logoMainLight from "../images/l4ckos-main-light.png";
 
 export default function Sobre() {
   const isMobile = useIsMobile();
@@ -39,7 +39,7 @@ export default function Sobre() {
           </p>
         </div>
         <div style={styles.sectionImage as CSSProperties}>
-          <img src={logoPrincipalPreta} alt="Logo L4CKOS" style={styles.realImage as CSSProperties} />
+          <img src={logoMainLight} alt="Logo L4CKOS" style={styles.realImage as CSSProperties} />
         </div>
       </section>
 

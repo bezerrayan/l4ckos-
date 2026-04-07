@@ -5,8 +5,7 @@ import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { PRODUCT_CATEGORIES } from "../lib/productCategories";
-import logoBranco from "../images/logo_branco.png";
-import logoPretaSemFundo from "../images/logo_preta-sem-fundo.png";
+import logoMainDark from "../images/l4ckos-main-dark.png";
 import "./Header.css";
 
 function firstName(name?: string, email?: string) {
@@ -23,7 +22,6 @@ export default function Header() {
   const { user, logout } = useUser();
   const isMobile = useIsMobile(980);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [logoSrc, setLogoSrc] = useState(logoBranco);
   const isAuthenticated = Boolean(user?.isAuthenticated);
   const displayName = firstName(user?.name, user?.email);
   const mobileCategoryLinks = PRODUCT_CATEGORIES.slice(0, 6);
@@ -61,17 +59,7 @@ export default function Header() {
         </button>
 
         <Link to="/" className="l4-header-brand" onClick={() => setMenuOpen(false)}>
-          <img
-            src={logoSrc}
-            alt="L4ckos"
-            onError={(event) => {
-              if (logoSrc !== logoPretaSemFundo) {
-                setLogoSrc(logoPretaSemFundo);
-              } else {
-                (event.currentTarget as HTMLImageElement).style.display = "none";
-              }
-            }}
-          />
+          <img src={logoMainDark} alt="L4CKOS" />
           <span>LOJA ESCOTEIRA</span>
         </Link>
 

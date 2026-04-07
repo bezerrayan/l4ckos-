@@ -1,6 +1,6 @@
 ﻿import { Link } from "react-router-dom";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
-import logoBranco from "../images/logo_branco.png";
+import logoMainDark from "../images/l4ckos-main-dark.png";
 import "./Footer.css";
 
 export default function Footer() {
@@ -10,7 +10,7 @@ export default function Footer() {
     <footer className="l4-footer">
       <div className="l4-footer-grid">
         <div>
-          <img src={logoBranco} alt="L4ckos" className="l4-footer-logo" />
+          <img src={logoMainDark} alt="L4CKOS" className="l4-footer-logo" />
           <p className="l4-footer-text">
             Seleção de peças e equipamentos para trilha, campo e rotina escoteira, com comunicação direta e foco no que realmente importa para o cliente.
           </p>

@@ -1,7 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { apiUrl } from "../const";
-import logoBrancaSemFundo from "../images/logo-branca-sem-fundo.png";
+import logoMainDark from "../images/l4ckos-main-dark.png";
+import logoMarkDark from "../images/l4k-mark-dark.png";
 
 type Countdown = { days: string; hours: string; minutes: string; seconds: string };
 const STORE_OPENING_TARGET = new Date("2026-06-11T00:00:00-03:00").getTime();
@@ -109,8 +110,8 @@ export default function ComingSoon() {
       {!introDone && (
         <div className={`l4-coming-v2-splash ${splashOut ? "is-out" : ""}`}>
           <div className="l4-coming-v2-splash-stage">
-            <img className="l4-coming-v2-splash-word-l4" src={logoBrancaSemFundo} alt="L4" />
-            <img className="l4-coming-v2-splash-word-rest" src={logoBrancaSemFundo} alt="CKOS" />
+            <img className="l4-coming-v2-splash-word-l4" src={logoMarkDark} alt="L4K" />
+            <img className="l4-coming-v2-splash-word-rest" src={logoMainDark} alt="L4CKOS" />
           </div>
         </div>
       )}
@@ -118,7 +119,7 @@ export default function ComingSoon() {
       <div className={`l4-coming-v2-shell ${introDone ? "is-ready" : ""}`}>
         <header className="l4-coming-v2-header">
           <a className="l4-coming-v2-logo-text" href="/">
-            <img src={logoBrancaSemFundo} alt="L4CKOS" />
+            <img src={logoMainDark} alt="L4CKOS" />
           </a>
           <div className="l4-coming-v2-live-pill">
             <span className="dot" />
@@ -255,4 +256,3 @@ export default function ComingSoon() {
     </div>
   );
 }
-
