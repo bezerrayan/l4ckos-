@@ -115,7 +115,7 @@ export default function Login() {
       <div style={{ ...styles.leftPanel, display: isMobile ? "none" : "flex" } as CSSProperties}>
         <div style={styles.logoSection as CSSProperties}>
           <div style={styles.logoPlaceholder as CSSProperties}>
-            <img src={logoMarkDark} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
+            <img src={logoMainDark} alt="Logo da marca" style={styles.logoImage as CSSProperties} />
           </div>
         </div>
       </div>
