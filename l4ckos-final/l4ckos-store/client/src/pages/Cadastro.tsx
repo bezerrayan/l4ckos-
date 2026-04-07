@@ -415,15 +415,15 @@ export default function Cadastro() {
 const styles: Record<string, CSSProperties> = {
   container: {
     display: "grid",
-    gridTemplateColumns: "0.72fr 1.28fr",
-    minHeight: "calc(100vh - 200px)",
+    gridTemplateColumns: "0.9fr 1.1fr",
+    minHeight: "clamp(520px, 72vh, 680px)",
     gap: 0,
     background: "#0a0a0a",
     border: "1px solid #1f1f1f",
   },
   leftPanel: {
     background: "#0f0f0f",
-    padding: "44px 24px",
+    padding: "32px 28px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -439,8 +439,8 @@ const styles: Record<string, CSSProperties> = {
   logoPlaceholder: {
     textAlign: "center",
     width: "100%",
-    maxWidth: 260,
-    padding: "8px 0",
+    maxWidth: 320,
+    padding: "0",
     background: "transparent",
     border: "none",
     borderRadius: 0,
