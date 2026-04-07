@@ -440,8 +440,8 @@ const styles: Record<string, CSSProperties> = {
     textAlign: "center",
     width: 320,
     height: 190,
-    background: "#080808",
-    border: "1px solid #161616",
+    background: "transparent",
+    border: "none",
     borderRadius: 0,
     display: "flex",
     alignItems: "center",
@@ -457,6 +457,7 @@ const styles: Record<string, CSSProperties> = {
     height: "auto",
     objectFit: "contain",
     objectPosition: "center",
+    filter: "drop-shadow(0 18px 34px rgba(232, 0, 42, 0.16))",
   },
   logo: {
     fontSize: 64,

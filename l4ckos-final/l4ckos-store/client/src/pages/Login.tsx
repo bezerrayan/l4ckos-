@@ -10,7 +10,7 @@ import type { CSSProperties } from "react";
 import { getLoginUrl } from "../const";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { trpc } from "../lib/trpc";
-import logoMarkDark from "../images/l4k-mark-dark-transparent.png";
+import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
 import { getApiErrorDisplay } from "../utils/apiError";
 import { useUser } from "../contexts/UserContext";
 
@@ -321,8 +321,8 @@ const styles: Record<string, CSSProperties> = {
     overflow: "hidden",
   },
   logoImage: {
-    width: "58%",
-    maxWidth: "58%",
+    width: "84%",
+    maxWidth: "84%",
     height: "auto",
     objectFit: "contain",
     objectPosition: "center",
