@@ -4,7 +4,6 @@ import { ShoppingCart } from "lucide-react";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useUser } from "../contexts/UserContext";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { PRODUCT_CATEGORIES } from "../lib/productCategories";
 import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
 import "./Header.css";
 
@@ -24,7 +23,6 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const isAuthenticated = Boolean(user?.isAuthenticated);
   const displayName = firstName(user?.name, user?.email);
-  const mobileCategoryLinks = PRODUCT_CATEGORIES.slice(0, 6);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -34,14 +32,13 @@ export default function Header() {
     { to: "/", label: "Início", active: location.pathname === "/" },
     {
       to: "/produtos",
-      label: "Produtos",
+      label: "Drop 01",
       active:
         location.pathname === "/produtos" ||
         location.pathname.startsWith("/produto/") ||
         location.pathname.startsWith("/categorias/"),
     },
-    { to: "/meus-pedidos", label: "Pedidos", active: location.pathname === "/meus-pedidos" },
-    { to: "/acompanhar-pedido", label: "Acompanhar", active: location.pathname === "/acompanhar-pedido" },
+    { to: "/sobre", label: "Sobre", active: location.pathname === "/sobre" },
     { to: "/contato", label: "Contato", active: location.pathname === "/contato" },
   ];
 
@@ -79,24 +76,6 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
-
-          {isMobile ? (
-            <div className="l4-header-mobile-categories">
-              <span className="l4-header-mobile-title">Categorias</span>
-              <div className="l4-header-mobile-grid">
-                {mobileCategoryLinks.map(category => (
-                  <Link
-                    key={category.value}
-                    to={`/categorias/${category.value}`}
-                    className="l4-header-mobile-chip"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    {category.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ) : null}
 
           <Link to="/favoritos" className={`l4-header-link ${location.pathname === "/favoritos" ? "active" : ""}`} onClick={() => setMenuOpen(false)}>
             Favoritos{favorites.length > 0 ? ` (${favorites.length})` : ""}
