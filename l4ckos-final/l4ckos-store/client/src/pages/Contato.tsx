@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Clock, Mail, MessageCircle } from "lucide-react";
 import { useToast } from "../contexts/ToastContext";
 import type { CSSProperties } from "react";
@@ -18,13 +19,15 @@ function isValidEmail(email: string) {
 
 export default function Contato() {
   const isMobile = useIsMobile();
+  const [searchParams] = useSearchParams();
   const { showToast } = useToast();
   const whatsappUrl = getWhatsAppUrl();
+  const initialSubject = searchParams.get("assunto") || "produto";
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
     telefone: "",
-    assunto: "produto",
+    assunto: initialSubject,
     mensagem: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -251,6 +254,7 @@ export default function Contato() {
                 <option value="pedido_pagamento">Pedido e pagamento</option>
                 <option value="entrega_rastreamento">Entrega e rastreamento</option>
                 <option value="troca_devolucao">Troca ou devolução</option>
+                <option value="privacidade">Privacidade e dados</option>
                 <option value="parcerias">Parcerias</option>
                 <option value="outro">Outro assunto</option>
               </select>

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
+import { openCookiePreferences } from "./CookiePreferences";
 import { contactChannels, getWhatsAppUrl } from "../config/site";
 import logoMainDark from "../images/l4ckos-main-dark-transparent.png";
 import "./Footer.css";
@@ -67,6 +68,7 @@ export default function Footer() {
           <ul>
             <li><Link to="/termos">Termos</Link></li>
             <li><Link to="/privacidade">Privacidade</Link></li>
+            <li><button className="l4-footer-link-button" type="button" onClick={openCookiePreferences}>Preferências de cookies</button></li>
           </ul>
         </div>
       </div>
