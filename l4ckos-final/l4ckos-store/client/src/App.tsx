@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { useUser } from "./contexts/UserContext";
@@ -23,7 +23,6 @@ const FAQs = lazy(() => import("./pages/FAQs"));
 const Termos = lazy(() => import("./pages/Termos"));
 const Privacidade = lazy(() => import("./pages/Privacidade"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const Forbidden = lazy(() => import("./pages/Forbidden"));
 const MeusPedidos = lazy(() => import("./pages/MeusPedidos"));
 const AcompanharPedido = lazy(() => import("./pages/AcompanharPedido"));
 const TrocasDevolucoes = lazy(() => import("./pages/TrocasDevolucoes"));
@@ -50,39 +49,16 @@ function RouteFallback() {
 
 function AdminRoute() {
   const { user, isAuthenticated, isLoading } = useUser();
-  const location = useLocation();
 
   if (isLoading) {
     return <RouteFallback />;
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to={`/entrar?next=${encodeURIComponent(location.pathname)}`} replace />;
-  }
-
-  if (user?.role !== "admin") {
-    return <Forbidden />;
+  if (!isAuthenticated || user?.role !== "admin") {
+    return <NotFound />;
   }
 
   return <Admin />;
-}
-
-function AdminLegacyRoute() {
-  const { user, isAuthenticated, isLoading } = useUser();
-
-  if (isLoading) {
-    return <RouteFallback />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/entrar?next=%2Fgestao" replace />;
-  }
-
-  if (user?.role !== "admin") {
-    return <Forbidden />;
-  }
-
-  return <Navigate to="/gestao" replace />;
 }
 
 function AppRoutes() {
@@ -95,7 +71,7 @@ function AppRoutes() {
     .replace(/[^a-z]/g, "");
   const comingSoonEnabled = comingSoonRaw === "true";
   const isAdmin = isAuthenticated && user?.role === "admin";
-  const comingSoonAllowedRoutes = new Set(["/login", "/entrar", "/cadastro", "/esqueci-senha", "/redefinir-senha"]);
+  const comingSoonAllowedRoutes = new Set(["/login", "/cadastro", "/esqueci-senha", "/redefinir-senha"]);
   const isAllowedDuringComingSoon = comingSoonAllowedRoutes.has(location.pathname);
 
   if (comingSoonEnabled && !isAllowedDuringComingSoon) {
@@ -127,7 +103,6 @@ function AppRoutes() {
             <Route path="/carrinho" element={<Carrinho />} />
             <Route path="/checkout" element={<Pagamento />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/entrar" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/esqueci-senha" element={<EsqueciSenha />} />
             <Route path="/redefinir-senha" element={<RedefinirSenha />} />
@@ -135,8 +110,7 @@ function AppRoutes() {
             <Route path="/meus-pedidos" element={<MeusPedidos />} />
             <Route path="/meus-pedidos/:id" element={<PedidoDetalhe />} />
             <Route path="/acompanhar-pedido" element={<AcompanharPedido />} />
-            <Route path="/gestao" element={<AdminRoute />} />
-            <Route path="/admin" element={<AdminLegacyRoute />} />
+            <Route path="/admin" element={<AdminRoute />} />
             <Route path="/sobre" element={<Sobre />} />
             <Route path="/contato" element={<Contato />} />
             <Route path="/faqs" element={<FAQs />} />

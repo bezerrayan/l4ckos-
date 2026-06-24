@@ -1,5 +1,4 @@
 import axios, { AxiosError } from "axios";
-import { timingSafeEqual } from "node:crypto";
 
 const DEFAULT_ASAAS_API_URL = "https://api.asaas.com/v3";
 const DEFAULT_ASAAS_CHECKOUT_BASE_URL = "https://www.asaas.com";
@@ -157,9 +156,5 @@ export function validateAsaasWebhookSignature(headers: Record<string, unknown>) 
   }
 
   const received = String(headers["asaas-access-token"] || "").trim();
-  if (!received) return false;
-
-  const receivedBuffer = Buffer.from(received, "utf8");
-  const configuredBuffer = Buffer.from(configuredToken, "utf8");
-  return receivedBuffer.length === configuredBuffer.length && timingSafeEqual(receivedBuffer, configuredBuffer);
+  return received.length > 0 && received === configuredToken;
 }

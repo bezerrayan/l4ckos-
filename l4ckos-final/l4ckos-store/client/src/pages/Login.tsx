@@ -26,8 +26,6 @@ export default function Login() {
   const { isAuthenticated, isLoading } = useUser();
   const utils = trpc.useUtils();
   const localLoginMutation = trpc.auth.localLogin.useMutation();
-  const nextPath = new URLSearchParams(location.search).get("next");
-  const safeNextPath = nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,15 +36,15 @@ export default function Login() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate(safeNextPath, { replace: true });
+      navigate("/", { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, safeNextPath]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   useEffect(() => {
     if (location.search.includes("oauthError=") && !isLoading && isAuthenticated) {
-      navigate(safeNextPath, { replace: true });
+      navigate("/", { replace: true });
     }
-  }, [isAuthenticated, isLoading, location.search, navigate, safeNextPath]);
+  }, [isAuthenticated, isLoading, location.search, navigate]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +77,7 @@ export default function Login() {
         message: "Login realizado com sucesso!",
         duration: 3000,
       });
-      navigate(safeNextPath);
+      navigate("/");
     } catch (err) {
       const parsed = getApiErrorDisplay(err, "Não foi possível fazer login. Verifique suas credenciais.");
       setFormError({ message: parsed.message, details: parsed.details });
@@ -93,7 +91,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    const loginUrl = getLoginUrl(safeNextPath);
+    const loginUrl = getLoginUrl();
     if (!loginUrl) {
       showToast({
         message: "Não foi possível iniciar login com Google",

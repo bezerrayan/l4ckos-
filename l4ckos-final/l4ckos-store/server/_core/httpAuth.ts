@@ -1,7 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
+import { ENV } from "./env";
+import { sdk } from "./sdk";
 import { securityLog } from "./security";
 import { buildApiErrorResponse } from "./appErrors";
-import { authenticateHttpRequest, isConfiguredAdmin } from "./authz";
 
 export type AuthenticatedRequest = Request & {
   authUser?: {
@@ -23,7 +24,7 @@ function sendError(
 
 export async function requireAuthenticatedUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await authenticateHttpRequest(req);
+    const user = await sdk.authenticateRequest(req);
     (req as AuthenticatedRequest).authUser = {
       id: user.id,
       role: user.role,
@@ -37,9 +38,10 @@ export async function requireAuthenticatedUser(req: Request, res: Response, next
 
 export async function requireAdminUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await authenticateHttpRequest(req);
+    const user = await sdk.authenticateRequest(req);
+    const normalizedEmail = String(user.email ?? "").trim().toLowerCase();
 
-    if (!isConfiguredAdmin(user)) {
+    if (user.role !== "admin" || !ENV.adminEmails.includes(normalizedEmail)) {
       securityLog("warn", "auth.admin_route_denied", {
         userId: user.id,
         requestIp: req.ip || "unknown",

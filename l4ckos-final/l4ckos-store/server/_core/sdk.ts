@@ -80,9 +80,6 @@ class SDKServer {
       sessionVersion: payload.sessionVersion,
     })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-      .setIssuer(ENV.jwtIssuer)
-      .setAudience(ENV.jwtAudience)
-      .setIssuedAt()
       .setExpirationTime(expirationSeconds)
       .sign(secretKey);
   }
@@ -98,8 +95,6 @@ class SDKServer {
       const secretKey = this.getSessionSecret();
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
-        issuer: ENV.jwtIssuer,
-        audience: ENV.jwtAudience,
       });
       const { openId, appId, name, sessionVersion } = payload as Record<string, unknown>;
 
@@ -135,10 +130,6 @@ class SDKServer {
     const user = await db.getUserByOpenId(session.openId);
     if (!user) {
       throw ForbiddenError("User not found");
-    }
-
-    if (user.isBlocked === 1) {
-      throw ForbiddenError("User blocked");
     }
 
     if (user.sessionVersion !== session.sessionVersion) {
