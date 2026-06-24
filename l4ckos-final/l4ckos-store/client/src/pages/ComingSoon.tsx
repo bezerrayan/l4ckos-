@@ -13,7 +13,7 @@ function getWaitlistMessage(responseMessage?: string) {
   if (normalized.includes("cadastrado") || normalized.includes("existe") || normalized.includes("lista")) {
     return "Este e-mail já está na lista.";
   }
-  return "Não foi possível cadastrar agora. Tente novamente em instantes.";
+  return "Não foi possível concluir o cadastro agora. Tente novamente.";
 }
 
 export default function ComingSoon() {
@@ -41,7 +41,7 @@ export default function ComingSoon() {
     setSuccessMessage("");
 
     if (!isValidEmail(normalizedEmail)) {
-      setError("Informe um e-mail válido para entrar na lista.");
+      setError("Digite um e-mail válido.");
       return;
     }
 
@@ -59,7 +59,7 @@ export default function ComingSoon() {
       setSuccessMessage("Cadastro realizado. Você está na lista.");
       setEmail("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível cadastrar agora. Tente novamente em instantes.");
+      setError(err instanceof Error ? err.message : "Não foi possível concluir o cadastro agora. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -131,6 +131,7 @@ export default function ComingSoon() {
                   }}
                   autoComplete="email"
                   inputMode="email"
+                  placeholder="voce@email.com"
                   aria-invalid={Boolean(error)}
                   aria-describedby="coming-form-feedback"
                   disabled={loading}
@@ -150,12 +151,12 @@ export default function ComingSoon() {
 
             <div className="l4-coming-v2-perks">
               <div className="perk">
-                <div className="pk">24H</div>
+                <div className="pk">24H ANTES</div>
                 <div className="pd">ACESSO ANTECIPADO</div>
               </div>
             </div>
             <p className="l4-coming-v2-perk-note">
-              Quem estiver na lista receberá o acesso ao Drop 01 antes da abertura pública.
+              Quem estiver na lista receberá acesso ao Drop 01 antes da abertura pública.
             </p>
 
             <div className="l4-coming-v2-socials" aria-label="Contatos L4CKOS">
