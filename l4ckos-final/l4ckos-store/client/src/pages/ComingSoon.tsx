@@ -1,82 +1,47 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { apiUrl } from "../const";
 import { csrfFetch } from "../lib/csrf";
 import logoMarkDark from "../images/l4k-mark-dark-transparent.png";
 
-type Countdown = { days: string; hours: string; minutes: string; seconds: string };
-const STORE_OPENING_TARGET = new Date("2026-06-11T00:00:00-03:00").getTime();
-const COUNTDOWN_REVEAL_DAYS = 21;
-
-function pad(value: number) {
-  return String(Math.max(0, value)).padStart(2, "0");
-}
-
 function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
-function getCountdown(targetDate: number, now = Date.now()): Countdown {
-  const diff = Math.max(0, targetDate - now);
-  return {
-    days: pad(Math.floor(diff / 86_400_000)),
-    hours: pad(Math.floor((diff % 86_400_000) / 3_600_000)),
-    minutes: pad(Math.floor((diff % 3_600_000) / 60_000)),
-    seconds: pad(Math.floor((diff % 60_000) / 1_000)),
-  };
+function getWaitlistMessage(responseMessage?: string) {
+  const normalized = String(responseMessage || "").toLowerCase();
+  if (normalized.includes("cadastrado") || normalized.includes("existe") || normalized.includes("lista")) {
+    return "Este e-mail já está na lista.";
+  }
+  return "Não foi possível cadastrar agora. Tente novamente em instantes.";
 }
 
 export default function ComingSoon() {
-  const targetDate = useMemo(() => STORE_OPENING_TARGET, []);
-  const [countdown, setCountdown] = useState<Countdown>(() => getCountdown(targetDate));
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [reservationCode, setReservationCode] = useState("");
-  const [secondsFlash, setSecondsFlash] = useState(false);
   const [splashOut, setSplashOut] = useState(false);
   const [introDone, setIntroDone] = useState(false);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    const startOut = window.setTimeout(() => setSplashOut(true), 2200);
-    const finish = window.setTimeout(() => setIntroDone(true), 2750);
+    const startOut = window.setTimeout(() => setSplashOut(true), 900);
+    const finish = window.setTimeout(() => setIntroDone(true), 1250);
     return () => {
       window.clearTimeout(startOut);
       window.clearTimeout(finish);
     };
   }, []);
 
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setCountdown(getCountdown(targetDate));
-      setSecondsFlash(true);
-      window.setTimeout(() => setSecondsFlash(false), 120);
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [targetDate]);
-
-  function generateReservationCode() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let out = "#L4K-";
-    for (let i = 0; i < 4; i += 1) out += chars[Math.floor(Math.random() * chars.length)];
-    return out;
-  }
-
-  const daysRemaining = useMemo(() => {
-    const diff = Math.max(0, targetDate - Date.now());
-    return Math.ceil(diff / 86_400_000);
-  }, [targetDate, countdown.days, countdown.hours, countdown.minutes, countdown.seconds]);
-
-  const shouldShowCountdown = daysRemaining <= COUNTDOWN_REVEAL_DAYS;
-
-  async function handleSubmit() {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     setError("");
     setSuccessMessage("");
+
     if (!isValidEmail(normalizedEmail)) {
-      setError("Insira um e-mail valido.");
+      setError("Informe um e-mail válido para entrar na lista.");
       return;
     }
 
@@ -89,13 +54,12 @@ export default function ComingSoon() {
       });
       const data = (await response.json().catch(() => null)) as { message?: string } | null;
       if (!response.ok) {
-        throw new Error(data?.message || "Algo deu errado. Tente novamente.");
+        throw new Error(getWaitlistMessage(data?.message));
       }
-      setSuccess(true);
-      setReservationCode(generateReservationCode());
-      setSuccessMessage(data?.message || "Você está na lista. Avisaremos quando a loja abrir.");
+      setSuccessMessage("Cadastro realizado. Você está na lista.");
+      setEmail("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Algo deu errado. Tente novamente.");
+      setError(err instanceof Error ? err.message : "Não foi possível cadastrar agora. Tente novamente em instantes.");
     } finally {
       setLoading(false);
     }
@@ -122,134 +86,100 @@ export default function ComingSoon() {
           </a>
           <div className="l4-coming-v2-live-pill">
             <span className="dot" />
-            Drop 01
+            DROP 01 — EM BREVE
           </div>
         </header>
 
-        <section className="l4-coming-v2-hero">
-          <div className="l4-coming-v2-drop-tag">// Lancamento oficial</div>
-          <h1 className="l4-coming-v2-title">
-            <span className="t1" data-t="ALGO">
-              ALGO
-            </span>
-            <span className="t2">GRANDE</span>
-            <span className="t3">VEM AI.</span>
-          </h1>
+        <main className="l4-coming-v2-main">
+          <section className="l4-coming-v2-hero" aria-labelledby="coming-soon-title">
+            <div className="l4-coming-v2-drop-tag">// LANÇAMENTO OFICIAL</div>
+            <h1 id="coming-soon-title" className="l4-coming-v2-title">
+              <span className="t1">ALGO</span>
+              <span className="t2">GRANDE</span>
+              <span className="t3">VEM AÍ.</span>
+            </h1>
 
-          <div className="l4-coming-v2-divider" />
-          <p className="l4-coming-v2-form-note" style={{ marginBottom: 12 }}>
-            <strong>Abertura oficial:</strong> Em breve.
-          </p>
-          <p className="l4-coming-v2-desc">
-            O primeiro drop da L4CKOS esta quase pronto.
-            <br />
-            Entre na lista e garanta <strong>acesso 24h antes</strong> de todo mundo.
-          </p>
-          {shouldShowCountdown ? (
-            <div className="l4-coming-v2-countdown-wrap">
-              <div className="l4-coming-v2-countdown-label">Contagem oficial iniciada</div>
-              <div className="l4-coming-v2-countdown">
-                <div className="cu">
-                  <div className="cn">{countdown.days}</div>
-                  <div className="cl">Dias</div>
-                </div>
-                <div className="csep">:</div>
-                <div className="cu">
-                  <div className="cn">{countdown.hours}</div>
-                  <div className="cl">Hr</div>
-                </div>
-                <div className="csep">:</div>
-                <div className="cu">
-                  <div className="cn">{countdown.minutes}</div>
-                  <div className="cl">Min</div>
-                </div>
-                <div className="csep">:</div>
-                <div className="cu">
-                  <div className={`cn ${secondsFlash ? "is-flash" : ""}`}>{countdown.seconds}</div>
-                  <div className="cl">Seg</div>
-                </div>
+            <div className="l4-coming-v2-divider" />
+            <p className="l4-coming-v2-desc">
+              O primeiro drop da L4CKOS está sendo preparado.
+              <br />
+              Entre na lista para receber acesso antecipado ao lançamento.
+            </p>
+          </section>
+
+          <aside className="l4-coming-v2-panel" aria-labelledby="coming-soon-form-title">
+            <div className="l4-coming-v2-panel-line" aria-hidden="true" />
+            <h2 className="l4-coming-v2-form-heading" id="coming-soon-form-title">
+              ACESSO ANTECIPADO
+            </h2>
+            <p className="l4-coming-v2-panel-copy">Cadastre seu e-mail e seja avisado antes da abertura oficial.</p>
+
+            <form className="l4-coming-v2-form" onSubmit={handleSubmit}>
+              <label className="l4-coming-v2-label" htmlFor="coming-email">
+                Seu melhor e-mail
+              </label>
+              <div className="l4-coming-v2-input-wrap">
+                <input
+                  id="coming-email"
+                  className={`l4-coming-v2-email-in ${error ? "has-error" : ""}`}
+                  type="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    if (error) setError("");
+                    if (successMessage) setSuccessMessage("");
+                  }}
+                  autoComplete="email"
+                  inputMode="email"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby="coming-form-feedback"
+                  disabled={loading}
+                />
+                <button className="l4-coming-v2-cta-btn" type="submit" disabled={loading || !isValidEmail(email.trim())}>
+                  {loading ? "ENVIANDO..." : "ENTRAR NA LISTA"}
+                </button>
               </div>
-            </div>
-          ) : (
-            <div className="l4-coming-v2-soon-panel">
-              <div className="l4-coming-v2-soon-badge">EM BREVE</div>
-              <p>
-                Estamos preparando a abertura com calma para entregar um lançamento forte, confiável e com benefícios  reais
-                para quem entrou primeiro.
+              <p
+                id="coming-form-feedback"
+                className={`l4-coming-v2-form-feedback ${error ? "is-error" : ""} ${successMessage ? "is-success" : ""}`}
+                aria-live="polite"
+              >
+                {error || successMessage || "Sem spam. Apenas novidades importantes sobre o lançamento."}
               </p>
-              <span>O contador aparece automaticamente quando estivermos na reta final.</span>
-            </div>
-          )}
-        </section>
-
-        {!success ? (
-          <section className="l4-coming-v2-form-section">
-            <div className="l4-coming-v2-form-heading">Reservar minha vaga</div>
-            <div className="l4-coming-v2-input-wrap">
-              <input
-                className={`l4-coming-v2-email-in ${error ? "has-error" : ""}`}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    void handleSubmit();
-                  }
-                }}
-                placeholder="seu@email.com"
-                autoComplete="email"
-              />
-              <button className="l4-coming-v2-cta-btn" type="button" onClick={() => void handleSubmit()} disabled={loading}>
-                {loading ? "ENVIANDO..." : "GARANTIR ACESSO →"}
-              </button>
-            </div>
-            {error ? <div className="l4-coming-v2-form-error">{error}</div> : null}
+            </form>
 
             <div className="l4-coming-v2-perks">
               <div className="perk">
                 <div className="pk">24H</div>
-                <div className="pd">Antes de todos</div>
-              </div>
-              <div className="perk">
-                <div className="pk">15%</div>
-                <div className="pd">Desconto exclusivo</div>
-              </div>
-              <div className="perk">
-                <div className="pk">FRETE</div>
-                <div className="pd">Grátis no 1° pedido</div>
+                <div className="pd">ACESSO ANTECIPADO</div>
               </div>
             </div>
-            <div className="l4-coming-v2-form-note">Sem spam. Só avisamos quando abrir.</div>
-          </section>
-        ) : (
-          <section className="l4-coming-v2-ok on">
-            <div className="ok-box">
-              <div className="ok-icon">OK</div>
-              <div className="ok-txt">Vaga reservada - você está na lista</div>
+            <p className="l4-coming-v2-perk-note">
+              Quem estiver na lista receberá o acesso ao Drop 01 antes da abertura pública.
+            </p>
+
+            <div className="l4-coming-v2-socials" aria-label="Contatos L4CKOS">
+              <a href="https://instagram.com/l4ckos" target="_blank" rel="noreferrer" aria-label="Instagram L4CKOS">
+                <Instagram size={15} aria-hidden="true" />
+                <span>Instagram</span>
+              </a>
+              <a href="https://wa.me/5561998030913" target="_blank" rel="noreferrer" aria-label="WhatsApp L4CKOS">
+                <MessageCircle size={15} aria-hidden="true" />
+                <span>WhatsApp</span>
+              </a>
+              <a href="mailto:contato@l4ckos.com.br" aria-label="Email L4CKOS">
+                <Mail size={15} aria-hidden="true" />
+                <span>E-mail</span>
+              </a>
             </div>
-            <div className="ok-num">{reservationCode}</div>
-            <div className="ok-sub">{successMessage || "Você será avisado primeiro quando abrir."}</div>
-          </section>
-        )}
+          </aside>
+        </main>
 
         <footer className="l4-coming-v2-footer">
           <div className="f-copy">
-            (c) 2026 <em>L4CKOS</em>
+            © {currentYear} <em>L4CKOS</em>
           </div>
-          <div className="socials">
-            <a href="https://instagram.com/l4ckos" target="_blank" rel="noreferrer" aria-label="Instagram L4CKOS">
-              <Instagram size={14} />
-              <span>Instagram</span>
-            </a>
-            <a href="https://wa.me/5561998030913" target="_blank" rel="noreferrer" aria-label="WhatsApp L4CKOS">
-              <MessageCircle size={14} />
-              <span>WhatsApp</span>
-            </a>
-            <a href="mailto:contato@l4ckos.com.br" aria-label="Email L4CKOS">
-              <Mail size={14} />
-              <span>E-mail</span>
-            </a>
-          </div>
+          <span>DROP 01 — BUILT FOR ADVENTURE</span>
         </footer>
       </div>
     </div>
