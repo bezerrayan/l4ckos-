@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { TRPCError } from "@trpc/server";
+import cors from "cors";
+import express from "express";
+import { createServer } from "node:http";
 import { getAllowedMethodsForApiPath, API_NOT_FOUND_RESPONSE } from "./_core/httpApi";
 import { hasForbiddenClientPaymentField } from "./controllers/paymentController";
-import { getAllowedOrigins, isAllowedOrigin } from "./_core/corsPolicy";
+import { createApiCorsOptions, getAllowedOrigins, isAllowedOrigin } from "./_core/corsPolicy";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { isKnownClientRoute } from "./_core/vite";
 
@@ -232,6 +235,56 @@ describe("security hardening contracts", () => {
     expect(isAllowedOrigin("http://localhost:5173", { isProduction: false, allowedOrigins: getAllowedOrigins({ isProduction: false }) })).toBe(true);
   });
 
+  it("sends CORS credentials and exact origin for GET /api/csrf from allowed origins", async () => {
+    await withCorsTestServer(async baseUrl => {
+      for (const origin of ["https://l4ckos.com.br", "https://www.l4ckos.com.br"]) {
+        const response = await fetch(`${baseUrl}/api/csrf`, {
+          headers: { Origin: origin, "x-forwarded-proto": "https" },
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("access-control-allow-origin")).toBe(origin);
+        expect(response.headers.get("access-control-allow-credentials")).toBe("true");
+        expect(response.headers.get("access-control-allow-origin")).not.toBe("*");
+        expect(response.headers.get("cache-control")).toBe("no-store, private");
+        expect(response.headers.get("set-cookie")).toContain("l4ckos_csrf=");
+        expect(response.headers.get("set-cookie")).toContain("Secure");
+      }
+    });
+  });
+
+  it("blocks GET /api/csrf from disallowed origins without wildcard credentials", async () => {
+    await withCorsTestServer(async baseUrl => {
+      const response = await fetch(`${baseUrl}/api/csrf`, {
+        headers: { Origin: "https://evil.example" },
+      });
+
+      expect(response.status).toBe(403);
+      expect(response.headers.get("access-control-allow-origin")).toBeNull();
+      expect(response.headers.get("access-control-allow-credentials")).toBeNull();
+    });
+  });
+
+  it("accepts OPTIONS preflight with content-type and x-csrf-token for mutating requests", async () => {
+    await withCorsTestServer(async baseUrl => {
+      const response = await fetch(`${baseUrl}/api/trpc/cart.add`, {
+        method: "OPTIONS",
+        headers: {
+          Origin: "https://l4ckos.com.br",
+          "Access-Control-Request-Method": "POST",
+          "Access-Control-Request-Headers": "content-type,x-csrf-token",
+        },
+      });
+
+      expect(response.status).toBe(204);
+      expect(response.headers.get("access-control-allow-origin")).toBe("https://l4ckos.com.br");
+      expect(response.headers.get("access-control-allow-credentials")).toBe("true");
+      expect(response.headers.get("access-control-allow-origin")).not.toBe("*");
+      expect(response.headers.get("access-control-allow-headers")?.toLowerCase()).toContain("x-csrf-token");
+      expect(response.headers.get("access-control-allow-headers")?.toLowerCase()).toContain("content-type");
+    });
+  });
+
   it("keeps valid React Router direct routes and marks unknown routes as 404 candidates", () => {
     expect(isKnownClientRoute("/entrar")).toBe(true);
     expect(isKnownClientRoute("/gestao")).toBe(true);
@@ -347,4 +400,45 @@ function createMockResponse() {
       return this;
     },
   };
+}
+
+async function withCorsTestServer(run: (baseUrl: string) => Promise<void>) {
+  const app = express();
+  const allowedOrigins = getAllowedOrigins({ isProduction: true });
+
+  app.use(
+    "/api",
+    cors(createApiCorsOptions({ isProduction: true, allowedOrigins })),
+  );
+  app.use("/api", (err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err instanceof Error && err.message === "Origin not allowed by CORS") {
+      res.status(403).json({ code: "CORS_ORIGIN_DENIED" });
+      return;
+    }
+    next(err);
+  });
+  app.get("/api/csrf", (_req, res) => {
+    res.cookie("l4ckos_csrf", "test-token", {
+      httpOnly: false,
+      path: "/",
+      sameSite: "lax",
+      secure: true,
+    });
+    res.setHeader("Cache-Control", "no-store, private");
+    res.status(200).json({ csrfToken: "test-token" });
+  });
+
+  const server = createServer(app);
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => resolve());
+  });
+
+  try {
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("Failed to start test server");
+    await run(`http://127.0.0.1:${address.port}`);
+  } finally {
+    await new Promise<void>(resolve => server.close(() => resolve()));
+  }
 }

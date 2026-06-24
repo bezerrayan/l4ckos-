@@ -14,7 +14,7 @@ import { serveStatic, setupVite } from "./vite";
 import { ENV, validateEnvOnStartup } from "./env";
 import { securityLog } from "./security";
 import { getAllowedMethodsForApiPath, methodNotAllowed, sendApiError, sendApiRouteNotFound } from "./httpApi";
-import { getAllowedOrigins, isAllowedOrigin } from "./corsPolicy";
+import { createApiCorsOptions, getAllowedOrigins, isAllowedOrigin } from "./corsPolicy";
 import { configureTrustProxy, createRateLimiter } from "./rateLimit";
 import { CSRF_COOKIE_NAME, createCsrfToken, csrfMiddleware } from "./csrf";
 import { getSessionCookieOptions } from "./cookies";
@@ -220,22 +220,6 @@ async function startServer() {
     });
   });
 
-  app.get("/api", (_req, res) => {
-    res.status(200).json({ ok: true });
-  });
-  app.all("/api", methodNotAllowed(["GET"]));
-
-  app.get("/api/csrf", (req, res) => {
-    const token = createCsrfToken();
-    res.cookie(CSRF_COOKIE_NAME, token, {
-      ...getSessionCookieOptions(req),
-      httpOnly: false,
-      maxAge: ENV.sessionTtlMs,
-    });
-    res.setHeader("Cache-Control", "no-store, private");
-    res.status(200).json({ csrfToken: token });
-  });
-
   app.use(
     helmet({
       referrerPolicy: { policy: "strict-origin-when-cross-origin" },
@@ -255,14 +239,13 @@ async function startServer() {
 
   app.use(
     "/api",
-    cors({
-      origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
-        if (isAllowed(origin)) return callback(null, true);
+    cors(createApiCorsOptions({
+      isProduction,
+      allowedOrigins,
+      onDenied: origin => {
         securityLog("warn", "cors.origin_blocked", { origin: origin || "missing" });
-        return callback(new Error("Origin not allowed by CORS"));
       },
-      credentials: true,
-    }),
+    })),
   );
 
   app.use("/api", (err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -271,6 +254,22 @@ async function startServer() {
       return;
     }
     next(err);
+  });
+
+  app.get("/api", (_req, res) => {
+    res.status(200).json({ ok: true });
+  });
+  app.all("/api", methodNotAllowed(["GET"]));
+
+  app.get("/api/csrf", (req, res) => {
+    const token = createCsrfToken();
+    res.cookie(CSRF_COOKIE_NAME, token, {
+      ...getSessionCookieOptions(req),
+      httpOnly: false,
+      maxAge: ENV.sessionTtlMs,
+    });
+    res.setHeader("Cache-Control", "no-store, private");
+    res.status(200).json({ csrfToken: token });
   });
 
   app.use(
