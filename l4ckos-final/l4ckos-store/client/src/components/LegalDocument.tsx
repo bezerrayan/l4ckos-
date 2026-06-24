@@ -16,6 +16,12 @@ type LegalDocumentProps = {
 };
 
 export default function LegalDocument({ title, description, updatedAt, sections }: LegalDocumentProps) {
+  function focusSection(sectionId: string) {
+    window.setTimeout(() => {
+      document.getElementById(sectionId)?.focus({ preventScroll: true });
+    }, 0);
+  }
+
   return (
     <main className="l4-legal-page">
       <header className="l4-legal-hero">
@@ -30,7 +36,7 @@ export default function LegalDocument({ title, description, updatedAt, sections 
           <summary>NESTA PÁGINA</summary>
           <nav aria-label={`Seções de ${title}`}>
             {sections.map(section => (
-              <a key={section.id} href={`#${section.id}`}>{section.title}</a>
+              <a key={section.id} href={`#${section.id}`} onClick={() => focusSection(section.id)}>{section.title}</a>
             ))}
           </nav>
         </details>
@@ -39,7 +45,7 @@ export default function LegalDocument({ title, description, updatedAt, sections 
           <nav aria-label={`Seções de ${title}`}>
             <strong>Nesta página</strong>
             {sections.map(section => (
-              <a key={section.id} href={`#${section.id}`}>{section.title}</a>
+              <a key={section.id} href={`#${section.id}`} onClick={() => focusSection(section.id)}>{section.title}</a>
             ))}
           </nav>
         </aside>

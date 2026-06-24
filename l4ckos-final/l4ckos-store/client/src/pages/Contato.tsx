@@ -17,12 +17,28 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
+const allowedSubjects = [
+  "produto",
+  "pedido_pagamento",
+  "entrega_rastreamento",
+  "troca_devolucao",
+  "privacidade",
+  "parcerias",
+  "outro",
+] as const;
+
+type ContactSubject = typeof allowedSubjects[number];
+
+function getSafeSubject(value: string | null): ContactSubject {
+  return allowedSubjects.includes(value as ContactSubject) ? value as ContactSubject : "produto";
+}
+
 export default function Contato() {
   const isMobile = useIsMobile();
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
   const whatsappUrl = getWhatsAppUrl();
-  const initialSubject = searchParams.get("assunto") || "produto";
+  const initialSubject = getSafeSubject(searchParams.get("assunto"));
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -254,7 +270,7 @@ export default function Contato() {
                 <option value="pedido_pagamento">Pedido e pagamento</option>
                 <option value="entrega_rastreamento">Entrega e rastreamento</option>
                 <option value="troca_devolucao">Troca ou devolução</option>
-                <option value="privacidade">Privacidade e dados</option>
+                <option value="privacidade">Privacidade e dados pessoais</option>
                 <option value="parcerias">Parcerias</option>
                 <option value="outro">Outro assunto</option>
               </select>

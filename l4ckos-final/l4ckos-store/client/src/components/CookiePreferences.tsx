@@ -151,18 +151,15 @@ export default function CookiePreferences() {
       {visible && !panelOpen ? (
         <section className="l4-cookie-banner" aria-labelledby="cookie-banner-title">
           <div>
-            <h2 id="cookie-banner-title">SUA PRIVACIDADE IMPORTA</h2>
+            <h2 id="cookie-banner-title">COOKIES ESSENCIAIS</h2>
             <p>
-              Utilizamos cookies essenciais para manter sua sessão, sua sacola e os recursos de segurança do site funcionando corretamente.
+              Utilizamos cookies necessários para manter sua sessão, sua sacola e os recursos de segurança da loja funcionando corretamente.
             </p>
-            <Link to="/privacidade#cookies">Política de Privacidade e Cookies</Link>
           </div>
           <div className="l4-cookie-actions">
-            <button type="button" className="secondary" onClick={() => setPanelOpen(true)}>
-              VER DETALHES
-            </button>
+            <Link className="l4-cookie-text-link" to="/privacidade#cookies">SAIBA MAIS</Link>
             <button type="button" onClick={() => persistChoice()}>
-              CONTINUAR COM ESSENCIAIS
+              ENTENDI
             </button>
           </div>
         </section>
@@ -175,12 +172,13 @@ export default function CookiePreferences() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="cookie-modal-title"
+            aria-describedby="cookie-modal-description"
             ref={panelRef}
           >
             <div className="l4-cookie-modal-head">
               <div>
                 <h2 id="cookie-modal-title">PREFERÊNCIAS DE COOKIES</h2>
-                <p>
+                <p id="cookie-modal-description">
                   Escolha quais categorias opcionais você autoriza. No momento, a L4CKOS utiliza apenas cookies e armazenamentos necessários.
                 </p>
               </div>

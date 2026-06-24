@@ -46,6 +46,15 @@
   font-size: 13px;
 }
 
+.l4-cookie-text-link {
+  align-self: center;
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+}
+
 .l4-cookie-actions,
 .l4-cookie-modal-actions {
   display: flex;
@@ -78,7 +87,8 @@
 
 .l4-cookie-banner button:focus-visible,
 .l4-cookie-modal button:focus-visible,
-.l4-cookie-banner a:focus-visible {
+.l4-cookie-banner a:focus-visible,
+.l4-cookie-text-link:focus-visible {
   outline: 2px solid #e8002a;
   outline-offset: 3px;
 }
