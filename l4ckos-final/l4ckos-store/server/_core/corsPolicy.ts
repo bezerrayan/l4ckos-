@@ -1,3 +1,5 @@
+import type { CorsOptions } from "cors";
+
 export const PRODUCTION_ALLOWED_ORIGINS = ["https://l4ckos.com.br", "https://www.l4ckos.com.br"];
 export const DEVELOPMENT_ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -37,4 +39,23 @@ export function isAllowedOrigin(origin: string | undefined, input: { isProductio
   } catch {
     return false;
   }
+}
+
+export function createApiCorsOptions(input: {
+  isProduction: boolean;
+  allowedOrigins: string[];
+  onDenied?: (origin: string | undefined) => void;
+}): CorsOptions {
+  return {
+    origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
+      if (isAllowedOrigin(origin, { isProduction: input.isProduction, allowedOrigins: input.allowedOrigins })) {
+        callback(null, true);
+        return;
+      }
+
+      input.onDenied?.(origin);
+      callback(new Error("Origin not allowed by CORS"));
+    },
+    credentials: true,
+  };
 }
