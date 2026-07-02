@@ -5,6 +5,7 @@ import { getCategoryLabel } from "../lib/productCategories";
 import { resolveCatalogImageUrl, retryImageWithVersion } from "../lib/images";
 import { apiUrl } from "../const";
 import { csrfFetch } from "../lib/csrf";
+import PromoCarousel from "../components/PromoCarousel";
 import "./Home.css";
 import camisaFallback from "../images/camisa.png";
 
@@ -157,30 +158,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        <section className="l4-home-drop-banner" aria-label="Coleção atual">
-          <div className="l4-home-drop-copy">
-            <span>COLEÇÃO ATUAL</span>
-            <h2>PEÇAS PARA IDENTIDADE EM MOVIMENTO</h2>
-            <p>Identidade urbana, movimento e espírito de aventura em cada peça.</p>
-            <Link to="/produtos" className="l4-home-drop-link">VER COLEÇÃO</Link>
-          </div>
-          <div className="l4-home-drop-products" aria-hidden="true">
-            {products.slice(0, 3).map((product, idx) => (
-              <div key={product.id} className={`l4-home-drop-product is-${idx + 1}`}>
-                <img
-                  src={product.imageUrl || camisaFallback}
-                  alt=""
-                  loading={idx === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                  onError={(event) => {
-                    if (product.imageUrl) retryImageWithVersion(event, product.imageUrl, camisaFallback, product.id);
-                  }}
-                />
-              </div>
-            ))}
-            {products.length === 0 ? <div className="l4-home-drop-fallback">L4K</div> : null}
-          </div>
-        </section>
+        <PromoCarousel />
       </section>
 
       <div className="l4-home-marquee">
